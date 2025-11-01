@@ -367,20 +367,20 @@ class _SearchViewState extends State<SearchView> {
           }
         }
       }
-      void main() {
-        // Create a set to keep track of seen hadithId values
-        Set<int> seenIds = {};
+      // void main() {
+      //   // Create a set to keep track of seen hadithId values
+      //   Set<int> seenIds = {};
 
-        // Iterate over the list in reverse to remove duplicates from the end
-        for (int i = pairedValues.length - 1; i >= 0; i--) {
-          int id = pairedValues[i]['hadithId'];
-          if (seenIds.contains(id)) {
-            pairedValues.removeAt(i);
-          } else {
-            seenIds.add(id);
-          }
-        }
-      }
+      //   // Iterate over the list in reverse to remove duplicates from the end
+      //   for (int i = pairedValues.length - 1; i >= 0; i--) {
+      //     int id = pairedValues[i]['hadithId'];
+      //     if (seenIds.contains(id)) {
+      //       pairedValues.removeAt(i);
+      //     } else {
+      //       seenIds.add(id);
+      //     }
+      //   }
+      // }
     } on http.ClientException {
       setState(() {
         searchIsRunning = false;

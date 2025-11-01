@@ -29,12 +29,6 @@ class _SimilarHadithViewState extends State<SimilarHadithView> {
 
   List<bool> isFavButtonPressedList = List.generate(300, (_) => false);
 
-  void _onFavButtonPressed(int index) {
-    setState(() {
-      isFavButtonPressedList[index] = !isFavButtonPressedList[index];
-    });
-  }
-
   double previousOffset = 0;
   double upwardScrollDistance = 0;
 
