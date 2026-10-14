@@ -37,7 +37,7 @@ def main():
     light_logo = ET.fromstring(white_svg)
     mark = light_logo.find('{http://www.w3.org/2000/svg}g')
     mark.set('stroke', '#000000')
-    mark.set('stroke-width', '2.5')
+    mark.set('stroke-width', '4')
     mark.set('stroke-linejoin', 'round')
     outlined_svg = ET.tostring(light_logo, encoding='unicode')
     (ICONS / 'logo_light.svg').write_text(outlined_svg + '\n')
