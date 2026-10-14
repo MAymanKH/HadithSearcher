@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/hadith.dart';
 import '../models/search_params.dart';
+import '../models/search_option.dart';
 import '../services/api_service.dart';
 import '../services/database_service.dart';
 
@@ -20,14 +22,31 @@ class SearchViewModel extends ChangeNotifier {
   SearchParams? _currentParams;
   int _searchGeneration = 0;
   bool _initialized = false;
+  bool _disposed = false;
+  bool _catalogsRequested = false;
+  List<SearchOption> _scholars = SearchOption.scholars;
+  List<SearchOption> _books = SearchOption.books;
+  List<String> _recentSearches = [];
+
+  List<SearchOption> get scholars => _scholars;
+  List<SearchOption> get books => _books;
+  List<String> get recentSearches => _recentSearches;
+  List<String> get activeFilters => [
+    if (_searchWay != SearchWay.anyWord) _searchWay.arabicName,
+    if (_searchRange != SearchRange.all) _searchRange.arabicName,
+    if (_searchGrade != SearchGrade.all) _searchGrade.arabicName,
+    if (_searchMohdith.apiCode != '0') _searchMohdith.arabicName,
+    if (_searchBook.apiCode != '0') _searchBook.arabicName,
+    if (_excludedWords.trim().isNotEmpty) 'استبعاد: $_excludedWords',
+  ];
 
   // Advanced search state
   bool _isAdvancedSearchOpen = false;
   SearchWay _searchWay = SearchWay.anyWord;
   SearchRange _searchRange = SearchRange.all;
   SearchGrade _searchGrade = SearchGrade.all;
-  SearchMohdith _searchMohdith = SearchMohdith.all;
-  SearchBook _searchBook = SearchBook.all;
+  SearchOption _searchMohdith = SearchOption.allScholars;
+  SearchOption _searchBook = SearchOption.allBooks;
   String _excludedWords = '';
   bool _saveAdvancedSettings = true;
   String _searchQuery = '';
@@ -36,8 +55,8 @@ class SearchViewModel extends ChangeNotifier {
   SearchWay? _initialSearchWay;
   SearchRange? _initialSearchRange;
   SearchGrade? _initialSearchGrade;
-  SearchMohdith? _initialSearchMohdith;
-  SearchBook? _initialSearchBook;
+  SearchOption? _initialSearchMohdith;
+  SearchOption? _initialSearchBook;
   String? _initialExcludedWords;
 
   // Getters
@@ -54,8 +73,8 @@ class SearchViewModel extends ChangeNotifier {
   SearchWay get searchWay => _searchWay;
   SearchRange get searchRange => _searchRange;
   SearchGrade get searchGrade => _searchGrade;
-  SearchMohdith get searchMohdith => _searchMohdith;
-  SearchBook get searchBook => _searchBook;
+  SearchOption get searchMohdith => _searchMohdith;
+  SearchOption get searchBook => _searchBook;
   String get excludedWords => _excludedWords;
   bool get saveAdvancedSettings => _saveAdvancedSettings;
   String get searchQuery => _searchQuery;
@@ -63,6 +82,7 @@ class SearchViewModel extends ChangeNotifier {
   /// Initialize by loading saved preferences.
   Future<void> init() async {
     if (!_initialized) {
+      await _loadCachedCatalogs();
       await _loadAdvancedPrefs();
       _initialized = true;
     }
@@ -98,15 +118,120 @@ class SearchViewModel extends ChangeNotifier {
 
     final mohdithStr = prefs.getString('searchMohdith');
     if (mohdithStr != null) {
-      _searchMohdith = SearchMohdith.fromArabic(mohdithStr);
+      _searchMohdith = _restoreOption(prefs, 'searchMohdith', _scholars);
     }
 
     final bookStr = prefs.getString('searchBook');
     if (bookStr != null) {
-      _searchBook = SearchBook.fromArabic(bookStr);
+      _searchBook = _restoreOption(prefs, 'searchBook', _books);
     }
 
     _excludedWords = prefs.getString('searchExcludedWords') ?? '';
+    notifyListeners();
+  }
+
+  Future<void> _loadCachedCatalogs() async {
+    final prefs = await SharedPreferences.getInstance();
+    _recentSearches = prefs.getStringList('recentSearches') ?? [];
+    for (final kind in ['book', 'mohdith']) {
+      final cached = prefs.getString('filterCatalog.$kind');
+      if (cached == null) continue;
+      try {
+        final options = (jsonDecode(cached) as List)
+            .map((item) => SearchOption.fromJson(item as Map<String, dynamic>))
+            .toList();
+        if (options.isNotEmpty) {
+          if (kind == 'book') {
+            _books = options;
+          } else {
+            _scholars = options;
+          }
+        }
+      } on FormatException {
+        /* Refresh invalid cached data from the API. */
+      } on TypeError {
+        /* Refresh invalid cached data from the API. */
+      }
+    }
+  }
+
+  SearchOption _restoreOption(
+    SharedPreferences prefs,
+    String key,
+    List<SearchOption> options,
+  ) {
+    final saved = prefs.getString(key);
+    final legacy = key == 'searchBook'
+        ? SearchOption.books
+        : SearchOption.scholars;
+    final legacyCode = legacy
+        .where((option) => option.arabicName == saved)
+        .firstOrNull
+        ?.apiCode;
+    return options.firstWhere(
+      (option) =>
+          option.apiCode == saved ||
+          option.apiCode == legacyCode ||
+          option.arabicName == saved ||
+          (saved == 'الإمام المالك' && option.apiCode == '179'),
+      orElse: () => prefs.containsKey('$key.label')
+          ? SearchOption(saved!, prefs.getString('$key.label')!)
+          : options.first,
+    );
+  }
+
+  Future<void> refreshFilterCatalogs() async {
+    if (_catalogsRequested) return;
+    _catalogsRequested = true;
+    final prefs = await SharedPreferences.getInstance();
+    await Future.wait(
+      ['book', 'mohdith'].map((kind) async {
+        final result = await _api.getFilterOptions(kind);
+        if (_disposed || result.isError || result.data!.isEmpty) return;
+        final all = kind == 'book'
+            ? SearchOption.allBooks
+            : SearchOption.allScholars;
+        final options = [
+          all,
+          ...result.data!.where((option) => option.apiCode != '0'),
+        ];
+        if (kind == 'book') {
+          _books = options;
+        } else {
+          _scholars = options;
+        }
+        await prefs.setString(
+          'filterCatalog.$kind',
+          jsonEncode(options.map((option) => option.toJson()).toList()),
+        );
+        if (!_disposed) notifyListeners();
+      }),
+    );
+  }
+
+  Future<void> clearRecentSearches() async {
+    _recentSearches = [];
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove('recentSearches');
+  }
+
+  Future<void> _rememberSearch(String keyword) async {
+    _recentSearches = [
+      keyword,
+      ..._recentSearches.where((query) => query != keyword),
+    ].take(10).toList();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('recentSearches', _recentSearches);
+  }
+
+  void resetFilters() {
+    _searchWay = SearchWay.anyWord;
+    _searchRange = SearchRange.all;
+    _searchGrade = SearchGrade.all;
+    _searchMohdith = SearchOption.allScholars;
+    _searchBook = SearchOption.allBooks;
+    _excludedWords = '';
     notifyListeners();
   }
 
@@ -126,6 +251,8 @@ class SearchViewModel extends ChangeNotifier {
       return;
     }
 
+    keyword = keyword.trim();
+    _searchQuery = keyword;
     final generation = ++_searchGeneration;
     _isLoading = true;
     _isLoadingMore = false;
@@ -144,6 +271,8 @@ class SearchViewModel extends ChangeNotifier {
     );
 
     notifyListeners();
+    await _rememberSearch(keyword);
+    if (generation != _searchGeneration) return;
     final result = await _api.searchHadith(_currentParams!);
     if (generation != _searchGeneration) return;
 
@@ -246,8 +375,8 @@ class SearchViewModel extends ChangeNotifier {
     return _initialSearchWay != _searchWay ||
         _initialSearchRange != _searchRange ||
         _initialSearchGrade != _searchGrade ||
-        _initialSearchMohdith != _searchMohdith ||
-        _initialSearchBook != _searchBook ||
+        _initialSearchMohdith?.apiCode != _searchMohdith.apiCode ||
+        _initialSearchBook?.apiCode != _searchBook.apiCode ||
         _initialExcludedWords != _excludedWords;
   }
 
@@ -273,12 +402,12 @@ class SearchViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void setSearchMohdith(SearchMohdith value) {
+  void setSearchMohdith(SearchOption value) {
     _searchMohdith = value;
     notifyListeners();
   }
 
-  void setSearchBook(SearchBook value) {
+  void setSearchBook(SearchOption value) {
     _searchBook = value;
     notifyListeners();
   }
@@ -312,6 +441,8 @@ class SearchViewModel extends ChangeNotifier {
         'searchMohdith',
         'searchBook',
         'searchExcludedWords',
+        'searchMohdith.label',
+        'searchBook.label',
       ]) {
         await prefs.remove(key);
       }
@@ -320,13 +451,16 @@ class SearchViewModel extends ChangeNotifier {
     await prefs.setString('searchWay', _searchWay.arabicName);
     await prefs.setString('searchRange', _searchRange.arabicName);
     await prefs.setString('searchGrade', _searchGrade.arabicName);
-    await prefs.setString('searchMohdith', _searchMohdith.arabicName);
-    await prefs.setString('searchBook', _searchBook.arabicName);
+    await prefs.setString('searchMohdith', _searchMohdith.apiCode);
+    await prefs.setString('searchMohdith.label', _searchMohdith.arabicName);
+    await prefs.setString('searchBook', _searchBook.apiCode);
+    await prefs.setString('searchBook.label', _searchBook.arabicName);
     await prefs.setString('searchExcludedWords', _excludedWords);
   }
 
   @override
   void dispose() {
+    _disposed = true;
     _searchGeneration++;
     super.dispose();
   }

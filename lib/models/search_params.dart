@@ -1,3 +1,5 @@
+import 'search_option.dart';
+
 /// Search parameters for the Hadith API.
 class SearchParams {
   final String keyword;
@@ -5,8 +7,8 @@ class SearchParams {
   final SearchWay searchWay;
   final SearchRange searchRange;
   final SearchGrade searchGrade;
-  final SearchMohdith searchMohdith;
-  final SearchBook searchBook;
+  final SearchOption searchMohdith;
+  final SearchOption searchBook;
   final String excludedWords;
 
   const SearchParams({
@@ -15,8 +17,8 @@ class SearchParams {
     this.searchWay = SearchWay.anyWord,
     this.searchRange = SearchRange.all,
     this.searchGrade = SearchGrade.all,
-    this.searchMohdith = SearchMohdith.all,
-    this.searchBook = SearchBook.all,
+    this.searchMohdith = SearchOption.allScholars,
+    this.searchBook = SearchOption.allBooks,
     this.excludedWords = '',
   });
 
@@ -142,51 +144,6 @@ enum SearchGrade {
     return SearchGrade.values.firstWhere(
       (e) => e.arabicName == name,
       orElse: () => SearchGrade.all,
-    );
-  }
-}
-
-/// Scholar (Mohdith) filter.
-enum SearchMohdith {
-  all('0', 'جميع المحدثين'),
-  malik('179', 'الإمام المالك'),
-  shafii('204', 'الإمام الشافعي'),
-  bukhari('256', 'البخاري'),
-  muslim('261', 'مسلم'),
-  daraqutni('385', 'الدارقطني'),
-  ibnHajar('852', 'ابن حجر العسقلاني'),
-  yahyaBinMaeen('232', 'يحيى بن معين');
-
-  final String apiCode;
-  final String arabicName;
-
-  const SearchMohdith(this.apiCode, this.arabicName);
-
-  static SearchMohdith fromArabic(String name) {
-    return SearchMohdith.values.firstWhere(
-      (e) => e.arabicName == name,
-      orElse: () => SearchMohdith.all,
-    );
-  }
-}
-
-/// Book filter.
-enum SearchBook {
-  all('0', 'جميع الكتب'),
-  arbaeen('13457', 'الأربعون النووية'),
-  sahihBukhari('6216', 'صحيح البخاري'),
-  sahihMuslim('3088', 'صحيح مسلم'),
-  sahihMusnad('96', 'الصحيح المسند');
-
-  final String apiCode;
-  final String arabicName;
-
-  const SearchBook(this.apiCode, this.arabicName);
-
-  static SearchBook fromArabic(String name) {
-    return SearchBook.values.firstWhere(
-      (e) => e.arabicName == name,
-      orElse: () => SearchBook.all,
     );
   }
 }

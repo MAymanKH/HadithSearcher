@@ -1,7 +1,10 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../models/search_params.dart';
+import '../../models/search_option.dart';
+import '../../widgets/search_option_picker.dart';
 import '../../viewmodels/search_viewmodel.dart';
 import '../../widgets/back_to_top_button.dart';
 import '../../widgets/hadith_card.dart';
@@ -27,6 +30,8 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       final vm = context.read<SearchViewModel>();
       await vm.init();
+      if (!mounted) return;
+      unawaited(vm.refreshFilterCatalogs());
       if (mounted) {
         _textController.text = vm.searchQuery;
         _excludedWordsController.text = vm.excludedWords;
@@ -111,6 +116,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
           children: [
             _buildSearchBar(screenWidth),
             const SizedBox(height: 10),
+            if (vm.activeFilters.isNotEmpty) _buildActiveFilters(vm),
             if (vm.isAdvancedSearchOpen)
               _buildAdvancedSearch(vm)
             else if (vm.isLoading)
@@ -135,6 +141,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
               controller: _textController,
               decoration: const InputDecoration(hintText: 'تحقق من حديث...'),
               style: const TextStyle(fontSize: 16),
+              onChanged: context.read<SearchViewModel>().setSearchQuery,
               onSubmitted: (_) => _onSearch(),
             ),
           ),
@@ -184,26 +191,89 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
               SearchGrade.values.map((e) => e.arabicName).toList(),
               (value) => vm.setSearchGrade(SearchGrade.fromArabic(value!)),
             ),
-            _buildDropdownRow(
+            _buildCatalogField(
               'المحدث',
-              vm.searchMohdith.arabicName,
-              SearchMohdith.values.map((e) => e.arabicName).toList(),
-              (value) => vm.setSearchMohdith(SearchMohdith.fromArabic(value!)),
+              vm.searchMohdith,
+              vm.scholars,
+              vm.setSearchMohdith,
             ),
-            _buildDropdownRow(
+            _buildCatalogField(
               'الكتاب',
-              vm.searchBook.arabicName,
-              SearchBook.values.map((e) => e.arabicName).toList(),
-              (value) => vm.setSearchBook(SearchBook.fromArabic(value!)),
+              vm.searchBook,
+              vm.books,
+              vm.setSearchBook,
             ),
             _buildExcludedWordsField(vm),
             _buildSaveCheckbox(vm),
+            TextButton(
+              onPressed: () => _clearFilters(vm),
+              child: const Text('مسح الفلاتر'),
+            ),
             const SizedBox(height: 20),
           ],
         ),
       ),
     ).animate().fade(duration: 200.ms);
   }
+
+  Future<void> _clearFilters(SearchViewModel vm) async {
+    vm.resetFilters();
+    _excludedWordsController.clear();
+    await vm.saveAdvancedPrefs();
+    if (mounted && _textController.text.trim().isNotEmpty) await _onSearch();
+  }
+
+  Widget _buildActiveFilters(SearchViewModel vm) => SizedBox(
+    height: 48,
+    child: ListView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      children: [
+        TextButton(
+          onPressed: () => _clearFilters(vm),
+          child: const Text('مسح الفلاتر'),
+        ),
+        ...vm.activeFilters.map(
+          (label) => Padding(
+            padding: const EdgeInsets.only(left: 6),
+            child: Chip(label: Text(label)),
+          ),
+        ),
+      ],
+    ),
+  );
+
+  Widget _buildCatalogField(
+    String label,
+    SearchOption selected,
+    List<SearchOption> options,
+    void Function(SearchOption) onChanged,
+  ) => Padding(
+    padding: const EdgeInsets.all(10),
+    child: InkWell(
+      borderRadius: BorderRadius.circular(30),
+      onTap: () async {
+        final value = await showSearchOptionPicker(
+          context,
+          title: label,
+          options: options,
+          selected: selected,
+        );
+        if (mounted && value != null) onChanged(value);
+      },
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: label,
+          suffixIcon: const Icon(Icons.search),
+        ),
+        child: Text(
+          selected.arabicName,
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+      ),
+    ),
+  );
 
   Widget _buildDropdownRow(
     String label,
@@ -214,6 +284,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     return Padding(
       padding: const EdgeInsets.all(10),
       child: DropdownButtonFormField<String>(
+        key: ValueKey('$label:$value'),
         initialValue: value,
         isExpanded: true,
         decoration: InputDecoration(labelText: label),
@@ -321,21 +392,44 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     }
 
     if (vm.isEmpty) {
-      return const Expanded(
-        child: Center(
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.search, size: 100, color: Colors.grey),
-                SizedBox(height: 20),
-                Text(
-                  'ابحث عن حديث',
-                  style: TextStyle(fontSize: 20, color: Colors.grey),
-                ),
-              ],
+      return Expanded(
+        child: ListView(
+          padding: const EdgeInsets.all(20),
+          children: [
+            const SizedBox(height: 40),
+            const Icon(Icons.search, size: 100, color: Colors.grey),
+            const Text(
+              'ابحث عن حديث',
+              textAlign: TextAlign.center,
+              style: TextStyle(fontSize: 20, color: Colors.grey),
             ),
-          ),
+            if (vm.recentSearches.isNotEmpty) ...[
+              const SizedBox(height: 30),
+              Row(
+                children: [
+                  const Expanded(child: Text('عمليات البحث الأخيرة')),
+                  TextButton(
+                    onPressed: vm.clearRecentSearches,
+                    child: const Text('مسح السجل'),
+                  ),
+                ],
+              ),
+              ...vm.recentSearches.map(
+                (query) => ListTile(
+                  leading: const Icon(Icons.history),
+                  title: Text(
+                    query,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  onTap: () {
+                    _textController.text = query;
+                    _onSearch();
+                  },
+                ),
+              ),
+            ],
+          ],
         ),
       );
     }

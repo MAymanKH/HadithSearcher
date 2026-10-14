@@ -4,6 +4,7 @@ import '../core/constants/app_config.dart';
 import 'package:http/http.dart' as http;
 import '../models/hadith.dart';
 import '../models/search_params.dart';
+import '../models/search_option.dart';
 import 'telemetry/telemetry_service.dart';
 
 class ApiService {
@@ -25,8 +26,8 @@ class ApiService {
       'search_way': params.searchWay.name,
       'search_range': params.searchRange.name,
       'grade': params.searchGrade.name,
-      'mohdith': params.searchMohdith.name,
-      'book': params.searchBook.name,
+      'mohdith': params.searchMohdith.apiCode,
+      'book': params.searchBook.apiCode,
     };
     if (params.page == 1) {
       TelemetryService.event('search_submitted', properties);
@@ -40,6 +41,17 @@ class ApiService {
       parse: _parseHadiths,
     );
   }
+
+  Future<ApiResult<List<SearchOption>>> getFilterOptions(String kind) => _get(
+    '/v1/data/$kind',
+    operation: 'filter_catalog',
+    event: 'filter_catalog_completed',
+    parse: (json) => ApiResult.success(
+      (json as List)
+          .map((item) => SearchOption.fromJson(item as Map<String, dynamic>))
+          .toList(),
+    ),
+  );
 
   Future<ApiResult<List<Hadith>>> getSimilarHadith(String hadithId) {
     TelemetryService.event('similar_hadith_requested', {'hadith_id': hadithId});
@@ -80,7 +92,7 @@ class ApiService {
         : ApiResult.success(Hadith.fromJson(json['data'])),
   );
 
-  ApiResult<List<Hadith>> _parseHadiths(Map<String, dynamic> json) {
+  ApiResult<List<Hadith>> _parseHadiths(dynamic json) {
     final metadata = json['metadata'] as Map<String, dynamic>;
     final hadiths = (json['data'] as List)
         .map((hadith) => Hadith.fromJson(hadith))
@@ -100,7 +112,7 @@ class ApiService {
     String path, {
     required String operation,
     required String event,
-    required ApiResult<T> Function(Map<String, dynamic>) parse,
+    required ApiResult<T> Function(dynamic) parse,
     Map<String, String>? query,
     Map<String, Object> properties = const {},
     Duration timeout = _timeout,
@@ -128,9 +140,7 @@ class ApiService {
           }
           return ApiResult<T>.error(ApiError.unknown);
         }
-        return parse(
-          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>,
-        );
+        return parse(jsonDecode(utf8.decode(response.bodyBytes)));
       });
     } on http.ClientException {
       result = ApiResult.error(ApiError.noConnection);

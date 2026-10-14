@@ -35,7 +35,7 @@ void main() {
     await tester.tap(find.byTooltip('البحث المتقدم'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    expect(find.byType(DropdownButtonFormField<String>), findsNWidgets(5));
+    expect(find.byType(DropdownButtonFormField<String>), findsNWidgets(3));
     await tester.pumpWidget(const SizedBox());
   });
 
@@ -43,25 +43,32 @@ void main() {
     tester,
   ) async {
     final response = Completer<http.Response>();
-    await http.runWithClient(() async {
-      await mount(tester, width: 400);
-      await tester.enterText(find.byType(TextField), 'first');
-      await tester.tap(find.widgetWithText(ElevatedButton, 'بحث'));
-      await tester.pump();
-      await tester.pump(const Duration(milliseconds: 100));
-      expect(find.byType(CircularProgressIndicator), findsOneWidget);
-      expect(find.byType(TextField), findsOneWidget);
-      await tester.enterText(find.byType(TextField), 'second');
-      expect(find.text('second'), findsOneWidget);
-      response.complete(
-        http.Response(
-          '{"metadata":{"length":0,"hasNextPage":false},"data":[]}',
-          200,
-        ),
-      );
-      await tester.pumpAndSettle();
-      expect(tester.takeException(), isNull);
-      await tester.pumpWidget(const SizedBox());
-    }, () => MockClient((_) => response.future));
+    await http.runWithClient(
+      () async {
+        await mount(tester, width: 400);
+        await tester.enterText(find.byType(TextField), 'first');
+        await tester.tap(find.widgetWithText(ElevatedButton, 'بحث'));
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+        expect(find.byType(CircularProgressIndicator), findsOneWidget);
+        expect(find.byType(TextField), findsOneWidget);
+        await tester.enterText(find.byType(TextField), 'second');
+        expect(find.text('second'), findsOneWidget);
+        response.complete(
+          http.Response(
+            '{"metadata":{"length":0,"hasNextPage":false},"data":[]}',
+            200,
+          ),
+        );
+        await tester.pumpAndSettle();
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+      },
+      () => MockClient(
+        (request) => request.url.path.startsWith('/v1/data/')
+            ? Future.value(http.Response('[]', 200))
+            : response.future,
+      ),
+    );
   });
 }

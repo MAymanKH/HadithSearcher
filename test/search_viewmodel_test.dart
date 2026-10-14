@@ -62,8 +62,9 @@ void main() {
         await vm.loadMore();
       },
       () => MockClient((request) async {
-        if (request.url.queryParameters['page'] == '1')
+        if (request.url.queryParameters['page'] == '1') {
           return page('first', hasNext: true);
+        }
         return ++attempts == 1 ? http.Response('error', 500) : page('second');
       }),
     );
