@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/settings.dart';
 import '../services/settings_service.dart';
+import '../services/telemetry/telemetry_service.dart';
 
 /// ViewModel for app-wide settings (theme, font preferences).
 /// This is shared across all views.
@@ -52,35 +53,50 @@ class SettingsViewModel extends ChangeNotifier {
 
   /// Update theme preference.
   Future<void> setTheme(ThemePreference theme) async {
-    await _settingsService.updateTheme(theme);
+    if (await _settingsService.updateTheme(theme)) {
+      TelemetryService.event(
+          'appearance_changed', {'setting': 'theme', 'value': theme.name});
+    }
     _settings = _settings.copyWith(theme: theme);
     notifyListeners();
   }
 
   /// Update font family.
   Future<void> setFontFamily(String fontFamily) async {
-    await _settingsService.updateFontFamily(fontFamily);
+    if (await _settingsService.updateFontFamily(fontFamily)) {
+      TelemetryService.event('appearance_changed',
+          {'setting': 'font_family', 'value': fontFamily});
+    }
     _settings = _settings.copyWith(fontFamily: fontFamily);
     notifyListeners();
   }
 
   /// Update font weight.
   Future<void> setFontWeight(FontWeightPreference fontWeight) async {
-    await _settingsService.updateFontWeight(fontWeight);
+    if (await _settingsService.updateFontWeight(fontWeight)) {
+      TelemetryService.event('appearance_changed',
+          {'setting': 'font_weight', 'value': fontWeight.name});
+    }
     _settings = _settings.copyWith(fontWeight: fontWeight);
     notifyListeners();
   }
 
   /// Update font size.
   Future<void> setFontSize(int fontSize) async {
-    await _settingsService.updateFontSize(fontSize);
+    if (await _settingsService.updateFontSize(fontSize)) {
+      TelemetryService.event(
+          'appearance_changed', {'setting': 'font_size', 'value': fontSize});
+    }
     _settings = _settings.copyWith(fontSize: fontSize);
     notifyListeners();
   }
 
   /// Update padding.
   Future<void> setPadding(int padding) async {
-    await _settingsService.updatePadding(padding);
+    if (await _settingsService.updatePadding(padding)) {
+      TelemetryService.event(
+          'appearance_changed', {'setting': 'padding', 'value': padding});
+    }
     _settings = _settings.copyWith(padding: padding);
     notifyListeners();
   }
@@ -89,6 +105,7 @@ class SettingsViewModel extends ChangeNotifier {
   Future<void> resetToDefaults() async {
     await _settingsService.resetSettings();
     _settings = AppSettings.defaults;
+    TelemetryService.event('settings_reset');
     notifyListeners();
   }
 }

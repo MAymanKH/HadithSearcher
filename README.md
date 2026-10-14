@@ -58,13 +58,13 @@ git clone https://github.com/MAymanKH/HadithSearcher.git
 cd HadithSearcher
 ```
 
-### 2. إعداد ملف البيئة
+### 2. إعداد الخدمات
 
-قم بإنشاء ملف `.env` في المجلد الجذر للمشروع وأضف رابط [API](https://github.com/AhmedElTabarani/dorar-hadith-api):
+رابط API الافتراضي موجود في `lib/core/constants/app_config.dart`، ومفاتيح إرسال Sentry وPostHog العامة موجودة في `lib/core/constants/telemetry_config.dart`. لا يحتاج البناء إلى ملف `.env` أو Shorebird. لا تضع رموز إدارة الحسابات أو مفاتيح التوقيع الخاصة في هذين الملفين.
 
-```bash
-API_BASE_URL="https://domain.com"
-```
+تقارير الأعطال وإحصاءات الاستخدام متوقفتان افتراضياً. يسأل التطبيق عند أول تشغيل، ويمكن تغيير كل اختيار من الإعدادات. تشمل إحصاءات الاستخدام الاختيارية كلمات البحث والمرشحات ومعرّفات الأحاديث المتفاعل معها. رابط سياسة الخصوصية متاح قبل الموافقة.
+
+استخدم Flutter **3.47.2** لإعادة بناء النسخة التي تم التحقق منها. يعتمد بناء Android على Gradle 8.14.3 وAndroid Gradle Plugin 8.11.1 وKotlin 2.2.20، مع الاعتماديات المحددة في `pubspec.lock`.
 
 ### 3. تثبيت الاعتماديات
 
@@ -89,6 +89,23 @@ flutter build apk --release
 ```bash
 flutter build ios --release
 ```
+
+## بناء Android والتوزيع
+
+يستخدم Google Play وF-Droid الكود نفسه وإعدادات القياس نفسها. إذا وُجد ملف `android/key.properties` يُستخدم مفتاح التوقيع المحلي. إذا لم يوجد الملف يُنتج Gradle نسخة غير موقعة يستطيع F-Droid توقيعها. لا تُضمّن بيانات التوقيع الخاصة في المصدر.
+
+المكتبتان Sentry وPostHog مرخصتان بـ MIT. يُعطّل التطبيق التهيئة التلقائية وجمع البيانات قبل الموافقة، ولا يستخدم تحديثات تنفيذية أو تسجيل الشاشة. أهلية المستودع الرسمي تخضع أيضاً لفحص F-Droid للبناء والتراخيص والخدمات والأصول.
+
+للتحقق من اختيار المستخدم والبيانات المرسلة:
+
+```bash
+flutter analyze
+flutter test test
+flutter test integration_test/telemetry_test.dart -d emulator-5554
+flutter build apk --release
+```
+
+اختبار `integration_test/cloud_telemetry_test.dart` متوقف افتراضياً. تشغيله مع `--dart-define=VERIFY_TELEMETRY_CLOUD=true` يرسل حدثاً اصطناعياً إلى الحسابين المهيأين في المصدر، تحت بيئة `verification`.
 
 ## الترخيص
 

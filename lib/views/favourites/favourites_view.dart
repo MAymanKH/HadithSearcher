@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../services/telemetry/telemetry_service.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -84,7 +85,7 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
           settings: settings,
           onRemove: () async {
             final error = await vm.removeFavourite(favourite.hadithId);
-            if (error != null && mounted) {
+            if (error != null && context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(error),
@@ -226,6 +227,8 @@ class _FavouriteHadithCard extends StatelessWidget {
           icon: Icons.share_rounded,
           label: 'مشاركة',
           onPressed: () async {
+            TelemetryService.event(
+                'share_opened', {'hadith_id': favourite.hadithId});
             await SharePlus.instance.share(
               ShareParams(
                   text:

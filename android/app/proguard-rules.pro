@@ -1,16 +1,8 @@
-# Firebase
--keep class com.google.firebase.** { *; }
--dontwarn com.google.firebase.**
+# Plugin consumer rules and Flutter's bundled rules preserve the classes used
+# by this app. Avoid retaining unused Play delivery code from the embedding.
 
-# Flutter
--keep class io.flutter.** { *; }
--dontwarn io.flutter.embedding.**
-
-# Notification
--keep class com.dexterous.flutterlocalnotifications.** { *; }
-
-# Shared Preferences, Permissions
--keep class com.baseflow.permissionhandler.** { *; }
-
-# Dynamic Color (Material You)
--keep class androidx.core.graphics.** { *; }
+# This app never registers push subscriptions. Fold out PostHog's optional
+# Firebase integration, including its reference to the Play Services listener.
+-assumevalues class com.posthog.android.PostHogAndroidConfig {
+    public boolean getCapturePushNotificationSubscriptions() return false;
+}

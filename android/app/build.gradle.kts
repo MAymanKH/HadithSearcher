@@ -42,7 +42,7 @@ android {
     }
 
     signingConfigs {
-        create("release") {
+        if (keystorePropertiesFile.exists()) create("release") {
             keyAlias = keystoreProperties["keyAlias"] as String
             keyPassword = keystoreProperties["keyPassword"] as String
             storeFile = keystoreProperties["storeFile"]?.let { file(it) }
@@ -52,24 +52,29 @@ android {
 
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
-            getByName("release") {
+            if (keystorePropertiesFile.exists()) {
                 signingConfig = signingConfigs.getByName("release")
-                isMinifyEnabled = true
-                isShrinkResources = true
-                proguardFiles(
-                    getDefaultProguardFile("proguard-android-optimize.txt"),
-                    "proguard-rules.pro"
-                )
             }
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }
 
 dependencies {
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
+    constraints {
+        implementation("com.posthog:posthog-android") {
+            version { strictly("3.72.2") }
+        }
+        implementation("com.posthog:posthog") {
+            version { strictly("6.47.1") }
+        }
+    }
 }
 
 flutter {

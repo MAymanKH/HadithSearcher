@@ -9,20 +9,25 @@ import 'viewmodels/settings_viewmodel.dart';
 import 'viewmodels/similar_hadith_viewmodel.dart';
 import 'views/main_shell.dart';
 import 'views/similar_hadith/similar_hadith_view.dart';
+import 'services/telemetry/telemetry_service.dart';
+import 'views/privacy/telemetry_consent_view.dart';
 
 /// Main app widget with Provider setup.
 class HadithSearcherApp extends StatelessWidget {
   final ThemeMode initialThemeMode;
+  final TelemetryService telemetry;
 
   const HadithSearcherApp({
     super.key,
     required this.initialThemeMode,
+    required this.telemetry,
   });
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider.value(value: telemetry),
         ChangeNotifierProvider(
           create: (_) => SettingsViewModel()..loadSettings(),
         ),
@@ -57,7 +62,11 @@ class HadithSearcherApp extends StatelessWidget {
             darkTheme: AppTheme.darkTheme,
             themeMode: themeMode,
             debugShowCheckedModeBanner: false,
-            home: const MainShell(),
+            home: Consumer<TelemetryService>(
+              builder: (context, service, child) => service.consent.decided
+                  ? const MainShell()
+                  : const TelemetryConsentView(firstLaunch: true),
+            ),
             routes: {
               searchRoute: (context) => const MainShell(initialIndex: 0),
               similarHadithRoute: (context) => const SimilarHadithView(),

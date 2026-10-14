@@ -38,7 +38,7 @@ class AppTheme {
       colorScheme: const ColorScheme(
         brightness: Brightness.light,
         primary: Colors.blue,
-        onPrimary: Colors.blue,
+        onPrimary: Colors.white,
         primaryContainer: Color.fromARGB(255, 225, 226, 230),
         secondaryContainer: Colors.black,
         secondary: Colors.blue,
@@ -85,7 +85,7 @@ class AppTheme {
       colorScheme: const ColorScheme(
         brightness: Brightness.dark,
         primary: Colors.blue,
-        onPrimary: Colors.blue,
+        onPrimary: Colors.white,
         primaryContainer: Color.fromARGB(255, 40, 38, 41),
         secondaryContainer: Colors.white,
         secondary: Colors.blue,

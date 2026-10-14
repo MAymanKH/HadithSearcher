@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../core/constants/app_config.dart';
 
 class AboutView extends StatelessWidget {
   const AboutView({super.key});
@@ -160,9 +161,15 @@ class AboutView extends StatelessWidget {
           ],
         ),
         const SizedBox(height: 20),
+        TextButton(
+          onPressed: () => showLicensePage(
+            context: context,
+            applicationName: 'Hadith Searcher',
+          ),
+          child: const Text('تراخيص المكتبات والخطوط'),
+        ),
         GestureDetector(
-          onTap: () => _launchUrl(
-              Uri.parse('https://hadith-searcher-privacy-policy.pages.dev')),
+          onTap: () => _launchUrl(Uri.parse(privacyPolicyUrl)),
           child: const Text(
             'سياسة الخصوصية',
             style: TextStyle(

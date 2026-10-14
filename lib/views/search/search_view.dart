@@ -415,7 +415,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
                   isFavourite: vm.isFavourite(hadith.id),
                   onFavouriteToggle: () async {
                     final error = await vm.toggleFavourite(hadith);
-                    if (error != null && mounted) {
+                    if (error != null && context.mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text(error),

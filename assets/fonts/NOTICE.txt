@@ -1,0 +1,42 @@
+Bundled fonts retain their original licenses. Roboto uses Apache 2.0.
+The other fonts use the SIL Open Font License 1.1.
+Copyright notices and license URLs below come from each bundled font.
+
+Amiri-Regular.ttf
+Copyright 2010-2022 The Amiri Project Authors (https://github.com/aliftype/amiri).
+https://scripts.sil.org/OFL
+
+ArefRuqaa-Regular.ttf
+Copyright 2015-2021 The Aref Ruqaa Project Authors (https://github.com/alif-type/aref-ruqaa), with Reserved Font Name EURM10.
+https://scripts.sil.org/OFL
+
+Cairo-Variable.ttf
+Copyright 2009 The Cairo Project Authors (https://github.com/Gue3bara/Cairo)
+http://scripts.sil.org/OFL
+
+Gulzar-Regular.ttf
+Copyright 2021 The Gulzar Project Authors (http://github.com/googlefonts/gulzar/)
+https://scripts.sil.org/OFL
+
+Lateef-Regular.ttf
+Copyright (c) 1994-2023 SIL International.
+http://scripts.sil.org/OFL
+
+ReemKufi-VariableFont_wght.ttf
+Copyright 2015-2022 The Reem Kufi Project Authors (https://github.com/aliftype/reem-kufi).
+https://scripts.sil.org/OFL
+
+Roboto-Regular.ttf
+Copyright 2011 Google Inc. All Rights Reserved.
+http://www.apache.org/licenses/LICENSE-2.0
+
+Rubik-VariableFont_wght.ttf
+Copyright 2015 The Rubik Project Authors (https://github.com/googlefonts/rubik)
+https://scripts.sil.org/OFL
+
+Lateef license declaration from the bundled font:
+Copyright (c) 1994-2023, SIL International (http://www.sil.org/).
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1, with Reserved Font Names "Lateef" and "SIL". This license is copied below, and is also available with an FAQ at: http://scripts.sil.org/OFL
+
+----------------------------------------------------

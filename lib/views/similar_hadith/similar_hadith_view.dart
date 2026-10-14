@@ -144,7 +144,7 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
           showSimilarButton: false, // Don't show similar button in similar view
           onFavouriteToggle: () async {
             final error = await vm.toggleFavourite(hadith);
-            if (error != null && mounted) {
+            if (error != null && context.mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(error),

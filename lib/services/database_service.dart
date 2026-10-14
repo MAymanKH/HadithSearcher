@@ -1,5 +1,6 @@
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import 'telemetry/telemetry_service.dart';
 
 /// Service for local SQLite database operations (favourites only).
 class DatabaseService {
@@ -58,8 +59,8 @@ class DatabaseService {
       );
 
       return results.map((row) => FavouriteHadith.fromDatabase(row)).toList();
-    } catch (e) {
-      // Return empty list on error to prevent crashes
+    } catch (error, stack) {
+      TelemetryService.report(error, stack, 'database.getFavourites');
       return [];
     }
   }
@@ -75,7 +76,8 @@ class DatabaseService {
         limit: 1,
       );
       return results.isNotEmpty;
-    } catch (e) {
+    } catch (error, stack) {
+      TelemetryService.report(error, stack, 'database.isFavourite');
       return false;
     }
   }
@@ -88,17 +90,23 @@ class DatabaseService {
   }) async {
     try {
       final db = await database;
-      await db.insert(
-        'favourites',
-        {
-          'hadithid': hadithId,
-          'hadithtext': hadithText,
-          'hadithinfo': hadithInfo,
-        },
-        conflictAlgorithm: ConflictAlgorithm.ignore,
-      );
+      final inserted = await TelemetryService.trace(
+          'database.addFavourite',
+          () => db.insert(
+                'favourites',
+                {
+                  'hadithid': hadithId,
+                  'hadithtext': hadithText,
+                  'hadithinfo': hadithInfo,
+                },
+                conflictAlgorithm: ConflictAlgorithm.ignore,
+              ));
+      if (inserted != 0) {
+        TelemetryService.event('favourite_added', {'hadith_id': hadithId});
+      }
       return true;
-    } catch (e) {
+    } catch (error, stack) {
+      TelemetryService.report(error, stack, 'database.addFavourite');
       return false;
     }
   }
@@ -107,13 +115,19 @@ class DatabaseService {
   Future<bool> removeFavourite(String hadithId) async {
     try {
       final db = await database;
-      await db.delete(
-        'favourites',
-        where: 'hadithid = ?',
-        whereArgs: [hadithId],
-      );
+      final removed = await TelemetryService.trace(
+          'database.removeFavourite',
+          () => db.delete(
+                'favourites',
+                where: 'hadithid = ?',
+                whereArgs: [hadithId],
+              ));
+      if (removed > 0) {
+        TelemetryService.event('favourite_removed', {'hadith_id': hadithId});
+      }
       return true;
-    } catch (e) {
+    } catch (error, stack) {
+      TelemetryService.report(error, stack, 'database.removeFavourite');
       return false;
     }
   }
@@ -124,7 +138,8 @@ class DatabaseService {
       final db = await database;
       final results = await db.query('favourites', columns: ['hadithid']);
       return results.map((row) => row['hadithid'] as String).toSet();
-    } catch (e) {
+    } catch (error, stack) {
+      TelemetryService.report(error, stack, 'database.getFavouriteIds');
       return {};
     }
   }

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/telemetry/telemetry_service.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/hadith.dart';
@@ -166,6 +167,7 @@ class HadithCard extends StatelessWidget {
   }
 
   Future<void> _share() async {
+    TelemetryService.event('share_opened', {'hadith_id': hadith.id});
     await SharePlus.instance.share(
       ShareParams(
           text:

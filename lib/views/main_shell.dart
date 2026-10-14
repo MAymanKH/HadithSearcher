@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/telemetry/telemetry_service.dart';
 import 'about/about_view.dart';
 import 'favourites/favourites_view.dart';
 import 'search/search_view.dart';
@@ -28,6 +29,13 @@ class _MainShellState extends State<MainShell> {
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
+    _trackScreen(_currentIndex);
+  }
+
+  void _trackScreen(int index) {
+    TelemetryService.event('screen_viewed', {
+      'screen': ['search', 'favourites', 'settings', 'about'][index],
+    });
   }
 
   @override
@@ -54,6 +62,8 @@ class _MainShellState extends State<MainShell> {
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
         onDestinationSelected: (index) {
+          if (index == _currentIndex) return;
+          _trackScreen(index);
           setState(() {
             _currentIndex = index;
           });

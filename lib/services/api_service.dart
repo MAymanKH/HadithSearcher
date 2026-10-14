@@ -1,123 +1,148 @@
 import 'dart:async';
 import 'dart:convert';
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+import '../core/constants/app_config.dart';
 import 'package:http/http.dart' as http;
 import '../models/hadith.dart';
 import '../models/search_params.dart';
+import 'telemetry/telemetry_service.dart';
 
-/// Service for making API calls to the Hadith API.
 class ApiService {
   static final ApiService _instance = ApiService._internal();
   factory ApiService() => _instance;
   ApiService._internal();
 
-  String get _baseUrl => dotenv.env['HADITH_API_BASE_URL'] ?? '';
+  String get _baseUrl => hadithApiBaseUrl;
+  static const _timeout = Duration(seconds: 24);
+  static const _shortTimeout = Duration(seconds: 8);
 
-  static const Duration _timeout = Duration(seconds: 24);
-  static const Duration _shortTimeout = Duration(seconds: 8);
+  Future<ApiResult<List<Hadith>>> searchHadith(SearchParams params) {
+    final properties = <String, Object>{
+      'query': params.keyword,
+      'excluded_words': params.excludedWords,
+      'query_length': params.keyword.trim().length,
+      'has_excluded_words': params.excludedWords.trim().isNotEmpty,
+      'page': params.page,
+      'search_way': params.searchWay.name,
+      'search_range': params.searchRange.name,
+      'grade': params.searchGrade.name,
+      'mohdith': params.searchMohdith.name,
+      'book': params.searchBook.name,
+    };
+    if (params.page == 1) {
+      TelemetryService.event('search_submitted', properties);
+    }
+    return _get(
+      '/v1/site/hadith/search',
+      operation: 'search',
+      event: params.page == 1 ? 'search_completed' : 'pagination_completed',
+      query: params.toQueryParams(),
+      properties: properties,
+      parse: _parseHadiths,
+    );
+  }
 
-  /// Search for hadiths with given parameters.
-  Future<ApiResult<List<Hadith>>> searchHadith(SearchParams params) async {
-    try {
-      final url = Uri.parse(
-        '$_baseUrl/v1/site/hadith/search?${params.toQueryString()}',
+  Future<ApiResult<List<Hadith>>> getSimilarHadith(String hadithId) {
+    TelemetryService.event('similar_hadith_requested', {'hadith_id': hadithId});
+    return _get(
+      '/v1/site/hadith/similar/$hadithId',
+      operation: 'similar_hadith',
+      event: 'similar_hadith_completed',
+      properties: {'hadith_id': hadithId},
+      parse: _parseHadiths,
+    );
+  }
+
+  Future<ApiResult<String>> getSharh(String sharhId) {
+    TelemetryService.event('explanation_requested', {'sharh_id': sharhId});
+    return _get(
+      '/v1/site/sharh/$sharhId',
+      operation: 'explanation',
+      event: 'explanation_completed',
+      timeout: _shortTimeout,
+      properties: {'sharh_id': sharhId},
+      parse: (json) {
+        final sharh = json['data']?['sharhMetadata']?['sharh'] as String?;
+        return sharh == null || sharh.isEmpty
+            ? ApiResult.error(ApiError.notFound)
+            : ApiResult.success(sharh);
+      },
+    );
+  }
+
+  Future<ApiResult<Hadith>> getHadithById(String hadithId) => _get(
+        '/v1/site/hadith/$hadithId',
+        operation: 'hadith_metadata',
+        event: 'hadith_metadata_completed',
+        timeout: _shortTimeout,
+        properties: {'hadith_id': hadithId},
+        parse: (json) => json['data'] == null
+            ? ApiResult.error(ApiError.notFound)
+            : ApiResult.success(Hadith.fromJson(json['data'])),
       );
 
-      final response = await http.get(url).timeout(_timeout);
-      final decodedBody = utf8.decode(response.bodyBytes);
-      final jsonResponse = json.decode(decodedBody);
-
-      if (jsonResponse['metadata']['length'] == 0) {
-        return ApiResult.success([]);
-      }
-
-      final hadiths = (jsonResponse['data'] as List)
-          .map((h) => Hadith.fromJson(h))
-          .toList();
-
-      return ApiResult.success(hadiths);
-    } on http.ClientException {
-      return ApiResult.error(ApiError.noConnection);
-    } on TimeoutException {
-      return ApiResult.error(ApiError.timeout);
-    } catch (e) {
-      return ApiResult.error(ApiError.unknown);
-    }
+  ApiResult<List<Hadith>> _parseHadiths(Map<String, dynamic> json) {
+    if (json['metadata']['length'] == 0) return ApiResult.success([]);
+    return ApiResult.success((json['data'] as List)
+        .map((hadith) => Hadith.fromJson(hadith))
+        .toList());
   }
 
-  /// Get similar hadiths for a given hadith ID.
-  Future<ApiResult<List<Hadith>>> getSimilarHadith(String hadithId) async {
+  Future<ApiResult<T>> _get<T>(
+    String path, {
+    required String operation,
+    required String event,
+    required ApiResult<T> Function(Map<String, dynamic>) parse,
+    Map<String, String>? query,
+    Map<String, Object> properties = const {},
+    Duration timeout = _timeout,
+  }) async {
+    final analytics = TelemetryService.instance?.consent.analytics ?? false;
+    final diagnostics = TelemetryService.instance?.consent.diagnostics ?? false;
+    final timer = Stopwatch()..start();
+    int? statusCode;
+    ApiResult<T> result;
     try {
-      final url = Uri.parse('$_baseUrl/v1/site/hadith/similar/$hadithId');
-
-      final response = await http.get(url).timeout(_timeout);
-      final decodedBody = utf8.decode(response.bodyBytes);
-      final jsonResponse = json.decode(decodedBody);
-
-      if (jsonResponse['metadata']['length'] == 0) {
-        return ApiResult.success([]);
-      }
-
-      final hadiths = (jsonResponse['data'] as List)
-          .map((h) => Hadith.fromJson(h))
-          .toList();
-
-      return ApiResult.success(hadiths);
+      result = await TelemetryService.trace('api.$operation', () async {
+        final url = Uri.parse('$_baseUrl$path').replace(queryParameters: query);
+        final response = await http.get(url).timeout(timeout);
+        statusCode = response.statusCode;
+        if (response.statusCode == 404) {
+          return ApiResult<T>.error(ApiError.notFound);
+        }
+        if (response.statusCode < 200 || response.statusCode >= 300) {
+          if (diagnostics) {
+            TelemetryService.report(
+                StateError('HTTP failure'),
+                StackTrace.current,
+                'api.$operation.http_${response.statusCode}');
+          }
+          return ApiResult<T>.error(ApiError.unknown);
+        }
+        return parse(jsonDecode(utf8.decode(response.bodyBytes))
+            as Map<String, dynamic>);
+      });
     } on http.ClientException {
-      return ApiResult.error(ApiError.noConnection);
+      result = ApiResult.error(ApiError.noConnection);
     } on TimeoutException {
-      return ApiResult.error(ApiError.timeout);
-    } catch (e) {
-      return ApiResult.error(ApiError.unknown);
+      result = ApiResult.error(ApiError.timeout);
+    } catch (error, stack) {
+      if (diagnostics) TelemetryService.report(error, stack, 'api.$operation');
+      result = ApiResult.error(ApiError.unknown);
     }
-  }
-
-  /// Get explanation (sharh) for a hadith.
-  Future<ApiResult<String>> getSharh(String sharhId) async {
-    try {
-      final url = Uri.parse('$_baseUrl/v1/site/sharh/$sharhId');
-
-      final response = await http.get(url).timeout(_shortTimeout);
-      final decodedBody = utf8.decode(response.bodyBytes);
-      final jsonResponse = json.decode(decodedBody);
-
-      final sharh = jsonResponse['data']?['sharhMetadata']?['sharh'] as String?;
-
-      if (sharh == null || sharh.isEmpty) {
-        return ApiResult.error(ApiError.notFound);
-      }
-
-      return ApiResult.success(sharh);
-    } on http.ClientException {
-      return ApiResult.error(ApiError.noConnection);
-    } on TimeoutException {
-      return ApiResult.error(ApiError.timeout);
-    } catch (e) {
-      return ApiResult.error(ApiError.unknown);
+    final outcomeProperties = <String, Object>{
+      'operation': operation,
+      'outcome': result.error?.name ?? 'success',
+      'duration_ms': timer.elapsedMilliseconds,
+      if (statusCode != null) 'status_code': statusCode!,
+      if (result.data is List) 'result_count': (result.data as List).length,
+    };
+    if (analytics) {
+      TelemetryService.event(event, {
+        ...properties,
+        ...outcomeProperties,
+      });
     }
-  }
-
-  /// Get hadith by ID (used for favourites to get full metadata).
-  Future<ApiResult<Hadith>> getHadithById(String hadithId) async {
-    try {
-      final url = Uri.parse('$_baseUrl/v1/site/hadith/$hadithId');
-
-      final response = await http.get(url).timeout(_shortTimeout);
-      final decodedBody = utf8.decode(response.bodyBytes);
-      final jsonResponse = json.decode(decodedBody);
-
-      if (jsonResponse['data'] == null) {
-        return ApiResult.error(ApiError.notFound);
-      }
-
-      return ApiResult.success(Hadith.fromJson(jsonResponse['data']));
-    } on http.ClientException {
-      return ApiResult.error(ApiError.noConnection);
-    } on TimeoutException {
-      return ApiResult.error(ApiError.timeout);
-    } catch (e) {
-      return ApiResult.error(ApiError.unknown);
-    }
+    return result;
   }
 }
 
