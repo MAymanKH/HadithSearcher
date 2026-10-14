@@ -21,6 +21,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
   void initState() {
     super.initState();
     initScrollController();
+    scrollController.addListener(_loadNearEnd);
 
     // Initialize ViewModel and sync text controllers
     WidgetsBinding.instance.addPostFrameCallback((_) async {
@@ -33,10 +34,18 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     });
   }
 
+  void _loadNearEnd() {
+    if (scrollController.hasClients &&
+        scrollController.position.extentAfter < 500) {
+      context.read<SearchViewModel>().loadMore();
+    }
+  }
+
   @override
   void dispose() {
     _textController.dispose();
     _excludedWordsController.dispose();
+    scrollController.removeListener(_loadNearEnd);
     disposeScrollController();
     super.dispose();
   }
@@ -66,13 +75,6 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
   Widget build(BuildContext context) {
     final vm = context.watch<SearchViewModel>();
     final screenWidth = MediaQuery.of(context).size.width;
-
-    // Add scroll listener for infinite loading
-    scrollController.addListener(() {
-      if (scrollController.position.extentAfter < 500 && !vm.isLoadingMore) {
-        vm.loadMore();
-      }
-    });
 
     return Scaffold(
       appBar: AppBar(
@@ -105,52 +107,51 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
         ],
       ),
       body: Center(
-        child: vm.isLoading
-            ? const CircularProgressIndicator()
-            : Column(
-                children: [
-                  _buildSearchBar(screenWidth),
-                  const SizedBox(height: 10),
-                  if (vm.isAdvancedSearchOpen)
-                    _buildAdvancedSearch(vm)
-                  else
-                    _buildResults(vm),
-                ],
-              ),
+        child: Column(
+          children: [
+            _buildSearchBar(screenWidth),
+            const SizedBox(height: 10),
+            if (vm.isAdvancedSearchOpen)
+              _buildAdvancedSearch(vm)
+            else if (vm.isLoading)
+              const Expanded(child: Center(child: CircularProgressIndicator()))
+            else
+              _buildResults(vm),
+          ],
+        ),
       ),
       floatingActionButton: buildBackToTopButton(),
     );
   }
 
   Widget _buildSearchBar(double screenWidth) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        SizedBox(
-          width: screenWidth * 0.6,
-          height: 60,
-          child: TextField(
-            textInputAction: TextInputAction.search,
-            controller: _textController,
-            decoration: const InputDecoration(hintText: 'تحقق من حديث...'),
-            style: const TextStyle(fontSize: 16),
-            onSubmitted: (_) => _onSearch(),
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10),
+      child: Row(
+        children: [
+          Expanded(
+            child: TextField(
+              textInputAction: TextInputAction.search,
+              controller: _textController,
+              decoration: const InputDecoration(hintText: 'تحقق من حديث...'),
+              style: const TextStyle(fontSize: 16),
+              onSubmitted: (_) => _onSearch(),
+            ),
           ),
-        ),
-        SizedBox(
-          height: 60,
-          child: ElevatedButton.icon(
+          const SizedBox(width: 10),
+          ElevatedButton.icon(
             icon: const Icon(Icons.search, size: 30),
             label: const Text('بحث'),
             onPressed: _onSearch,
             style: ElevatedButton.styleFrom(
+              minimumSize: const Size(0, 60),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(30),
               ),
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -210,99 +211,44 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     List<String> items,
     void Function(String?) onChanged,
   ) {
-    return Container(
+    return Padding(
       padding: const EdgeInsets.all(10),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                Text(label, style: const TextStyle(fontSize: 15)),
-                const SizedBox(width: 10),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: DropdownButton<String>(
-                    value: value,
-                    onChanged: onChanged,
-                    items: items
-                        .map((item) => DropdownMenuItem(
-                              value: item,
-                              child: Text(item,
-                                  style: const TextStyle(fontSize: 15)),
-                            ))
-                        .toList(),
-                    icon: const Icon(Icons.arrow_drop_down),
-                    iconSize: 30,
-                    underline: const SizedBox(),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+      child: DropdownButtonFormField<String>(
+        initialValue: value,
+        isExpanded: true,
+        decoration: InputDecoration(labelText: label),
+        onChanged: onChanged,
+        items: items
+            .map(
+              (item) => DropdownMenuItem(
+                value: item,
+                child: Text(item, overflow: TextOverflow.ellipsis),
+              ),
+            )
+            .toList(),
       ),
     );
   }
 
   Widget _buildExcludedWordsField(SearchViewModel vm) {
-    return Container(
+    return Padding(
       padding: const EdgeInsets.all(10),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                const Text('كلمات مستثناة', style: TextStyle(fontSize: 15)),
-                const SizedBox(width: 10),
-                SizedBox(
-                  width: 200,
-                  child: TextField(
-                    controller: _excludedWordsController,
-                    decoration: const InputDecoration(
-                      hintText: 'كلمات أو جملة تعيد استبعادها',
-                      border: OutlineInputBorder(),
-                      contentPadding: EdgeInsets.symmetric(horizontal: 10),
-                    ),
-                    style: const TextStyle(fontSize: 14),
-                    onChanged: (value) => vm.setExcludedWords(value),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
+      child: TextField(
+        controller: _excludedWordsController,
+        decoration: const InputDecoration(
+          labelText: 'كلمات مستثناة',
+          hintText: 'كلمات أو جملة تريد استبعادها',
+        ),
+        onChanged: vm.setExcludedWords,
       ),
     );
   }
 
   Widget _buildSaveCheckbox(SearchViewModel vm) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      child: Row(
-        children: [
-          Checkbox(
-            checkColor: Colors.white,
-            value: vm.saveAdvancedSettings,
-            onChanged: (value) => vm.setSaveAdvancedSettings(value ?? true),
-          ),
-          const Text('حفظ إعدادات البحث المتقدم'),
-        ],
-      ),
+    return CheckboxListTile(
+      value: vm.saveAdvancedSettings,
+      title: const Text('حفظ إعدادات البحث المتقدم'),
+      onChanged: (value) => vm.setSaveAdvancedSettings(value ?? true),
     );
   }
 

@@ -70,21 +70,30 @@ class ApiService {
   }
 
   Future<ApiResult<Hadith>> getHadithById(String hadithId) => _get(
-        '/v1/site/hadith/$hadithId',
-        operation: 'hadith_metadata',
-        event: 'hadith_metadata_completed',
-        timeout: _shortTimeout,
-        properties: {'hadith_id': hadithId},
-        parse: (json) => json['data'] == null
-            ? ApiResult.error(ApiError.notFound)
-            : ApiResult.success(Hadith.fromJson(json['data'])),
-      );
+    '/v1/site/hadith/$hadithId',
+    operation: 'hadith_metadata',
+    event: 'hadith_metadata_completed',
+    timeout: _shortTimeout,
+    properties: {'hadith_id': hadithId},
+    parse: (json) => json['data'] == null
+        ? ApiResult.error(ApiError.notFound)
+        : ApiResult.success(Hadith.fromJson(json['data'])),
+  );
 
   ApiResult<List<Hadith>> _parseHadiths(Map<String, dynamic> json) {
-    if (json['metadata']['length'] == 0) return ApiResult.success([]);
-    return ApiResult.success((json['data'] as List)
+    final metadata = json['metadata'] as Map<String, dynamic>;
+    final hadiths = (json['data'] as List)
         .map((hadith) => Hadith.fromJson(hadith))
-        .toList());
+        .toList();
+    final hasNextPage = metadata['hasNextPage'] as bool?;
+    final totalPages = metadata['totalPages'] as num?;
+    final page = metadata['page'] as num?;
+    return ApiResult.success(
+      hadiths,
+      hasNextPage:
+          hasNextPage ??
+          (totalPages != null && page != null && page < totalPages),
+    );
   }
 
   Future<ApiResult<T>> _get<T>(
@@ -112,14 +121,16 @@ class ApiService {
         if (response.statusCode < 200 || response.statusCode >= 300) {
           if (diagnostics) {
             TelemetryService.report(
-                StateError('HTTP failure'),
-                StackTrace.current,
-                'api.$operation.http_${response.statusCode}');
+              StateError('HTTP failure'),
+              StackTrace.current,
+              'api.$operation.http_${response.statusCode}',
+            );
           }
           return ApiResult<T>.error(ApiError.unknown);
         }
-        return parse(jsonDecode(utf8.decode(response.bodyBytes))
-            as Map<String, dynamic>);
+        return parse(
+          jsonDecode(utf8.decode(response.bodyBytes)) as Map<String, dynamic>,
+        );
       });
     } on http.ClientException {
       result = ApiResult.error(ApiError.noConnection);
@@ -137,10 +148,7 @@ class ApiService {
       if (result.data is List) 'result_count': (result.data as List).length,
     };
     if (analytics) {
-      TelemetryService.event(event, {
-        ...properties,
-        ...outcomeProperties,
-      });
+      TelemetryService.event(event, {...properties, ...outcomeProperties});
     }
     return result;
   }
@@ -150,10 +158,12 @@ class ApiService {
 class ApiResult<T> {
   final T? data;
   final ApiError? error;
+  final bool? hasNextPage;
 
-  ApiResult._({this.data, this.error});
+  ApiResult._({this.data, this.error, this.hasNextPage});
 
-  factory ApiResult.success(T data) => ApiResult._(data: data);
+  factory ApiResult.success(T data, {bool? hasNextPage}) =>
+      ApiResult._(data: data, hasNextPage: hasNextPage);
   factory ApiResult.error(ApiError error) => ApiResult._(error: error);
 
   bool get isSuccess => error == null;

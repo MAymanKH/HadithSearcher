@@ -18,6 +18,8 @@ class SearchViewModel extends ChangeNotifier {
   bool _hasMoreResults = true;
   String? _errorMessage;
   SearchParams? _currentParams;
+  int _searchGeneration = 0;
+  bool _initialized = false;
 
   // Advanced search state
   bool _isAdvancedSearchOpen = false;
@@ -60,13 +62,24 @@ class SearchViewModel extends ChangeNotifier {
 
   /// Initialize by loading saved preferences.
   Future<void> init() async {
-    await _loadAdvancedPrefs();
+    if (!_initialized) {
+      await _loadAdvancedPrefs();
+      _initialized = true;
+    }
     await _loadFavouriteIds();
+    notifyListeners();
   }
 
   /// Load saved advanced search preferences.
   Future<void> _loadAdvancedPrefs() async {
     final prefs = await SharedPreferences.getInstance();
+
+    _saveAdvancedSettings = prefs.getBool('advancedSaveCheckbox') ?? true;
+    _searchQuery = prefs.getString('searchQuery') ?? '';
+    if (!_saveAdvancedSettings) {
+      notifyListeners();
+      return;
+    }
 
     final wayStr = prefs.getString('searchWay');
     if (wayStr != null) {
@@ -94,9 +107,6 @@ class SearchViewModel extends ChangeNotifier {
     }
 
     _excludedWords = prefs.getString('searchExcludedWords') ?? '';
-    _saveAdvancedSettings = prefs.getBool('advancedSaveCheckbox') ?? true;
-    _searchQuery = prefs.getString('searchQuery') ?? '';
-
     notifyListeners();
   }
 
@@ -116,12 +126,12 @@ class SearchViewModel extends ChangeNotifier {
       return;
     }
 
+    final generation = ++_searchGeneration;
     _isLoading = true;
+    _isLoadingMore = false;
     _errorMessage = null;
     _results = [];
     _hasMoreResults = true;
-    notifyListeners();
-
     _currentParams = SearchParams(
       keyword: keyword,
       page: 1,
@@ -133,12 +143,15 @@ class SearchViewModel extends ChangeNotifier {
       excludedWords: _excludedWords,
     );
 
+    notifyListeners();
     final result = await _api.searchHadith(_currentParams!);
+    if (generation != _searchGeneration) return;
 
     if (result.isSuccess) {
       _results = result.data!;
-      _hasMoreResults = result.data!.length >= 30; // API returns 30 per page
+      _hasMoreResults = result.hasNextPage ?? false;
       await _loadFavouriteIds();
+      if (generation != _searchGeneration) return;
 
       if (_results.isEmpty) {
         _errorMessage = 'noResults';
@@ -153,23 +166,30 @@ class SearchViewModel extends ChangeNotifier {
 
   /// Load more results (pagination).
   Future<void> loadMore() async {
-    if (_isLoadingMore || !_hasMoreResults || _currentParams == null) return;
-
+    if (_isLoading ||
+        _isLoadingMore ||
+        !_hasMoreResults ||
+        _currentParams == null) {
+      return;
+    }
+    final generation = _searchGeneration;
+    final params = _currentParams!.nextPage();
     _isLoadingMore = true;
     notifyListeners();
 
-    _currentParams = _currentParams!.nextPage();
-    final result = await _api.searchHadith(_currentParams!);
-
-    if (result.isSuccess) {
-      if (result.data!.isEmpty) {
-        _hasMoreResults = false;
-      } else {
-        _results.addAll(result.data!);
-        _hasMoreResults = result.data!.length >= 30;
-      }
+    var result = await _api.searchHadith(params);
+    if (generation != _searchGeneration) return;
+    if (result.isError) {
+      result = await _api.searchHadith(params);
+      if (generation != _searchGeneration) return;
     }
 
+    // After two failures, the next load moves past this page silently.
+    _currentParams = params;
+    if (result.isSuccess) {
+      _results.addAll(result.data!);
+      _hasMoreResults = result.hasNextPage ?? false;
+    }
     _isLoadingMore = false;
     notifyListeners();
   }
@@ -273,24 +293,42 @@ class SearchViewModel extends ChangeNotifier {
     // Don't notify listeners to avoid rebuild during typing
   }
 
-  void setSaveAdvancedSettings(bool value) {
+  Future<void> setSaveAdvancedSettings(bool value) async {
     _saveAdvancedSettings = value;
     notifyListeners();
+    await saveAdvancedPrefs();
   }
 
   /// Save advanced search settings if enabled.
   Future<void> saveAdvancedPrefs() async {
-    if (!_saveAdvancedSettings) return;
-
     final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('advancedSaveCheckbox', _saveAdvancedSettings);
+    await prefs.setString('searchQuery', _searchQuery);
+    if (!_saveAdvancedSettings) {
+      for (final key in [
+        'searchWay',
+        'searchRange',
+        'searchGrade',
+        'searchMohdith',
+        'searchBook',
+        'searchExcludedWords',
+      ]) {
+        await prefs.remove(key);
+      }
+      return;
+    }
     await prefs.setString('searchWay', _searchWay.arabicName);
     await prefs.setString('searchRange', _searchRange.arabicName);
     await prefs.setString('searchGrade', _searchGrade.arabicName);
     await prefs.setString('searchMohdith', _searchMohdith.arabicName);
     await prefs.setString('searchBook', _searchBook.arabicName);
     await prefs.setString('searchExcludedWords', _excludedWords);
-    await prefs.setBool('advancedSaveCheckbox', _saveAdvancedSettings);
-    await prefs.setString('searchQuery', _searchQuery);
+  }
+
+  @override
+  void dispose() {
+    _searchGeneration++;
+    super.dispose();
   }
 
   /// Clear error message.
