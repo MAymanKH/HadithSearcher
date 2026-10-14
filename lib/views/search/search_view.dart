@@ -75,6 +75,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
   }
 
   Future<void> _onSearch() async {
+    FocusScope.of(context).unfocus();
     final vm = context.read<SearchViewModel>();
     hideBackToTopButton();
     vm.closeAdvancedSearch();

@@ -168,9 +168,11 @@ void main() {
       () async {
         await mount(tester, width: 400);
         await tester.enterText(find.byType(TextField), 'first');
+        expect(tester.testTextInput.isVisible, isTrue);
         await tester.tap(find.widgetWithText(ElevatedButton, 'بحث'));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 100));
+        expect(tester.testTextInput.isVisible, isFalse);
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
         expect(find.byType(TextField), findsOneWidget);
         await tester.enterText(find.byType(TextField), 'second');
