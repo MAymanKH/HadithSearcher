@@ -8,7 +8,7 @@ import '../services/database_service.dart';
 import '../services/explanation_service.dart';
 import '../viewmodels/similar_hadith_viewmodel.dart';
 import 'favourite_undo.dart';
-import '../viewmodels/settings_viewmodel.dart';
+import 'hadith_card_layout.dart';
 import '../views/similar_hadith/similar_hadith_view.dart';
 import 'message_dialog.dart';
 
@@ -29,83 +29,19 @@ class HadithCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final settings = context.watch<SettingsViewModel>();
-
-    return Container(
-      margin: const EdgeInsets.all(10),
-      padding: settings.padding,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Column(
-        children: [
-          SelectableText(
-            '${hadith.text}\n\n${hadith.formattedInfo}',
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.secondaryContainer,
-              fontSize: settings.fontSize,
-              fontWeight: settings.fontWeight,
-              fontFamily: settings.fontFamily,
-            ),
-          ),
-          const SizedBox(height: 15),
-          _buildActionRow1(context),
-          const SizedBox(height: 10),
-          _buildActionRow2(context),
-          if (hadith.hasAlternateHadithSahih) ...[
-            const SizedBox(height: 10),
-            _ActionButton(
-              icon: Icons.fact_check_outlined,
-              label: 'البديل الصحيح',
-              onPressed: () => _showSimilar(context, alternate: true),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionRow1(BuildContext context) {
-    return Wrap(
-      alignment: WrapAlignment.center,
-      spacing: 15,
-      runSpacing: 10,
-      children: [
-        _ActionButton(
-          icon: Icons.manage_search,
-          label: 'الشرح',
-          onPressed: () => _showSharh(context),
-        ),
-        if (showSimilarButton) ...[
-          _ActionButton(
-            icon: Icons.content_paste_go,
-            label: 'أحاديث مشابهة',
-            onPressed: () => _showSimilar(context),
-          ),
-        ],
-      ],
-    );
-  }
-
-  Widget _buildActionRow2(BuildContext context) {
-    return Wrap(
-      alignment: WrapAlignment.center,
-      spacing: 15,
-      runSpacing: 10,
-      children: [
-        _ActionButton(
-          icon: Icons.share_rounded,
-          label: 'مشاركة',
-          onPressed: () => _share(),
-        ),
-        _ActionButton(
-          icon: isFavourite ? Icons.star : Icons.star_border,
-          label: isFavourite ? 'أزل من المفضلة' : 'أضف إلى المفضلة',
-          onPressed: () => _toggleFavourite(context),
-        ),
-      ],
+    final citation = hadith.citation;
+    return HadithCardLayout(
+      text: hadith.text,
+      grading: citation.grading,
+      attribution: citation.attribution,
+      isFavourite: isFavourite,
+      onExplanation: () => _showSharh(context),
+      onSimilar: showSimilarButton ? () => _showSimilar(context) : null,
+      onShare: _share,
+      onFavourite: () => _toggleFavourite(context),
+      onAlternate: hadith.hasAlternateHadithSahih
+          ? () => _showSimilar(context, alternate: true)
+          : null,
     );
   }
 
@@ -202,36 +138,6 @@ class HadithCard extends StatelessWidget {
       ShareParams(
         text:
             '${hadith.shareText}\n\nHadith Searcher:\nhttps://bit.ly/hadith-searcher',
-      ),
-    );
-  }
-}
-
-/// Reusable action button for hadith card.
-class _ActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onPressed;
-
-  const _ActionButton({
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 45,
-      child: ElevatedButton.icon(
-        onPressed: onPressed,
-        icon: Icon(icon, size: 25),
-        label: Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-        style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30.0),
-          ),
-        ),
       ),
     );
   }

@@ -1,3 +1,5 @@
+import 'hadith_citation.dart';
+
 /// Represents a Hadith with all its metadata from the API.
 class Hadith {
   final String id;
@@ -60,14 +62,16 @@ class Hadith {
     return {'hadithid': id, 'hadithtext': text, 'hadithinfo': formattedInfo};
   }
 
+  HadithCitation get citation => HadithCitation(
+    rawi: rawi,
+    mohdith: mohdith,
+    book: book,
+    numberOrPage: numberOrPage,
+    grade: grade,
+  );
+
   /// Formatted hadith info string for display.
-  String get formattedInfo {
-    return 'الراوي: $rawi\n'
-        'المحدث: $mohdith\n'
-        'المصدر: $book\n'
-        'الصفحة أو الرقم: $numberOrPage\n'
-        'خلاصة حكم المحدث: $grade';
-  }
+  String get formattedInfo => citation.formattedInfo;
 
   /// Full text for sharing.
   String get shareText {

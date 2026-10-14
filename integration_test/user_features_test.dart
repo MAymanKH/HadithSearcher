@@ -110,9 +110,7 @@ void main() {
           await tester.pumpAndSettle();
           await tester.tap(find.text('المفضلة').last);
           await tester.pumpAndSettle();
-          final remove = find
-              .widgetWithText(ElevatedButton, 'أزل من المفضلة')
-              .first;
+          final remove = find.byTooltip('أزل من المفضلة').first;
           await tester.tap(remove);
           await tester.pumpAndSettle();
           expect(await db.getFavourite(hadith.id), isNull);
@@ -124,7 +122,7 @@ void main() {
           expect((await db.getFavourites()).first.hadithId, hadith.id);
           expect(vm.isFavourite(hadith.id), isTrue);
           networkRequests = 0;
-          await tester.tap(find.widgetWithText(ElevatedButton, 'الشرح').first);
+          await tester.tap(find.widgetWithText(TextButton, 'الشرح').first);
           await tester.pumpAndSettle();
           expect(find.text('Saved explanation'), findsOneWidget);
           expect(networkRequests, 0);

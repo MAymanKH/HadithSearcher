@@ -6,7 +6,8 @@ import 'package:share_plus/share_plus.dart';
 import '../../services/api_service.dart';
 import '../../services/database_service.dart';
 import '../../viewmodels/favourites_viewmodel.dart';
-import '../../viewmodels/settings_viewmodel.dart';
+import '../../models/hadith_citation.dart';
+import '../../widgets/hadith_card_layout.dart';
 import '../../widgets/back_to_top_button.dart';
 import '../../widgets/message_dialog.dart';
 import '../../widgets/favourite_undo.dart';
@@ -39,7 +40,6 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<FavouritesViewModel>();
-    final settings = context.watch<SettingsViewModel>();
 
     return Scaffold(
       appBar: AppBar(
@@ -53,7 +53,7 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
             ? const CircularProgressIndicator()
             : vm.isEmpty
             ? _buildEmptyState()
-            : _buildFavouritesList(vm, settings),
+            : _buildFavouritesList(vm),
       ),
       floatingActionButton: buildBackToTopButton(),
     );
@@ -77,10 +77,7 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
     );
   }
 
-  Widget _buildFavouritesList(
-    FavouritesViewModel vm,
-    SettingsViewModel settings,
-  ) {
+  Widget _buildFavouritesList(FavouritesViewModel vm) {
     return ListView.builder(
       controller: scrollController,
       itemCount: vm.favourites.length,
@@ -88,7 +85,6 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
         final favourite = vm.favourites[index];
         return _FavouriteHadithCard(
           favourite: favourite,
-          settings: settings,
           onRemove: () async {
             final error = await vm.removeFavourite(favourite.hadithId);
             if (error == null && context.mounted) {
@@ -159,149 +155,52 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
 
 class _FavouriteHadithCard extends StatelessWidget {
   final FavouriteHadith favourite;
-  final SettingsViewModel settings;
   final VoidCallback onRemove;
   final VoidCallback onGetSharh;
 
   const _FavouriteHadithCard({
     required this.favourite,
-    required this.settings,
     required this.onRemove,
     required this.onGetSharh,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.all(10),
-      padding: settings.padding,
-      alignment: Alignment.center,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer,
-        borderRadius: BorderRadius.circular(30),
-      ),
-      child: Column(
-        children: [
-          SelectableText(
-            favourite.displayText,
-            style: TextStyle(
-              color: Theme.of(context).colorScheme.secondaryContainer,
-              fontSize: settings.fontSize,
-              fontWeight: settings.fontWeight,
-              fontFamily: settings.fontFamily,
-            ),
+    final citation = HadithCitation.tryParse(favourite.hadithInfo);
+    return HadithCardLayout(
+      text: favourite.hadithText,
+      grading: citation?.grading,
+      attribution: citation?.attribution ?? favourite.hadithInfo,
+      isFavourite: true,
+      onExplanation: onGetSharh,
+      onSimilar: () => _showSimilar(context),
+      onShare: () async {
+        TelemetryService.event('share_opened', {
+          'hadith_id': favourite.hadithId,
+        });
+        await SharePlus.instance.share(
+          ShareParams(
+            text:
+                '${favourite.shareText}\n\nHadith Searcher:\nhttps://bit.ly/hadith-searcher',
           ),
-          const SizedBox(height: 15),
-          _buildActionRow1(context),
-          const SizedBox(height: 10),
-          _buildActionRow2(context),
-          if (favourite.hasAlternate) ...[
-            const SizedBox(height: 10),
-            _ActionButton(
-              icon: Icons.fact_check_outlined,
-              label: 'البديل الصحيح',
-              onPressed: () => Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => ChangeNotifierProvider(
-                    create: (_) => SimilarHadithViewModel(),
-                    child: SimilarHadithView(
-                      hadithId: favourite.hadithId,
-                      alternate: true,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ],
-      ),
+        );
+      },
+      onFavourite: onRemove,
+      onAlternate: favourite.hasAlternate
+          ? () => _showSimilar(context, alternate: true)
+          : null,
     );
   }
 
-  Widget _buildActionRow1(BuildContext context) {
-    return Wrap(
-      alignment: WrapAlignment.center,
-      spacing: 15,
-      runSpacing: 10,
-      children: [
-        _ActionButton(
-          icon: Icons.manage_search,
-          label: 'الشرح',
-          onPressed: onGetSharh,
-        ),
-        _ActionButton(
-          icon: Icons.content_paste_go,
-          label: 'أحاديث مشابهة',
-          onPressed: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ChangeNotifierProvider(
-                  create: (_) => SimilarHadithViewModel(),
-                  child: SimilarHadithView(hadithId: favourite.hadithId),
-                ),
-              ),
-            );
-          },
-        ),
-      ],
-    );
-  }
-
-  Widget _buildActionRow2(BuildContext context) {
-    return Wrap(
-      alignment: WrapAlignment.center,
-      spacing: 15,
-      runSpacing: 10,
-      children: [
-        _ActionButton(
-          icon: Icons.share_rounded,
-          label: 'مشاركة',
-          onPressed: () async {
-            TelemetryService.event('share_opened', {
-              'hadith_id': favourite.hadithId,
-            });
-            await SharePlus.instance.share(
-              ShareParams(
-                text:
-                    '${favourite.shareText}\n\nHadith Searcher:\nhttps://bit.ly/hadith-searcher',
-              ),
-            );
-          },
-        ),
-        _ActionButton(
-          icon: Icons.star,
-          label: 'أزل من المفضلة',
-          onPressed: onRemove,
-        ),
-      ],
-    );
-  }
-}
-
-class _ActionButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onPressed;
-
-  const _ActionButton({
-    required this.icon,
-    required this.label,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      height: 45,
-      child: ElevatedButton.icon(
-        onPressed: onPressed,
-        icon: Icon(icon, size: 25),
-        label: Text(label, style: const TextStyle(fontWeight: FontWeight.bold)),
-        style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
+  void _showSimilar(BuildContext context, {bool alternate = false}) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => ChangeNotifierProvider(
+          create: (_) => SimilarHadithViewModel(),
+          child: SimilarHadithView(
+            hadithId: favourite.hadithId,
+            alternate: alternate,
           ),
         ),
       ),

@@ -1,0 +1,46 @@
+class HadithCitation {
+  final String rawi;
+  final String mohdith;
+  final String book;
+  final String numberOrPage;
+  final String grade;
+
+  const HadithCitation({
+    required this.rawi,
+    required this.mohdith,
+    required this.book,
+    required this.numberOrPage,
+    required this.grade,
+  });
+
+  static final _storedFormat = RegExp(
+    r'^الراوي: (.*?)\nالمحدث: (.*?)\nالمصدر: (.*?)\nالصفحة أو الرقم: (.*?)\nخلاصة حكم المحدث: (.*)$',
+    dotAll: true,
+  );
+
+  static HadithCitation? tryParse(String info) {
+    final match = _storedFormat.firstMatch(info);
+    if (match == null) return null;
+    return HadithCitation(
+      rawi: match[1]!,
+      mohdith: match[2]!,
+      book: match[3]!,
+      numberOrPage: match[4]!,
+      grade: match[5]!,
+    );
+  }
+
+  String get grading => mohdith.trim().isEmpty
+      ? 'خلاصة حكم المحدث: $grade'
+      : 'حكم $mohdith: $grade';
+
+  String get attribution =>
+      'الراوي: $rawi\nالمصدر: $book، الصفحة أو الرقم: $numberOrPage';
+
+  String get formattedInfo =>
+      'الراوي: $rawi\n'
+      'المحدث: $mohdith\n'
+      'المصدر: $book\n'
+      'الصفحة أو الرقم: $numberOrPage\n'
+      'خلاصة حكم المحدث: $grade';
+}
