@@ -196,18 +196,21 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
               vm.searchWay.arabicName,
               SearchWay.values.map((e) => e.arabicName).toList(),
               (value) => vm.setSearchWay(SearchWay.fromArabic(value!)),
+              isDefault: vm.searchWay == SearchWay.anyWord,
             ),
             _buildDropdownRow(
               'نطاق البحث',
               vm.searchRange.arabicName,
               SearchRange.values.map((e) => e.arabicName).toList(),
               (value) => vm.setSearchRange(SearchRange.fromArabic(value!)),
+              isDefault: vm.searchRange == SearchRange.all,
             ),
             _buildDropdownRow(
               'درجة الحديث',
               vm.searchGrade.arabicName,
               SearchGrade.values.map((e) => e.arabicName).toList(),
               (value) => vm.setSearchGrade(SearchGrade.fromArabic(value!)),
+              isDefault: vm.searchGrade == SearchGrade.all,
             ),
             _buildCatalogField(
               SearchFilter.scholar,
@@ -291,6 +294,9 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
           selected.arabicName,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
+          style: selected.apiCode == '0'
+              ? Theme.of(context).inputDecorationTheme.hintStyle
+              : null,
         ),
       ),
     ),
@@ -300,8 +306,9 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     String label,
     String value,
     List<String> items,
-    void Function(String?) onChanged,
-  ) {
+    void Function(String?) onChanged, {
+    required bool isDefault,
+  }) {
     return Padding(
       padding: const EdgeInsets.all(10),
       child: DropdownButtonFormField<String>(
@@ -310,6 +317,17 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
         isExpanded: true,
         decoration: InputDecoration(labelText: label),
         onChanged: onChanged,
+        selectedItemBuilder: (context) => items
+            .map(
+              (item) => Text(
+                item,
+                overflow: TextOverflow.ellipsis,
+                style: isDefault
+                    ? Theme.of(context).inputDecorationTheme.hintStyle
+                    : null,
+              ),
+            )
+            .toList(),
         items: items
             .map(
               (item) => DropdownMenuItem(
