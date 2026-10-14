@@ -15,14 +15,10 @@ class AppLink extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final style = TextButton.styleFrom(
-      foregroundColor: Theme.of(context).brightness == Brightness.dark
-          ? const Color(0xff90caf9)
-          : const Color(0xff1565c0),
-      textStyle: const TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w600,
-        decoration: TextDecoration.none,
-      ),
+      foregroundColor: Theme.of(context).colorScheme.primary,
+      textStyle: Theme.of(
+        context,
+      ).textTheme.bodyLarge?.copyWith(decoration: TextDecoration.none),
     );
     return TextButton(
       style: style,
