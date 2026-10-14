@@ -59,7 +59,16 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('large catalogs show 40 options per page and search all names', (
+  int optionCount(WidgetTester tester) =>
+      (tester.widget<SliverList>(find.byType(SliverList)).delegate
+              as SliverChildBuilderDelegate)
+          .childCount!;
+
+  ScrollController controller(WidgetTester tester) => tester
+      .widget<CustomScrollView>(find.byType(CustomScrollView))
+      .controller!;
+
+  testWidgets('scrolling appends options lazily and search resets the batch', (
     tester,
   ) async {
     final options = [
@@ -69,30 +78,47 @@ void main() {
     ];
     await openPicker(tester, load: () async => ApiResult.success(options));
     await settle(tester);
-    SliverList list() => tester.widget<SliverList>(find.byType(SliverList));
-    int? count() => (list().delegate as SliverChildBuilderDelegate).childCount;
-    expect(count(), 40);
-    expect(find.text('صفحة 1'), findsOneWidget);
+    expect(optionCount(tester), 40);
+    expect(find.text('السابق'), findsNothing);
+    expect(find.text('التالي'), findsNothing);
     expect(find.text('أَسْمَاء بنت أبى بكر'), findsNothing);
-    await tester.tap(find.text('التالي'));
+    expect(find.byType(ListTile).evaluate().length, lessThan(25));
+    for (var i = 0; i < 10 && optionCount(tester) == 40; i++) {
+      await tester.drag(find.byType(CustomScrollView), const Offset(0, -400));
+      await tester.pumpAndSettle();
+    }
+    expect(optionCount(tester), 80);
+    expect(controller(tester).offset, greaterThan(0));
+    expect(find.byType(ListTile).evaluate().length, lessThan(25));
+    controller(tester).jumpTo(0);
     await tester.pumpAndSettle();
-    expect(count(), 40);
-    expect(find.text('صفحة 2'), findsOneWidget);
-    expect(find.text('راوي 40'), findsOneWidget);
+    expect(optionCount(tester), 80);
+    expect(find.text('راوي 0'), findsOneWidget);
+    controller(tester).jumpTo(500);
+    await tester.pumpAndSettle();
     await tester.enterText(find.byType(TextField), 'اسماء بنت ابي');
     await tester.pump(const Duration(milliseconds: 250));
     await tester.pumpAndSettle();
-    expect(count(), 1);
+    expect(optionCount(tester), 1);
+    expect(controller(tester).offset, 0);
     expect(find.text('أَسْمَاء بنت أبى بكر'), findsOneWidget);
-    expect(find.text('التالي'), findsNothing);
     expect(find.text('جميع الرواة'), findsOneWidget);
+    await tester.enterText(find.byType(TextField), '');
+    await tester.pump(const Duration(milliseconds: 250));
+    await tester.pumpAndSettle();
+    expect(optionCount(tester), 40);
+    await tester.enterText(find.byType(TextField), 'اسماء بنت ابي');
+    await tester.pump(const Duration(milliseconds: 250));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('أَسْمَاء بنت أبى بكر'));
     await tester.pumpAndSettle();
     expect(find.text('اختيار: 20000'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('last page is bounded and can navigate back', (tester) async {
+  testWidgets('scrolling reaches the final partial batch without duplicates', (
+    tester,
+  ) async {
     await openPicker(
       tester,
       load: () async => ApiResult.success([
@@ -100,21 +126,67 @@ void main() {
       ]),
     );
     await settle(tester);
-    for (var i = 0; i < 2; i++) {
-      await tester.tap(find.text('التالي'));
+    final scroll = controller(tester);
+    expect(optionCount(tester), 40);
+    for (final expectedCount in [80, 85]) {
+      final offset = scroll.position.maxScrollExtent - 100;
+      scroll.jumpTo(offset);
       await tester.pumpAndSettle();
+      expect(optionCount(tester), expectedCount);
+      expect(scroll.offset, offset);
     }
-    final list = tester.widget<SliverList>(find.byType(SliverList));
-    expect((list.delegate as SliverChildBuilderDelegate).childCount, 5);
-    expect(
-      tester
-          .widget<TextButton>(find.widgetWithText(TextButton, 'التالي'))
-          .onPressed,
-      isNull,
-    );
-    await tester.tap(find.text('السابق'));
+    scroll.jumpTo(scroll.position.maxScrollExtent);
     await tester.pumpAndSettle();
-    expect(find.text('صفحة 2'), findsOneWidget);
+    expect(optionCount(tester), 85);
+    expect(find.text('راوي 84'), findsOneWidget);
+    scroll.jumpTo(0);
+    await tester.pumpAndSettle();
+    expect(optionCount(tester), 85);
+    expect(find.text('راوي 0'), findsOneWidget);
+    scroll.jumpTo(scroll.position.maxScrollExtent);
+    await tester.pumpAndSettle();
+    expect(optionCount(tester), 85);
+    await tester.tap(find.text('راوي 84'));
+    await tester.pumpAndSettle();
+    expect(find.text('اختيار: 85'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('scrolling a filtered list only appends matching names', (
+    tester,
+  ) async {
+    await openPicker(
+      tester,
+      load: () async => ApiResult.success(
+        List.generate(
+          120,
+          (i) => SearchOption('${i + 1}', i.isEven ? 'أسماء $i' : 'راوي $i'),
+        ),
+      ),
+    );
+    await settle(tester);
+    await tester.enterText(find.byType(TextField), 'اسماء');
+    await tester.pump(const Duration(milliseconds: 250));
+    await tester.pumpAndSettle();
+    expect(optionCount(tester), 40);
+    final scroll = controller(tester);
+    scroll.jumpTo(scroll.position.maxScrollExtent - 100);
+    await tester.pumpAndSettle();
+    expect(optionCount(tester), 60);
+    scroll.jumpTo(scroll.position.maxScrollExtent);
+    await tester.pumpAndSettle();
+    expect(find.text('أسماء 118'), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(SliverList),
+        matching: find.textContaining('راوي'),
+      ),
+      findsNothing,
+    );
+    await tester.tap(find.text('أسماء 118'));
+    await tester.pumpAndSettle();
+    expect(find.text('اختيار: 119'), findsOneWidget);
+    expect(tester.takeException(), isNull);
   });
 
   testWidgets(

@@ -35,11 +35,13 @@ class _SearchOptionPicker extends StatefulWidget {
 }
 
 class _SearchOptionPickerState extends State<_SearchOptionPicker> {
-  static const _pageSize = 40;
+  static const _batchSize = 40;
   final _scrollController = ScrollController();
   Timer? _debounce;
   String _query = '';
-  int _page = 0;
+  final _visibleOptions = <_IndexedOption>[];
+  late Iterator<_IndexedOption> _matches;
+  bool _hasMoreOptions = false;
   bool _loading = true;
   ApiError? _error;
   late List<_IndexedOption> _options;
@@ -49,6 +51,8 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
     super.initState();
     _options = _indexOptions(widget.filter.fallbackOptions);
     _includeSelection();
+    _resetVisibleOptions();
+    _scrollController.addListener(_loadMoreOptions);
     _load();
   }
 
@@ -74,6 +78,7 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
         setState(() {
           _options = options;
           _includeSelection();
+          _resetVisibleOptions();
           _loading = false;
         });
       } else {
@@ -96,15 +101,35 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
     _debounce = Timer(const Duration(milliseconds: 200), () {
       setState(() {
         _query = _normalize(value.trim());
-        _page = 0;
+        _resetVisibleOptions();
       });
       _scrollToTop();
     });
   }
 
-  void _changePage(int page) {
-    setState(() => _page = page);
-    _scrollToTop();
+  void _resetVisibleOptions() {
+    _matches = _options
+        .where((entry) => entry.searchName.contains(_query))
+        .iterator;
+    _visibleOptions.clear();
+    _hasMoreOptions = true;
+    _appendBatch();
+  }
+
+  void _appendBatch() {
+    for (var i = 0; i < _batchSize; i++) {
+      if (!_matches.moveNext()) {
+        _hasMoreOptions = false;
+        break;
+      }
+      _visibleOptions.add(_matches.current);
+    }
+  }
+
+  void _loadMoreOptions() {
+    if (_hasMoreOptions && _scrollController.position.extentAfter < 300) {
+      setState(_appendBatch);
+    }
   }
 
   void _scrollToTop() {
@@ -114,6 +139,7 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
   @override
   void dispose() {
     _debounce?.cancel();
+    _scrollController.removeListener(_loadMoreOptions);
     _scrollController.dispose();
     super.dispose();
   }
@@ -128,13 +154,6 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
 
   @override
   Widget build(BuildContext context) {
-    final page = _options
-        .where((entry) => entry.searchName.contains(_query))
-        .skip(_page * _pageSize)
-        .take(_pageSize + 1)
-        .toList();
-    final hasNext = page.length > _pageSize;
-    final visibleCount = hasNext ? _pageSize : page.length;
     final keyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
     return SizedBox(
       height: MediaQuery.sizeOf(context).height * (keyboardHeight > 0 ? 1 : .8),
@@ -182,7 +201,7 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
                         ),
                       ),
                     ),
-                  if (page.isEmpty)
+                  if (_visibleOptions.isEmpty)
                     SliverFillRemaining(
                       hasScrollBody: false,
                       child: Center(
@@ -195,28 +214,13 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
                     )
                   else
                     SliverList.builder(
-                      itemCount: visibleCount,
+                      itemCount: _visibleOptions.length,
                       itemBuilder: (context, index) =>
-                          _tile(page[index].option),
+                          _tile(_visibleOptions[index].option),
                     ),
                 ],
               ),
             ),
-            if (_page > 0 || hasNext)
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  TextButton(
-                    onPressed: _page > 0 ? () => _changePage(_page - 1) : null,
-                    child: const Text('السابق'),
-                  ),
-                  Text('صفحة ${_page + 1}'),
-                  TextButton(
-                    onPressed: hasNext ? () => _changePage(_page + 1) : null,
-                    child: const Text('التالي'),
-                  ),
-                ],
-              ),
           ],
         ),
       ),
