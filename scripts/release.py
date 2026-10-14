@@ -2,6 +2,7 @@
 """Build the store releases from the current working tree."""
 
 import argparse
+import os
 from pathlib import Path
 import re
 import shutil
@@ -46,6 +47,58 @@ def build_fdroid(version):
     apk = ROOT / "build/app/outputs/flutter-apk/app-fdroid-release.apk"
     verify_artifact(apk, shorebird=False)
     keep_artifact(apk, "fdroid", version)
+
+
+def sign_fdroid(version):
+    apk = ROOT / "build/releases/fdroid" / f"HadithSearcher-{version}-fdroid.apk"
+    if not apk.is_file():
+        raise RuntimeError("Build the unsigned APK first: ./scripts/release.py fdroid")
+    verify_artifact(apk, shorebird=False)
+    properties = dict(re.findall(
+        r"^\s*(\w+)\s*=\s*(.*?)\s*$",
+        (ROOT / "android/key.properties").read_text(), re.MULTILINE,
+    ))
+    for key in ("storeFile", "storePassword", "keyAlias", "keyPassword"):
+        if not properties.get(key):
+            raise RuntimeError(f"Signing configuration has no {key}")
+    keystore = Path(properties["storeFile"].replace("\\ ", " "))
+    if not keystore.is_absolute():
+        keystore = (ROOT / "android/app" / keystore).resolve()
+    if not keystore.is_file():
+        raise RuntimeError("The configured signing keystore does not exist")
+    sdk = re.search(
+        r"^sdk.dir\s*=\s*(.+)$",
+        (ROOT / "android/local.properties").read_text(), re.MULTILINE,
+    )
+    if sdk is None:
+        raise RuntimeError("android/local.properties has no sdk.dir")
+    build_tools = Path(sdk.group(1).strip().replace("\\ ", " ")) / "build-tools"
+    versions = sorted(
+        (path for path in build_tools.iterdir() if re.fullmatch(r"\d+\.\d+\.\d+", path.name)),
+        key=lambda path: tuple(map(int, path.name.split("."))), reverse=True,
+    )
+    tools = next((path for path in versions if (path / "apksigner").is_file()
+                  and (path / "zipalign").is_file()), None)
+    if tools is None:
+        raise RuntimeError("Install Android SDK Build Tools with apksigner and zipalign")
+    env = os.environ.copy()
+    env["HADITH_STORE_PASSWORD"] = properties["storePassword"]
+    env["HADITH_KEY_PASSWORD"] = properties["keyPassword"]
+    with tempfile.TemporaryDirectory(prefix="hadith-sign-") as directory:
+        aligned = Path(directory) / "aligned.apk"
+        signed = Path(directory) / "signed.apk"
+        run(str(tools / "zipalign"), "-P", "16", "-f", "4", str(apk), str(aligned))
+        subprocess.run([
+            str(tools / "apksigner"), "sign", "--ks", str(keystore),
+            "--ks-key-alias", properties["keyAlias"],
+            "--ks-pass", "env:HADITH_STORE_PASSWORD",
+            "--key-pass", "env:HADITH_KEY_PASSWORD",
+            "--out", str(signed), str(aligned),
+        ], cwd=ROOT, env=env, check=True)
+        run(str(tools / "apksigner"), "verify", "--verbose", str(signed))
+        run(str(tools / "zipalign"), "-P", "16", "-c", "4", str(signed))
+        verify_artifact(signed, shorebird=False)
+        keep_artifact(signed, "fdroid", f"{version}-signed")
 
 
 def build_play(version, dry_run, *, patch=False):
@@ -108,7 +161,7 @@ def build_play(version, dry_run, *, patch=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("store", choices=["play", "fdroid", "all", "patch-play"], nargs="?", default="all")
+    parser.add_argument("store", choices=["play", "fdroid", "all", "patch-play", "sign-fdroid"], nargs="?", default="all")
     parser.add_argument("--dry-run", action="store_true", help="Build Play without registering a Shorebird release")
     args = parser.parse_args()
     version = re.search(r"^version:\s*(\S+)", (ROOT / "pubspec.yaml").read_text(), re.MULTILINE)
@@ -120,6 +173,8 @@ def main():
         build_play(version.group(1), args.dry_run)
     if args.store == "patch-play":
         build_play(version.group(1), args.dry_run, patch=True)
+    if args.store == "sign-fdroid":
+        sign_fdroid(version.group(1))
 
 
 if __name__ == "__main__":
