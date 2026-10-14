@@ -1,9 +1,9 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import '../../core/constants/app_config.dart';
+import '../../widgets/app_link.dart';
+import '../../widgets/app_logo.dart';
 
 class AboutView extends StatelessWidget {
   const AboutView({super.key});
@@ -18,25 +18,22 @@ class AboutView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-          title: const Text(
-        'حول',
-        style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-      )),
+        title: const Text(
+          'حول',
+          style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+        ),
+      ),
       body: SingleChildScrollView(
         child: Center(
           child: Column(
             children: [
+              const SizedBox(height: 16),
+              const AppLogo(size: 128),
+              const SizedBox(height: 16),
               const Text(
                 'Hadith Searcher',
+                textAlign: TextAlign.center,
                 style: TextStyle(fontSize: 37, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 5),
-              FutureBuilder<PackageInfo>(
-                future: PackageInfo.fromPlatform(),
-                builder: (_, snapshot) => snapshot.hasData
-                    ? Text('الإصدار ${snapshot.data!.version}',
-                        style: const TextStyle(fontSize: 18))
-                    : const SizedBox(height: 18),
               ),
               const SizedBox(height: 20),
               _buildInfoCard(
@@ -80,30 +77,29 @@ class AboutView extends StatelessWidget {
         textAlign: TextAlign.center,
         text: TextSpan(
           style: TextStyle(
-              fontSize: 18, color: Theme.of(context).colorScheme.onSurface),
+            fontSize: 18,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
           children: [
             const TextSpan(text: 'جميع الأحاديث والمعلومات مأخوذة من موقع '),
-            TextSpan(
-              text: 'dorar.net',
-              style: const TextStyle(
-                decoration: TextDecoration.underline,
-                decorationColor: Colors.blue,
-                color: Colors.blue,
+            WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: AppLink(
+                label: 'dorar.net',
+                onPressed: () => _launchUrl(Uri.parse('https://dorar.net/')),
               ),
-              recognizer: TapGestureRecognizer()
-                ..onTap = () => _launchUrl(Uri.parse('https://dorar.net/')),
             ),
             const TextSpan(text: ' باستخدام '),
-            TextSpan(
-              text: 'Dorar Hadith API',
-              style: const TextStyle(
-                decoration: TextDecoration.underline,
-                decorationColor: Colors.blue,
-                color: Colors.blue,
+            WidgetSpan(
+              alignment: PlaceholderAlignment.middle,
+              child: AppLink(
+                label: 'Dorar Hadith API',
+                onPressed: () => _launchUrl(
+                  Uri.parse(
+                    'https://github.com/AhmedElTabarani/dorar-hadith-api',
+                  ),
+                ),
               ),
-              recognizer: TapGestureRecognizer()
-                ..onTap = () => _launchUrl(Uri.parse(
-                    'https://github.com/AhmedElTabarani/dorar-hadith-api')),
             ),
             const TextSpan(text: '.'),
           ],
@@ -113,30 +109,31 @@ class AboutView extends StatelessWidget {
   }
 
   Widget _buildActionButtons(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    return Wrap(
+      alignment: WrapAlignment.center,
+      spacing: 24,
+      runSpacing: 16,
       children: [
-        _ActionIconButton(
+        AppLink(
           icon: Icons.share_rounded,
           label: 'مشاركة',
-          onTap: () async {
-            await SharePlus.instance.share(ShareParams(
-              text: 'https://bit.ly/hadith-searcher',
-            ));
+          onPressed: () async {
+            await SharePlus.instance.share(
+              ShareParams(text: 'https://bit.ly/hadith-searcher'),
+            );
           },
         ),
-        const SizedBox(width: 40),
-        _ActionIconButton(
+        AppLink(
           icon: Icons.code_rounded,
           label: 'الكود',
-          onTap: () => _launchUrl(
-              Uri.parse('https://github.com/MAymanKH/HadithSearcher')),
+          onPressed: () => _launchUrl(
+            Uri.parse('https://github.com/MAymanKH/HadithSearcher'),
+          ),
         ),
-        const SizedBox(width: 40),
-        _ActionIconButton(
+        AppLink(
           icon: Icons.attach_money_rounded,
           label: 'دعم',
-          onTap: () => _launchUrl(Uri.parse('https://ko-fi.com/MAymanKH')),
+          onPressed: () => _launchUrl(Uri.parse('https://ko-fi.com/MAymanKH')),
         ),
       ],
     );
@@ -150,78 +147,38 @@ class AboutView extends StatelessWidget {
           style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 15),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Wrap(
+          alignment: WrapAlignment.center,
+          spacing: 24,
+          runSpacing: 16,
           children: [
-            _ActionIconButton(
+            AppLink(
               icon: Icons.language,
               label: 'الموقع',
-              onTap: () => _launchUrl(Uri.parse('https://mohamedayman.net')),
+              onPressed: () =>
+                  _launchUrl(Uri.parse('https://mohamedayman.net')),
             ),
-            const SizedBox(width: 40),
-            _ActionIconButton(
+            AppLink(
               icon: Icons.email,
               label: 'البريد',
-              onTap: () => _launchUrl(
-                  Uri.parse('mailto:mohamed.ayman.khodeir@gmail.com')),
+              onPressed: () => _launchUrl(
+                Uri.parse('mailto:mohamed.ayman.khodeir@gmail.com'),
+              ),
             ),
           ],
         ),
         const SizedBox(height: 20),
-        TextButton(
+        AppLink(
           onPressed: () => showLicensePage(
             context: context,
             applicationName: 'Hadith Searcher',
           ),
-          child: const Text('تراخيص المكتبات والخطوط'),
+          label: 'تراخيص المكتبات والخطوط',
         ),
-        GestureDetector(
-          onTap: () => _launchUrl(Uri.parse(privacyPolicyUrl)),
-          child: const Text(
-            'سياسة الخصوصية',
-            style: TextStyle(
-              decoration: TextDecoration.underline,
-              decorationColor: Colors.blue,
-              color: Colors.blue,
-              fontSize: 16,
-            ),
-          ),
+        AppLink(
+          label: 'سياسة الخصوصية',
+          onPressed: () => _launchUrl(Uri.parse(privacyPolicyUrl)),
         ),
-      ],
-    );
-  }
-}
-
-class _ActionIconButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _ActionIconButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(2),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(30),
-          ),
-          child: IconButton(
-            onPressed: onTap,
-            icon: Icon(icon),
-            tooltip: label,
-            iconSize: 33,
-          ),
-        ),
-        const SizedBox(height: 5),
-        Text(label),
       ],
     );
   }

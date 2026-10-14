@@ -44,6 +44,7 @@ dependencies:
   provider: ^6.0.5
   flutter_native_splash: ^2.3.1
   url_launcher: ^6.1.12
+  flutter_svg: ^2.3.0
   flutter_launcher_icons: ^0.14.4
   flutter_animate: ^4.2.0+1
   share_plus: ^12.0.1
@@ -53,15 +54,27 @@ dependencies:
   package_info_plus: 9.0.1
 
 flutter_native_splash:
- color: "#ffffff"
- color_dark: "#000000"
- image: assets/icons/logo.png
+  color: "#ffffff"
+  color_dark: "#000000"
+  image: assets/icons/logo.png
+  image_dark: assets/icons/logo_dark.png
+  ios: false
+  web: false
+  android_12:
+    color: "#ffffff"
+    color_dark: "#000000"
+    image: assets/icons/splash_android12.png
+    image_dark: assets/icons/splash_android12_dark.png
 
 flutter_launcher_icons:
   android: "launcher_icon"
-  ios: true
-  image_path: "assets/icons/icon.jpg"
-  min_sdk_android: 21 # android min sdk min:16, default 21
+  ios: false
+  image_path: "assets/icons/launcher.png"
+  adaptive_icon_background: "#000000"
+  adaptive_icon_foreground: "assets/icons/launcher_foreground.png"
+  adaptive_icon_foreground_inset: 0
+  adaptive_icon_monochrome: "assets/icons/launcher_foreground.png"
+  min_sdk_android: 21
 
 dev_dependencies:
   integration_test:
@@ -93,8 +106,7 @@ flutter:
     - path: shorebird.yaml
       flavors:
         - play
-    - assets/icons/logo.png
-    - assets/icons/icon.jpg
+    - assets/icons/logo.svg
     - assets/fonts/NOTICE.txt
     - assets/fonts/LICENSE-OFL.txt
     - assets/fonts/LICENSE-Apache-2.0.txt

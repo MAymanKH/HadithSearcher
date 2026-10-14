@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/constants/app_config.dart';
+import '../../widgets/app_link.dart';
+import '../../widgets/app_logo.dart';
 import '../../services/telemetry/telemetry_service.dart';
 
 class TelemetryConsentView extends StatefulWidget {
@@ -68,15 +70,7 @@ class _TelemetryConsentViewState extends State<TelemetryConsentView> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.circular(24),
-                        child: Image.asset(
-                          'assets/icons/icon.jpg',
-                          width: 112,
-                          height: 112,
-                          excludeFromSemantics: true,
-                        ),
-                      ),
+                      const AppLogo(),
                       const SizedBox(height: 20),
                       const Text(
                         'الموافقة على مشاركة البيانات',
@@ -137,9 +131,9 @@ class _TelemetryConsentViewState extends State<TelemetryConsentView> {
                         child: const Text('متابعة'),
                       ),
                       const SizedBox(height: 8),
-                      TextButton(
+                      AppLink(
                         onPressed: _openPrivacyPolicy,
-                        child: const Text('سياسة الخصوصية'),
+                        label: 'سياسة الخصوصية',
                       ),
                     ],
                   ),
