@@ -85,6 +85,7 @@ class SearchViewModel extends ChangeNotifier {
   String get excludedWords => _excludedWords;
   bool get saveAdvancedSettings => _saveAdvancedSettings;
   String get searchQuery => _searchQuery;
+  int get resultRevision => _searchGeneration;
 
   /// Initialize by loading saved preferences.
   Future<void> init() async {
@@ -102,7 +103,7 @@ class SearchViewModel extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
 
     _saveAdvancedSettings = prefs.getBool('advancedSaveCheckbox') ?? true;
-    _searchQuery = prefs.getString('searchQuery') ?? '';
+    await prefs.remove('searchQuery');
     if (!_saveAdvancedSettings) {
       notifyListeners();
       return;
@@ -470,7 +471,6 @@ class SearchViewModel extends ChangeNotifier {
   Future<void> saveAdvancedPrefs() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool('advancedSaveCheckbox', _saveAdvancedSettings);
-    await prefs.setString('searchQuery', _searchQuery);
     if (!_saveAdvancedSettings) {
       for (final key in [
         'searchWay',

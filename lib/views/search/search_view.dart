@@ -468,6 +468,9 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
         children: [
           Expanded(
             child: ListView.builder(
+              key: PageStorageKey<String>(
+                'search-results-${vm.resultRevision}',
+              ),
               controller: scrollController,
               itemCount: vm.results.length + (vm.isLoadingMore ? 1 : 0),
               itemBuilder: (context, index) {
@@ -482,6 +485,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
 
                 final hadith = vm.results[index];
                 return HadithCard(
+                  key: PageStorageKey<String>('search-hadith-${hadith.id}'),
                   hadith: hadith,
                   isFavourite: vm.isFavourite(hadith.id),
                   onFavouriteToggle: () async {
