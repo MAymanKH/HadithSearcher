@@ -60,11 +60,11 @@ cd HadithSearcher
 
 ### 2. إعداد الخدمات
 
-رابط API الافتراضي موجود في `lib/core/constants/app_config.dart`، ومفاتيح إرسال Sentry وPostHog العامة موجودة في `lib/core/constants/telemetry_config.dart`. لا يحتاج البناء إلى ملف `.env` أو Shorebird. لا تضع رموز إدارة الحسابات أو مفاتيح التوقيع الخاصة في هذين الملفين.
+رابط API الافتراضي موجود في `lib/core/constants/app_config.dart`، ومفاتيح إرسال Sentry وPostHog العامة موجودة في `lib/core/constants/telemetry_config.dart`. لا يحتاج البناء إلى ملف `.env`. تستخدم نسخة Google Play خدمة Shorebird، وتستخدم نسخة F-Droid مكتبة Flutter القياسية. لا تضع رموز إدارة الحسابات أو مفاتيح التوقيع الخاصة في ملفات المصدر.
 
-تقارير الأعطال وإحصاءات الاستخدام متوقفتان افتراضياً. يسأل التطبيق عند أول تشغيل، ويمكن تغيير كل اختيار من الإعدادات. تشمل إحصاءات الاستخدام الاختيارية كلمات البحث والمرشحات ومعرّفات الأحاديث المتفاعل معها. رابط سياسة الخصوصية متاح قبل الموافقة.
+في نسخة F-Droid تتوقف تقارير الأعطال وإحصاءات الاستخدام افتراضياً، ويسأل التطبيق عند أول تشغيل، ويمكن تغيير كل اختيار من الإعدادات. في نسخة Google Play تعمل الخدمتان تلقائياً ولا تظهر شاشة الموافقة أو خيارات إيقاف القياس. تشمل الإحصاءات كلمات البحث والمرشحات ومعرّفات الأحاديث المتفاعل معها. يستخدم المتجران رابط سياسة الخصوصية نفسه.
 
-استخدم Flutter **3.47.2** لإعادة بناء النسخة التي تم التحقق منها. يعتمد بناء Android على Gradle 8.14.3 وAndroid Gradle Plugin 8.11.1 وKotlin 2.2.20، مع الاعتماديات المحددة في `pubspec.lock`.
+استخدم Flutter **3.47.2** لنسخة F-Droid. يحدد سكربت الإصدار Flutter **3.47.7** لنسخة Shorebird. يعتمد بناء Android على Gradle 8.14.3 وAndroid Gradle Plugin 8.11.1 وKotlin 2.2.20، مع الاعتماديات المحددة في `pubspec.lock`.
 
 ### 3. تثبيت الاعتماديات
 
@@ -75,14 +75,16 @@ flutter pub get
 ### 4. تشغيل التطبيق
 
 ```bash
-flutter run
+flutter run --flavor fdroid
+# لتجربة واجهة نسخة Google Play:
+flutter run --flavor play
 ```
 
 ### 5. بناء التطبيق
 
-**لنظام Android:**
+**لبناء نسختي Android:**
 ```bash
-flutter build apk --release
+./scripts/release.py all
 ```
 
 **لنظام iOS:**
@@ -92,17 +94,33 @@ flutter build ios --release
 
 ## بناء Android والتوزيع
 
-يستخدم Google Play وF-Droid الكود نفسه وإعدادات القياس نفسها. إذا وُجد ملف `android/key.properties` يُستخدم مفتاح التوقيع المحلي. إذا لم يوجد الملف يُنتج Gradle نسخة غير موقعة يستطيع F-Droid توقيعها. لا تُضمّن بيانات التوقيع الخاصة في المصدر.
+غيّر `version` في `pubspec.yaml` مرة واحدة لكل إصدار جديد، ثم شغّل `./scripts/release.py all`. تعرض صفحة حول التطبيق رقم الإصدار الفعلي. يتطلب السكربت Python 3، وFlutter، وShorebird عند بناء نسخة Play، مع تسجيل الدخول مسبقاً عبر `shorebird login`.
 
-المكتبتان Sentry وPostHog مرخصتان بـ MIT. يُعطّل التطبيق التهيئة التلقائية وجمع البيانات قبل الموافقة، ولا يستخدم تحديثات تنفيذية أو تسجيل الشاشة. أهلية المستودع الرسمي تخضع أيضاً لفحص F-Droid للبناء والتراخيص والخدمات والأصول.
+| الأمر | الناتج |
+| --- | --- |
+| `./scripts/release.py play` | ملف AAB موقع مع Shorebird، وتسجيل الإصدار في حساب Shorebird الحالي |
+| `./scripts/release.py fdroid` | ملف APK غير موقع، دون Shorebird، مع شاشة الموافقة وإعدادات القياس |
+| `./scripts/release.py all` | بناء نسختي المتجرين بالتتابع |
+| `./scripts/release.py play --dry-run` | بناء ملف Play دون تسجيل إصدار على الخادم |
+| `./scripts/release.py patch-play` | إرسال تحديث Dart لإصدار Play المحدد حالياً في `pubspec.yaml` |
+
+يحفظ السكربت ملفات المتجرين في `build/releases/play/` و`build/releases/fdroid/` بأسماء تتضمن رقم الإصدار. لا يرفع الملفات إلى Google Play أو F-Droid. يتطلب Play ملف `android/key.properties` ومفتاح التوقيع المحلي، بينما تبقى نسخة F-Droid غير موقعة حتى عند وجودهما. لا تُضمّن بيانات التوقيع الخاصة في المصدر.
+
+يبني السكربت نسخة Play في مجلد مؤقت لتوافق فحص أصول Shorebird مع أصل خاص بالنكهة. لا يغير ملف `pubspec.yaml` الأصلي، ولا ينشئ تطبيق Shorebird لنسخة F-Droid. يتحقق من نوع محرك Flutter ووجود إعداد Shorebird أو غيابه داخل الناتج قبل حفظه.
+
+للبناء المباشر في F-Droid استخدم `flutter build apk --release --flavor fdroid`، والناتج هو `build/app/outputs/flutter-apk/app-fdroid-release.apk`. النكهة الافتراضية هي `fdroid` إذا لم تحدد نكهة. يستخدم المتجران معرّف Android نفسه، لكن مفتاح توقيع F-Droid قد يختلف عن مفتاح Play.
+
+المكتبتان Sentry وPostHog مرخصتان بـ MIT. في F-Droid تتوقف المكتبتان قبل الموافقة، ولا تُضمّن إعدادات Shorebird أو محركه. لا تستخدم أي نسخة تسجيل الشاشة. أهلية المستودع الرسمي تخضع أيضاً لفحص F-Droid للبناء والتراخيص والخدمات والأصول.
 
 للتحقق من اختيار المستخدم والبيانات المرسلة:
 
 ```bash
 flutter analyze
 flutter test test
-flutter test integration_test/telemetry_test.dart -d emulator-5554
-flutter build apk --release
+flutter test integration_test/telemetry_test.dart --flavor fdroid -d emulator-5554
+flutter test integration_test/distribution_test.dart --flavor fdroid -d emulator-5554
+flutter test integration_test/distribution_test.dart --flavor play -d emulator-5554
+./scripts/release.py all --dry-run
 ```
 
 اختبار `integration_test/cloud_telemetry_test.dart` متوقف افتراضياً. تشغيله مع `--dart-define=VERIFY_TELEMETRY_CLOUD=true` يرسل حدثاً اصطناعياً إلى الحسابين المهيأين في المصدر، تحت بيئة `verification`.

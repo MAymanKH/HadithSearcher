@@ -2,7 +2,14 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
+enum TelemetryPolicy { optIn, alwaysOn }
+
+const buildTelemetryPolicy = appFlavor == 'play'
+    ? TelemetryPolicy.alwaysOn
+    : TelemetryPolicy.optIn;
 
 class TelemetryConsent {
   final bool decided;
@@ -33,11 +40,11 @@ class TelemetryConsent {
   }
 
   String encode() => jsonEncode({
-        'version': 1,
-        'decided': decided,
-        'diagnostics': diagnostics,
-        'analytics': analytics,
-      });
+    'version': 1,
+    'decided': decided,
+    'diagnostics': diagnostics,
+    'analytics': analytics,
+  });
 }
 
 abstract class TelemetryBackend {
@@ -55,14 +62,24 @@ class TelemetryService extends ChangeNotifier {
 
   final SharedPreferences preferences;
   final TelemetryBackend backend;
+  final TelemetryPolicy policy;
   TelemetryConsent _consent;
   bool _saving = false;
   String? _error;
 
-  TelemetryService({required this.preferences, required this.backend})
-      : _consent = TelemetryConsent.read(preferences.get(consentKey));
+  TelemetryService({
+    required this.preferences,
+    required this.backend,
+    this.policy = TelemetryPolicy.optIn,
+  }) : _consent = TelemetryConsent.read(preferences.get(consentKey));
 
   TelemetryConsent get consent => _consent;
+  bool get canChangeConsent => policy == TelemetryPolicy.optIn;
+  bool get needsConsent => canChangeConsent && !_consent.decided;
+  bool get analyticsEnabled =>
+      policy == TelemetryPolicy.alwaysOn || _consent.analytics;
+  bool get diagnosticsEnabled =>
+      policy == TelemetryPolicy.alwaysOn || _consent.diagnostics;
   bool get saving => _saving;
   String? get error => _error;
 
@@ -70,9 +87,11 @@ class TelemetryService extends ChangeNotifier {
     await _configure();
   }
 
-  Future<bool> save(
-      {required bool diagnostics, required bool analytics}) async {
-    if (_saving) return false;
+  Future<bool> save({
+    required bool diagnostics,
+    required bool analytics,
+  }) async {
+    if (!canChangeConsent || _saving) return false;
     _saving = true;
     _error = null;
     final previous = _consent;
@@ -109,12 +128,12 @@ class TelemetryService extends ChangeNotifier {
   Future<void> _configure() async {
     // SDK failures must not prevent searching or returning to the app.
     try {
-      await backend.setDiagnosticsEnabled(_consent.diagnostics);
+      await backend.setDiagnosticsEnabled(diagnosticsEnabled);
     } catch (_) {
       _error = 'تعذر تشغيل تقارير الأعطال حالياً.';
     }
     try {
-      await backend.setAnalyticsEnabled(_consent.analytics);
+      await backend.setAnalyticsEnabled(analyticsEnabled);
     } catch (_) {
       _error = 'تعذر تشغيل إحصاءات الاستخدام حالياً.';
     }
@@ -122,22 +141,23 @@ class TelemetryService extends ChangeNotifier {
 
   static void event(String name, [Map<String, Object> properties = const {}]) {
     final service = instance;
-    if (service == null || !service.consent.analytics) return;
+    if (service == null || !service.analyticsEnabled) return;
     unawaited(
-        service.backend.capture(name, properties).catchError((Object _) {}));
+      service.backend.capture(name, properties).catchError((Object _) {}),
+    );
   }
 
   static void report(Object error, StackTrace stack, String operation) {
     final service = instance;
-    if (service == null || !service.consent.diagnostics) return;
-    unawaited(service.backend
-        .report(error, stack, operation)
-        .catchError((Object _) {}));
+    if (service == null || !service.diagnosticsEnabled) return;
+    unawaited(
+      service.backend.report(error, stack, operation).catchError((Object _) {}),
+    );
   }
 
   static Future<T> trace<T>(String operation, Future<T> Function() action) {
     final service = instance;
-    if (service == null || !service.consent.diagnostics) return action();
+    if (service == null || !service.diagnosticsEnabled) return action();
     return service.backend.trace(operation, action);
   }
 }

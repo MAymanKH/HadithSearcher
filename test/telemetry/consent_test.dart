@@ -37,6 +37,70 @@ void main() {
     expect(backend.transitions, ['diagnostics:false', 'analytics:false']);
   });
 
+  test(
+    'Play enables both SDKs and cannot change a saved F-Droid choice',
+    () async {
+      final declined = const TelemetryConsent(decided: true).encode();
+      await service.preferences.setString(
+        TelemetryService.consentKey,
+        declined,
+      );
+      final preferences = service.preferences;
+      service.dispose();
+      service = TelemetryService(
+        preferences: preferences,
+        backend: backend,
+        policy: TelemetryPolicy.alwaysOn,
+      );
+      TelemetryService.instance = service;
+      await service.initialize();
+      expect(service.needsConsent, false);
+      expect(service.canChangeConsent, false);
+      expect(backend.diagnostics && backend.analytics, true);
+      TelemetryService.event('search_submitted');
+      TelemetryService.report(
+        StateError('test'),
+        StackTrace.current,
+        'api.search',
+      );
+      expect(backend.events, ['search_submitted']);
+      expect(backend.reports, ['api.search']);
+      expect(await service.save(diagnostics: false, analytics: false), false);
+      expect(service.analyticsEnabled && service.diagnosticsEnabled, true);
+      expect(preferences.getString(TelemetryService.consentKey), declined);
+      final fdroid = TelemetryService(
+        preferences: preferences,
+        backend: FakeBackend(),
+      );
+      await fdroid.initialize();
+      expect(fdroid.analyticsEnabled || fdroid.diagnosticsEnabled, false);
+      fdroid.dispose();
+    },
+  );
+
+  test(
+    'Play never records consent that a later F-Droid build can inherit',
+    () async {
+      final preferences = service.preferences;
+      service.dispose();
+      service = TelemetryService(
+        preferences: preferences,
+        backend: backend,
+        policy: TelemetryPolicy.alwaysOn,
+      );
+      await service.initialize();
+      expect(preferences.containsKey(TelemetryService.consentKey), false);
+      final fdroid = TelemetryService(
+        preferences: preferences,
+        backend: FakeBackend(),
+      );
+      await fdroid.initialize();
+      expect(fdroid.needsConsent, true);
+      expect(fdroid.analyticsEnabled || fdroid.diagnosticsEnabled, false);
+      fdroid.dispose();
+    },
+  );
+
   test('diagnostics and analytics are independent and survive restart',
       () async {
     await service.save(diagnostics: true, analytics: false);

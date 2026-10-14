@@ -96,8 +96,8 @@ class ApiService {
     Map<String, Object> properties = const {},
     Duration timeout = _timeout,
   }) async {
-    final analytics = TelemetryService.instance?.consent.analytics ?? false;
-    final diagnostics = TelemetryService.instance?.consent.diagnostics ?? false;
+    final analytics = TelemetryService.instance?.analyticsEnabled ?? false;
+    final diagnostics = TelemetryService.instance?.diagnosticsEnabled ?? false;
     final timer = Stopwatch()..start();
     int? statusCode;
     ApiResult<T> result;

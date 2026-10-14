@@ -12,6 +12,7 @@ class SdkTelemetryBackend implements TelemetryBackend {
   final String posthogToken;
   final String posthogHost;
   final String environment;
+  final String distribution;
   bool _diagnostics = false;
   bool _analytics = false;
 
@@ -20,6 +21,7 @@ class SdkTelemetryBackend implements TelemetryBackend {
     this.posthogToken = config.posthogProjectToken,
     this.posthogHost = config.posthogHost,
     this.environment = 'production',
+    this.distribution = appFlavor ?? 'fdroid',
   });
 
   @override
@@ -57,6 +59,8 @@ class SdkTelemetryBackend implements TelemetryBackend {
         options.replay.onErrorSampleRate = 0;
       });
       await _native.invokeMethod<void>('configureDiagnosticsPrivacy');
+      await Sentry.configureScope(
+          (scope) => scope.setTag('distribution', distribution));
       _diagnostics = true;
     } catch (_) {
       _diagnostics = false;
@@ -135,6 +139,7 @@ class SdkTelemetryBackend implements TelemetryBackend {
     await Posthog().capture(eventName: event, properties: {
       ...properties,
       'app_environment': environment,
+      'app_distribution': distribution,
       '\$geoip_disable': true,
     });
   }

@@ -36,6 +36,7 @@ void main() async {
   final telemetry = TelemetryService(
     preferences: await SharedPreferences.getInstance(),
     backend: SdkTelemetryBackend(),
+    policy: buildTelemetryPolicy,
   );
   TelemetryService.instance = telemetry;
   await telemetry.initialize();

@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import '../../core/constants/app_config.dart';
 
 class AboutView extends StatelessWidget {
@@ -30,7 +31,13 @@ class AboutView extends StatelessWidget {
                 style: TextStyle(fontSize: 37, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 5),
-              const Text('الإصدار 2.0.2', style: TextStyle(fontSize: 18)),
+              FutureBuilder<PackageInfo>(
+                future: PackageInfo.fromPlatform(),
+                builder: (_, snapshot) => snapshot.hasData
+                    ? Text('الإصدار ${snapshot.data!.version}',
+                        style: const TextStyle(fontSize: 18))
+                    : const SizedBox(height: 18),
+              ),
               const SizedBox(height: 20),
               _buildInfoCard(
                 context,

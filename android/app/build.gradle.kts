@@ -50,11 +50,21 @@ android {
         }
     }
 
-    buildTypes {
-        release {
+    flavorDimensions += "distribution"
+    productFlavors {
+        create("play") {
+            dimension = "distribution"
             if (keystorePropertiesFile.exists()) {
                 signingConfig = signingConfigs.getByName("release")
             }
+        }
+        create("fdroid") {
+            dimension = "distribution"
+        }
+    }
+
+    buildTypes {
+        release {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(

@@ -63,7 +63,7 @@ class HadithSearcherApp extends StatelessWidget {
             themeMode: themeMode,
             debugShowCheckedModeBanner: false,
             home: Consumer<TelemetryService>(
-              builder: (context, service, child) => service.consent.decided
+              builder: (context, service, child) => !service.needsConsent
                   ? const MainShell()
                   : const TelemetryConsentView(firstLaunch: true),
             ),

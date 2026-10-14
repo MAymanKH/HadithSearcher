@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../models/settings.dart';
 import '../../viewmodels/settings_viewmodel.dart';
+import '../../services/telemetry/telemetry_service.dart';
 import '../privacy/telemetry_consent_view.dart';
 
 class SettingsView extends StatelessWidget {
@@ -33,7 +34,7 @@ class SettingsView extends StatelessWidget {
                 _buildFontWeightSection(context, vm),
                 _buildFontSizeSection(context, vm),
                 _buildPaddingSection(context, vm),
-                ListTile(
+                if (context.watch<TelemetryService>().canChangeConsent) ListTile(
                   leading: const Icon(Icons.privacy_tip_outlined),
                   title: const Text('الخصوصية والقياس الاختياري'),
                   trailing: const Icon(Icons.chevron_left),
