@@ -7,8 +7,9 @@ import '../../widgets/hadith_card.dart';
 
 class SimilarHadithView extends StatefulWidget {
   final String? hadithId;
+  final bool alternate;
 
-  const SimilarHadithView({super.key, this.hadithId});
+  const SimilarHadithView({super.key, this.hadithId, this.alternate = false});
 
   @override
   State<SimilarHadithView> createState() => _SimilarHadithViewState();
@@ -22,9 +23,10 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
     initScrollController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.hadithId != null) {
-        context
-            .read<SimilarHadithViewModel>()
-            .loadSimilarHadith(widget.hadithId!);
+        context.read<SimilarHadithViewModel>().loadSimilarHadith(
+          widget.hadithId!,
+          alternate: widget.alternate,
+        );
       }
     });
   }
@@ -40,15 +42,17 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
     final vm = context.watch<SimilarHadithViewModel>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('أحاديث مشابهة')),
+      appBar: AppBar(
+        title: Text(widget.alternate ? 'البديل الصحيح' : 'أحاديث مشابهة'),
+      ),
       body: SafeArea(
         top: false,
         child: Center(
           child: vm.isLoading
               ? const CircularProgressIndicator()
               : vm.isEmpty
-                  ? _buildEmptyState(vm)
-                  : _buildResults(vm),
+              ? _buildEmptyState(vm)
+              : _buildResults(vm),
         ),
       ),
       floatingActionButton: buildBackToTopButton(),
@@ -57,14 +61,16 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
 
   Widget _buildEmptyState(SimilarHadithViewModel vm) {
     if (vm.errorMessage == 'noSimilar') {
-      return const Column(
+      return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.content_paste_off, size: 100, color: Colors.grey),
-          SizedBox(height: 20),
+          const Icon(Icons.content_paste_off, size: 100, color: Colors.grey),
+          const SizedBox(height: 20),
           Text(
-            'لا توجد أحاديث مشابهة',
-            style: TextStyle(fontSize: 20, color: Colors.grey),
+            widget.alternate
+                ? 'لا يوجد بديل صحيح متاح'
+                : 'لا توجد أحاديث مشابهة',
+            style: const TextStyle(fontSize: 20, color: Colors.grey),
           ),
         ],
       );
@@ -115,7 +121,10 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
             ElevatedButton.icon(
               onPressed: () {
                 if (widget.hadithId != null) {
-                  vm.loadSimilarHadith(widget.hadithId!);
+                  vm.loadSimilarHadith(
+                    widget.hadithId!,
+                    alternate: widget.alternate,
+                  );
                 }
               },
               icon: const Icon(Icons.refresh),

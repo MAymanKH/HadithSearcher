@@ -9,6 +9,7 @@ class Hadith {
   final String grade;
   final bool hasSharhMetadata;
   final String? sharhId;
+  final bool hasAlternateHadithSahih;
 
   const Hadith({
     required this.id,
@@ -20,6 +21,7 @@ class Hadith {
     required this.grade,
     this.hasSharhMetadata = false,
     this.sharhId,
+    this.hasAlternateHadithSahih = false,
   });
 
   /// Creates a Hadith from API JSON response.
@@ -34,6 +36,7 @@ class Hadith {
       grade: json['grade'] ?? '',
       hasSharhMetadata: json['hasSharhMetadata'] ?? false,
       sharhId: json['sharhMetadata']?['id']?.toString(),
+      hasAlternateHadithSahih: json['hasAlternateHadithSahih'] == true,
     );
   }
 
@@ -54,11 +57,7 @@ class Hadith {
 
   /// Converts to map for database insertion.
   Map<String, dynamic> toDatabase() {
-    return {
-      'hadithid': id,
-      'hadithtext': text,
-      'hadithinfo': formattedInfo,
-    };
+    return {'hadithid': id, 'hadithtext': text, 'hadithinfo': formattedInfo};
   }
 
   /// Formatted hadith info string for display.

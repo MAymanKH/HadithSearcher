@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/database_service.dart';
+import '../services/explanation_service.dart';
 
 /// ViewModel for favourites view.
 class FavouritesViewModel extends ChangeNotifier {
+  FavouritesViewModel() {
+    _db.addListener(_refreshFavourites);
+  }
   final DatabaseService _db = DatabaseService();
-  final ApiService _api = ApiService();
+  bool _disposed = false;
 
   List<FavouriteHadith> _favourites = [];
   bool _isLoading = true;
@@ -33,6 +37,13 @@ class FavouritesViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> _refreshFavourites() async {
+    final favourites = await _db.getFavourites();
+    if (_disposed) return;
+    _favourites = favourites;
+    notifyListeners();
+  }
+
   /// Remove a hadith from favourites.
   Future<String?> removeFavourite(String hadithId) async {
     final success = await _db.removeFavourite(hadithId);
@@ -46,19 +57,13 @@ class FavouritesViewModel extends ChangeNotifier {
   }
 
   /// Get sharh (explanation) for a hadith.
-  Future<ApiResult<String>> getSharh(String hadithId) async {
-    // First get the full hadith to check for sharh metadata
-    final hadithResult = await _api.getHadithById(hadithId);
+  Future<ApiResult<String>> getSharh(String hadithId) =>
+      ExplanationService().getExplanation(hadithId);
 
-    if (hadithResult.isError) {
-      return ApiResult.error(hadithResult.error!);
-    }
-
-    final hadith = hadithResult.data!;
-    if (!hadith.hasSharhMetadata || hadith.sharhId == null) {
-      return ApiResult.error(ApiError.notFound);
-    }
-
-    return _api.getSharh(hadith.sharhId!);
+  @override
+  void dispose() {
+    _disposed = true;
+    _db.removeListener(_refreshFavourites);
+    super.dispose();
   }
 }

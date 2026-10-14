@@ -1,19 +1,25 @@
+import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import 'telemetry/telemetry_service.dart';
 
 /// Service for local SQLite database operations (favourites only).
-class DatabaseService {
+class DatabaseService extends ChangeNotifier {
   static final DatabaseService _instance = DatabaseService._internal();
   factory DatabaseService() => _instance;
   DatabaseService._internal();
 
   static Database? _db;
+  static Future<Database>? _opening;
 
   /// Get database instance, initializing if needed.
   Future<Database> get database async {
-    _db ??= await _initDb();
-    return _db!;
+    try {
+      _db ??= await (_opening ??= _initDb());
+      return _db!;
+    } finally {
+      _opening = null;
+    }
   }
 
   /// Initialize the database.
@@ -23,7 +29,7 @@ class DatabaseService {
 
     return openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -35,7 +41,10 @@ class DatabaseService {
         id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
         hadithtext TEXT NOT NULL,
         hadithinfo TEXT NOT NULL,
-        hadithid TEXT NOT NULL UNIQUE
+        hadithid TEXT NOT NULL UNIQUE,
+        sharhid TEXT,
+        explanation TEXT,
+        hasalternate INTEGER NOT NULL DEFAULT 0
       )
     ''');
   }
@@ -45,6 +54,13 @@ class DatabaseService {
     if (oldVersion < 2) {
       await db.execute('DROP TABLE IF EXISTS settings');
     }
+    if (oldVersion < 3) {
+      await db.execute('ALTER TABLE favourites ADD COLUMN sharhid TEXT');
+      await db.execute('ALTER TABLE favourites ADD COLUMN explanation TEXT');
+      await db.execute(
+        'ALTER TABLE favourites ADD COLUMN hasalternate INTEGER NOT NULL DEFAULT 0',
+      );
+    }
   }
 
   // ==================== FAVOURITES ====================
@@ -53,10 +69,7 @@ class DatabaseService {
   Future<List<FavouriteHadith>> getFavourites() async {
     try {
       final db = await database;
-      final results = await db.query(
-        'favourites',
-        orderBy: 'id DESC',
-      );
+      final results = await db.query('favourites', orderBy: 'id DESC');
 
       return results.map((row) => FavouriteHadith.fromDatabase(row)).toList();
     } catch (error, stack) {
@@ -87,22 +100,24 @@ class DatabaseService {
     required String hadithId,
     required String hadithText,
     required String hadithInfo,
+    String? sharhId,
+    bool hasAlternate = false,
   }) async {
     try {
       final db = await database;
       final inserted = await TelemetryService.trace(
-          'database.addFavourite',
-          () => db.insert(
-                'favourites',
-                {
-                  'hadithid': hadithId,
-                  'hadithtext': hadithText,
-                  'hadithinfo': hadithInfo,
-                },
-                conflictAlgorithm: ConflictAlgorithm.ignore,
-              ));
+        'database.addFavourite',
+        () => db.insert('favourites', {
+          'hadithid': hadithId,
+          'hadithtext': hadithText,
+          'hadithinfo': hadithInfo,
+          'sharhid': sharhId,
+          'hasalternate': hasAlternate ? 1 : 0,
+        }, conflictAlgorithm: ConflictAlgorithm.ignore),
+      );
       if (inserted != 0) {
         TelemetryService.event('favourite_added', {'hadith_id': hadithId});
+        notifyListeners();
       }
       return true;
     } catch (error, stack) {
@@ -116,19 +131,67 @@ class DatabaseService {
     try {
       final db = await database;
       final removed = await TelemetryService.trace(
-          'database.removeFavourite',
-          () => db.delete(
-                'favourites',
-                where: 'hadithid = ?',
-                whereArgs: [hadithId],
-              ));
+        'database.removeFavourite',
+        () => db.delete(
+          'favourites',
+          where: 'hadithid = ?',
+          whereArgs: [hadithId],
+        ),
+      );
       if (removed > 0) {
         TelemetryService.event('favourite_removed', {'hadith_id': hadithId});
+        notifyListeners();
       }
       return true;
     } catch (error, stack) {
       TelemetryService.report(error, stack, 'database.removeFavourite');
       return false;
+    }
+  }
+
+  Future<FavouriteHadith?> getFavourite(String hadithId) async {
+    final db = await database;
+    final rows = await db.query(
+      'favourites',
+      where: 'hadithid = ?',
+      whereArgs: [hadithId],
+      limit: 1,
+    );
+    return rows.isEmpty ? null : FavouriteHadith.fromDatabase(rows.first);
+  }
+
+  Future<bool> restoreFavourite(FavouriteHadith favourite) async {
+    try {
+      final db = await database;
+      await db.insert(
+        'favourites',
+        favourite.toDatabase(),
+        conflictAlgorithm: ConflictAlgorithm.ignore,
+      );
+      notifyListeners();
+      return true;
+    } catch (error, stack) {
+      TelemetryService.report(error, stack, 'database.restoreFavourite');
+      return false;
+    }
+  }
+
+  Future<void> saveExplanation(
+    String hadithId,
+    String sharhId,
+    String explanation,
+  ) async {
+    try {
+      final db = await database;
+      final changed = await db.update(
+        'favourites',
+        {'sharhid': sharhId, 'explanation': explanation},
+        where: 'hadithid = ?',
+        whereArgs: [hadithId],
+      );
+      if (changed > 0) notifyListeners();
+    } catch (error, stack) {
+      TelemetryService.report(error, stack, 'database.saveExplanation');
     }
   }
 
@@ -151,12 +214,18 @@ class FavouriteHadith {
   final String hadithId;
   final String hadithText;
   final String hadithInfo;
+  final String? sharhId;
+  final String? explanation;
+  final bool hasAlternate;
 
   const FavouriteHadith({
     required this.id,
     required this.hadithId,
     required this.hadithText,
     required this.hadithInfo,
+    this.sharhId,
+    this.explanation,
+    this.hasAlternate = false,
   });
 
   factory FavouriteHadith.fromDatabase(Map<String, dynamic> row) {
@@ -165,8 +234,21 @@ class FavouriteHadith {
       hadithId: row['hadithid'] as String,
       hadithText: row['hadithtext'] as String,
       hadithInfo: row['hadithinfo'] as String,
+      sharhId: row['sharhid'] as String?,
+      explanation: row['explanation'] as String?,
+      hasAlternate: row['hasalternate'] == 1,
     );
   }
+
+  Map<String, Object?> toDatabase() => {
+    'id': id,
+    'hadithid': hadithId,
+    'hadithtext': hadithText,
+    'hadithinfo': hadithInfo,
+    'sharhid': sharhId,
+    'explanation': explanation,
+    'hasalternate': hasAlternate ? 1 : 0,
+  };
 
   /// Full text for display.
   String get displayText => '$hadithText\n\n$hadithInfo';

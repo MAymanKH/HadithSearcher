@@ -64,6 +64,16 @@ class ApiService {
     );
   }
 
+  Future<ApiResult<Hadith>> getAlternateHadith(String hadithId) => _get(
+    '/v1/site/hadith/alternate/$hadithId',
+    operation: 'alternate_hadith',
+    event: 'alternate_hadith_completed',
+    properties: {'hadith_id': hadithId},
+    parse: (json) => json['data'] == null
+        ? ApiResult.error(ApiError.notFound)
+        : ApiResult.success(Hadith.fromJson(json['data'])),
+  );
+
   Future<ApiResult<String>> getSharh(String sharhId) {
     TelemetryService.event('explanation_requested', {'sharh_id': sharhId});
     return _get(

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6,9 +7,14 @@ import '../models/search_params.dart';
 import '../models/search_option.dart';
 import '../services/api_service.dart';
 import '../services/database_service.dart';
+import '../services/explanation_service.dart';
 
 /// ViewModel for hadith search functionality.
 class SearchViewModel extends ChangeNotifier {
+  SearchViewModel() {
+    _db.addListener(_refreshFavouriteIds);
+  }
+
   final ApiService _api = ApiService();
   final DatabaseService _db = DatabaseService();
 
@@ -240,6 +246,13 @@ class SearchViewModel extends ChangeNotifier {
     _favouriteIds = await _db.getFavouriteIds();
   }
 
+  Future<void> _refreshFavouriteIds() async {
+    final ids = await _db.getFavouriteIds();
+    if (_disposed) return;
+    _favouriteIds = ids;
+    notifyListeners();
+  }
+
   /// Check if a hadith is favourited.
   bool isFavourite(String hadithId) => _favouriteIds.contains(hadithId);
 
@@ -339,8 +352,18 @@ class SearchViewModel extends ChangeNotifier {
         hadithId: hadith.id,
         hadithText: hadith.text,
         hadithInfo: hadith.formattedInfo,
+        sharhId: hadith.sharhId,
+        hasAlternate: hadith.hasAlternateHadithSahih,
       );
       if (success) {
+        if (hadith.sharhId != null) {
+          unawaited(
+            ExplanationService().getExplanation(
+              hadith.id,
+              sharhId: hadith.sharhId,
+            ),
+          );
+        }
         _favouriteIds.add(hadith.id);
         notifyListeners();
         return null;
@@ -461,6 +484,7 @@ class SearchViewModel extends ChangeNotifier {
   @override
   void dispose() {
     _disposed = true;
+    _db.removeListener(_refreshFavouriteIds);
     _searchGeneration++;
     super.dispose();
   }
