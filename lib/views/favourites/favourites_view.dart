@@ -195,13 +195,6 @@ class _FavouriteHadithCard extends StatelessWidget {
           _buildActionRow1(context),
           const SizedBox(height: 10),
           _buildActionRow2(context),
-          if (favourite.explanation != null) ...[
-            const SizedBox(height: 10),
-            const Text(
-              'الشرح محفوظ للقراءة دون اتصال',
-              style: TextStyle(fontSize: 12),
-            ),
-          ],
           if (favourite.hasAlternate) ...[
             const SizedBox(height: 10),
             _ActionButton(
