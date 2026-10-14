@@ -431,7 +431,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
                       style: TextStyle(fontSize: 20, color: Colors.grey),
                     ),
                   ],
-                ),
+                ).animate().fade(duration: 200.ms),
               ),
             ),
           ),
