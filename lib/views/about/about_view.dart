@@ -29,12 +29,6 @@ class AboutView extends StatelessWidget {
             children: [
               const SizedBox(height: 16),
               const AppLogo(size: 128),
-              const SizedBox(height: 16),
-              const Text(
-                'Hadith Searcher',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 37, fontWeight: FontWeight.bold),
-              ),
               const SizedBox(height: 20),
               _buildInfoCard(
                 context,
