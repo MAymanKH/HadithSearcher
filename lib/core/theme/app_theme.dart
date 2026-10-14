@@ -37,6 +37,8 @@ class AppTheme {
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         systemOverlayStyle: systemUiOverlayStyle(Brightness.light),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
@@ -85,6 +87,8 @@ class AppTheme {
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         elevation: 0,
+        scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         systemOverlayStyle: systemUiOverlayStyle(Brightness.dark),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
