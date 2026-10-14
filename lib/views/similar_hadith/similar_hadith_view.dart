@@ -41,12 +41,15 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
 
     return Scaffold(
       appBar: AppBar(title: const Text('أحاديث مشابهة')),
-      body: Center(
-        child: vm.isLoading
-            ? const CircularProgressIndicator()
-            : vm.isEmpty
-                ? _buildEmptyState(vm)
-                : _buildResults(vm),
+      body: SafeArea(
+        top: false,
+        child: Center(
+          child: vm.isLoading
+              ? const CircularProgressIndicator()
+              : vm.isEmpty
+                  ? _buildEmptyState(vm)
+                  : _buildResults(vm),
+        ),
       ),
       floatingActionButton: buildBackToTopButton(),
     );

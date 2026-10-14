@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 import 'core/constants/routes.dart';
@@ -62,6 +63,16 @@ class HadithSearcherApp extends StatelessWidget {
             darkTheme: AppTheme.darkTheme,
             themeMode: themeMode,
             debugShowCheckedModeBanner: false,
+            builder: (context, child) {
+              final theme = Theme.of(context);
+              return AnnotatedRegion<SystemUiOverlayStyle>(
+                value: AppTheme.systemUiOverlayStyle(theme.brightness),
+                child: ColoredBox(
+                  color: theme.scaffoldBackgroundColor,
+                  child: SafeArea(top: false, bottom: false, child: child!),
+                ),
+              );
+            },
             home: Consumer<TelemetryService>(
               builder: (context, service, child) => !service.needsConsent
                   ? const MainShell()

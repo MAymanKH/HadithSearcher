@@ -1,8 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 /// App theme configuration.
 class AppTheme {
   AppTheme._();
+
+  static SystemUiOverlayStyle systemUiOverlayStyle(Brightness brightness) {
+    final icons = brightness == Brightness.dark
+        ? Brightness.light
+        : Brightness.dark;
+    return SystemUiOverlayStyle(
+      statusBarBrightness: brightness,
+      statusBarIconBrightness: icons,
+      systemNavigationBarIconBrightness: icons,
+      systemStatusBarContrastEnforced: false,
+      systemNavigationBarContrastEnforced: true,
+    );
+  }
 
   /// Light theme.
   static ThemeData get lightTheme {
@@ -19,10 +33,11 @@ class AppTheme {
         ),
       ),
       scaffoldBackgroundColor: Colors.white,
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: Colors.white,
         foregroundColor: Colors.black,
         elevation: 0,
+        systemOverlayStyle: systemUiOverlayStyle(Brightness.light),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: TextButton.styleFrom(
@@ -66,10 +81,11 @@ class AppTheme {
         ),
       ),
       scaffoldBackgroundColor: Colors.black,
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
         elevation: 0,
+        systemOverlayStyle: systemUiOverlayStyle(Brightness.dark),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: TextButton.styleFrom(

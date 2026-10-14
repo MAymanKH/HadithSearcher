@@ -57,9 +57,10 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
   }
 
   Widget _buildEmptyState() {
-    return Container(
-      margin: const EdgeInsets.all(20),
+    return SingleChildScrollView(
+      padding: const EdgeInsets.all(20),
       child: const Column(
+        mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.star_border, size: 140),

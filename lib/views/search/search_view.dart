@@ -377,16 +377,18 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     if (vm.isEmpty) {
       return const Expanded(
         child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.search, size: 100, color: Colors.grey),
-              SizedBox(height: 20),
-              Text(
-                'ابحث عن حديث',
-                style: TextStyle(fontSize: 20, color: Colors.grey),
-              ),
-            ],
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(Icons.search, size: 100, color: Colors.grey),
+                SizedBox(height: 20),
+                Text(
+                  'ابحث عن حديث',
+                  style: TextStyle(fontSize: 20, color: Colors.grey),
+                ),
+              ],
+            ),
           ),
         ),
       );

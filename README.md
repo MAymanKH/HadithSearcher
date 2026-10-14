@@ -125,6 +125,8 @@ flutter test integration_test/distribution_test.dart --flavor play -d emulator-5
 
 اختبار `integration_test/cloud_telemetry_test.dart` متوقف افتراضياً. تشغيله مع `--dart-define=VERIFY_TELEMETRY_CLOUD=true` يرسل حدثاً اصطناعياً إلى الحسابين المهيأين في المصدر، تحت بيئة `verification`.
 
+تفاصيل معالجة عرض الحواف وتحذيرات Google Play وخطوات التحقق موجودة في [دليل Android edge-to-edge](docs/android-edge-to-edge.md).
+
 ## الترخيص
 
 هذا المشروع مرخص بموجب [رخصة GNU العمومية الإصدار 3](LICENSE) - برنامج حر ومفتوح المصدر.
