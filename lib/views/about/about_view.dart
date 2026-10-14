@@ -103,7 +103,7 @@ class AboutView extends StatelessWidget {
               recognizer: TapGestureRecognizer()
                 ..onTap = () => _launchUrl(
                   Uri.parse(
-                    'https://github.com/AhmedElTabarani/dorar-hadith-api',
+                    'https://github.com/MAymanKH/dorar-hadith-api',
                   ),
                 ),
             ),
