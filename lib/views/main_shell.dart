@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/telemetry/telemetry_service.dart';
+import '../services/shared_text_service.dart';
 import 'about/about_view.dart';
 import 'favourites/favourites_view.dart';
 import 'search/search_view.dart';
@@ -18,18 +19,35 @@ class MainShell extends StatefulWidget {
 class _MainShellState extends State<MainShell> {
   late int _currentIndex;
 
-  final List<Widget> _pages = const [
-    SearchView(),
-    FavouritesView(),
-    SettingsView(),
-    AboutView(),
-  ];
+  String? _sharedText;
+  int _shareRevision = 0;
 
   @override
   void initState() {
     super.initState();
     _currentIndex = widget.initialIndex;
     _trackScreen(_currentIndex);
+    SharedTextService.instance.addListener(_acceptSharedText);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _acceptSharedText());
+  }
+
+  void _acceptSharedText() {
+    if (!mounted) return;
+    final text = SharedTextService.instance.takePendingText();
+    if (text == null) return;
+    Navigator.of(context).popUntil((route) => route.isFirst);
+    setState(() {
+      _sharedText = text;
+      _shareRevision = SharedTextService.instance.revision;
+      _currentIndex = 0;
+    });
+    _trackScreen(0);
+  }
+
+  @override
+  void dispose() {
+    SharedTextService.instance.removeListener(_acceptSharedText);
+    super.dispose();
   }
 
   void _trackScreen(int index) {
@@ -40,6 +58,12 @@ class _MainShellState extends State<MainShell> {
 
   @override
   Widget build(BuildContext context) {
+    final pages = [
+      SearchView(sharedText: _sharedText, shareRevision: _shareRevision),
+      const FavouritesView(),
+      const SettingsView(),
+      const AboutView(),
+    ];
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final activeColor = isDark ? Colors.black : Colors.white;
 
@@ -49,14 +73,11 @@ class _MainShellState extends State<MainShell> {
         switchInCurve: Curves.easeInOut,
         switchOutCurve: Curves.easeInOut,
         transitionBuilder: (child, animation) {
-          return FadeTransition(
-            opacity: animation,
-            child: child,
-          );
+          return FadeTransition(opacity: animation, child: child);
         },
         child: KeyedSubtree(
           key: ValueKey<int>(_currentIndex),
-          child: _pages[_currentIndex],
+          child: pages[_currentIndex],
         ),
       ),
       bottomNavigationBar: NavigationBar(

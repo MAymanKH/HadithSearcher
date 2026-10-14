@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'app.dart';
+import 'services/shared_text_service.dart';
 import 'services/database_service.dart';
 import 'services/settings_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -41,6 +42,8 @@ void main() async {
   );
   TelemetryService.instance = telemetry;
   await telemetry.initialize();
+
+  await SharedTextService.instance.initialize();
 
   // Initialize database (for favourites)
   final db = DatabaseService();

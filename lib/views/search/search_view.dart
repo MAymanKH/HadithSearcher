@@ -10,7 +10,9 @@ import '../../widgets/back_to_top_button.dart';
 import '../../widgets/hadith_card.dart';
 
 class SearchView extends StatefulWidget {
-  const SearchView({super.key});
+  final String? sharedText;
+  final int shareRevision;
+  const SearchView({super.key, this.sharedText, this.shareRevision = 0});
 
   @override
   State<SearchView> createState() => _SearchViewState();
@@ -33,10 +35,27 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
       if (!mounted) return;
       unawaited(vm.refreshFilterCatalogs());
       if (mounted) {
+        if (widget.sharedText != null) {
+          vm.prepareSharedSearch(widget.sharedText!, widget.shareRevision);
+        }
         _textController.text = vm.searchQuery;
         _excludedWordsController.text = vm.excludedWords;
       }
     });
+  }
+
+  @override
+  void didUpdateWidget(SearchView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.shareRevision != oldWidget.shareRevision &&
+        widget.sharedText != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        final vm = context.read<SearchViewModel>();
+        vm.prepareSharedSearch(widget.sharedText!, widget.shareRevision);
+        _textController.text = vm.searchQuery;
+      });
+    }
   }
 
   void _loadNearEnd() {

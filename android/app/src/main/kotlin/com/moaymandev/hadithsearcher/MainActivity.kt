@@ -1,6 +1,7 @@
 package com.moaymandev.hadithsearcher
 
 import android.os.Bundle
+import android.content.Intent
 import androidx.core.view.WindowCompat
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
@@ -9,13 +10,46 @@ import io.sentry.Sentry
 import java.io.File
 
 class MainActivity : FlutterActivity() {
+    private var sharedTextChannel: MethodChannel? = null
+    private var pendingSharedText: String? = null
+    private var shareListenerReady = false
+
+    private fun receiveSharedText(intent: Intent?) {
+        if (intent?.action != Intent.ACTION_SEND || intent.type != "text/plain") return
+        val text = intent.getCharSequenceExtra(Intent.EXTRA_TEXT)?.toString()?.trim()
+        if (text.isNullOrEmpty()) return
+        if (shareListenerReady) {
+            sharedTextChannel?.invokeMethod("sharedText", text)
+        } else {
+            pendingSharedText = text
+        }
+        intent.removeExtra(Intent.EXTRA_TEXT)
+    }
+
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        setIntent(intent)
+        receiveSharedText(intent)
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         WindowCompat.enableEdgeToEdge(window)
+        receiveSharedText(intent)
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        sharedTextChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "hadithsearcher/shared_text")
+        sharedTextChannel?.setMethodCallHandler { call, result ->
+            if (call.method == "consumeSharedText") {
+                shareListenerReady = true
+                result.success(pendingSharedText)
+                pendingSharedText = null
+            } else {
+                result.notImplemented()
+            }
+        }
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "hadithsearcher/telemetry")
             .setMethodCallHandler { call, result ->
                 when (call.method) {

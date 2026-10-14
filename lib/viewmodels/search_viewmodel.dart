@@ -27,6 +27,7 @@ class SearchViewModel extends ChangeNotifier {
   String? _errorMessage;
   SearchParams? _currentParams;
   int _searchGeneration = 0;
+  int _lastShareRevision = 0;
   bool _initialized = false;
   bool _disposed = false;
   bool _catalogsRequested = false;
@@ -238,6 +239,20 @@ class SearchViewModel extends ChangeNotifier {
     _searchMohdith = SearchOption.allScholars;
     _searchBook = SearchOption.allBooks;
     _excludedWords = '';
+    notifyListeners();
+  }
+
+  void prepareSharedSearch(String text, int revision) {
+    if (revision == _lastShareRevision) return;
+    _lastShareRevision = revision;
+    _searchGeneration++;
+    _searchQuery = text;
+    _results = [];
+    _currentParams = null;
+    _errorMessage = null;
+    _isLoading = false;
+    _isLoadingMore = false;
+    _isAdvancedSearchOpen = false;
     notifyListeners();
   }
 
