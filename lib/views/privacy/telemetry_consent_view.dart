@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/constants/app_config.dart';
-import '../../widgets/app_link.dart';
 import '../../widgets/app_logo.dart';
 import '../../services/telemetry/telemetry_service.dart';
 
@@ -131,9 +130,9 @@ class _TelemetryConsentViewState extends State<TelemetryConsentView> {
                         child: const Text('متابعة'),
                       ),
                       const SizedBox(height: 8),
-                      AppLink(
+                      TextButton(
                         onPressed: _openPrivacyPolicy,
-                        label: 'سياسة الخصوصية',
+                        child: const Text('سياسة الخصوصية'),
                       ),
                     ],
                   ),
