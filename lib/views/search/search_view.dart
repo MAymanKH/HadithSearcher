@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
@@ -33,7 +32,6 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
       final vm = context.read<SearchViewModel>();
       await vm.init();
       if (!mounted) return;
-      unawaited(vm.refreshFilterCatalogs());
       if (mounted) {
         if (widget.sharedText != null) {
           vm.prepareSharedSearch(widget.sharedText!, widget.shareRevision);
@@ -212,16 +210,19 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
               (value) => vm.setSearchGrade(SearchGrade.fromArabic(value!)),
             ),
             _buildCatalogField(
-              'المحدث',
+              SearchFilter.scholar,
               vm.searchMohdith,
-              vm.scholars,
               vm.setSearchMohdith,
             ),
             _buildCatalogField(
-              'الكتاب',
+              SearchFilter.book,
               vm.searchBook,
-              vm.books,
               vm.setSearchBook,
+            ),
+            _buildCatalogField(
+              SearchFilter.narrator,
+              vm.searchRawi,
+              vm.setSearchRawi,
             ),
             _buildExcludedWordsField(vm),
             _buildSaveCheckbox(vm),
@@ -264,9 +265,8 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
   );
 
   Widget _buildCatalogField(
-    String label,
+    SearchFilter filter,
     SearchOption selected,
-    List<SearchOption> options,
     void Function(SearchOption) onChanged,
   ) => Padding(
     padding: const EdgeInsets.all(10),
@@ -275,15 +275,16 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
       onTap: () async {
         final value = await showSearchOptionPicker(
           context,
-          title: label,
-          options: options,
+          filter: filter,
+          loadOptions: () =>
+              context.read<SearchViewModel>().loadFilterOptions(filter),
           selected: selected,
         );
         if (mounted && value != null) onChanged(value);
       },
       child: InputDecorator(
         decoration: InputDecoration(
-          labelText: label,
+          labelText: filter.arabicName,
           suffixIcon: const Icon(Icons.search),
         ),
         child: Text(

@@ -151,6 +151,61 @@ void main() {
     );
   }
 
+  testWidgets('narrator picker loads on demand and applies its API code', (
+    tester,
+  ) async {
+    final requests = <Uri>[];
+    await http.runWithClient(
+      () async {
+        await mount(tester);
+        expect(requests, isEmpty);
+        await tester.enterText(find.byType(TextField), 'query');
+        await tester.tap(find.byTooltip('البحث المتقدم'));
+        await tester.pumpAndSettle();
+        expect(requests, isEmpty);
+        await tester.ensureVisible(find.text('جميع الرواة'));
+        await tester.tap(find.text('جميع الرواة'));
+        await tester.pump();
+        await tester.runAsync(() async {
+          for (var i = 0; i < 200; i++) {
+            await tester.pump();
+            if (find.byType(LinearProgressIndicator).evaluate().isEmpty) break;
+            await Future<void>.delayed(const Duration(milliseconds: 10));
+          }
+        });
+        await tester.pumpAndSettle();
+        expect(requests.map((url) => url.path), ['/v1/data/rawi']);
+        await tester.tap(find.text('عمر بن الخطاب'));
+        await tester.pumpAndSettle();
+        await tester.tap(find.byTooltip('البحث المتقدم'));
+        await tester.pumpAndSettle();
+        expect(requests.last.queryParameters['rawi[]'], '8918');
+        expect(find.widgetWithText(Chip, 'عمر بن الخطاب'), findsOneWidget);
+        expect(tester.takeException(), isNull);
+        await tester.pumpWidget(const SizedBox());
+      },
+      () => MockClient((request) async {
+        requests.add(request.url);
+        return http.Response(
+          jsonEncode(
+            request.url.path == '/v1/data/rawi'
+                ? {
+                    'data': [
+                      {'key': '8918', 'value': 'عمر بن الخطاب'},
+                    ],
+                  }
+                : {
+                    'metadata': {'hasNextPage': false},
+                    'data': [],
+                  },
+          ),
+          200,
+          headers: {'content-type': 'application/json; charset=utf-8'},
+        );
+      }),
+    );
+  });
+
   testWidgets('advanced controls fit a narrow phone', (tester) async {
     await mount(tester);
     await tester.tap(find.byTooltip('البحث المتقدم'));

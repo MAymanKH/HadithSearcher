@@ -9,6 +9,7 @@ class SearchParams {
   final SearchGrade searchGrade;
   final SearchOption searchMohdith;
   final SearchOption searchBook;
+  final SearchOption searchRawi;
   final String excludedWords;
 
   const SearchParams({
@@ -19,6 +20,7 @@ class SearchParams {
     this.searchGrade = SearchGrade.all,
     this.searchMohdith = SearchOption.allScholars,
     this.searchBook = SearchOption.allBooks,
+    this.searchRawi = SearchOption.allNarrators,
     this.excludedWords = '',
   });
 
@@ -32,6 +34,7 @@ class SearchParams {
       searchGrade: searchGrade,
       searchMohdith: searchMohdith,
       searchBook: searchBook,
+      searchRawi: searchRawi,
       excludedWords: excludedWords,
     );
   }
@@ -46,6 +49,7 @@ class SearchParams {
       searchGrade: searchGrade,
       searchMohdith: searchMohdith,
       searchBook: searchBook,
+      searchRawi: searchRawi,
       excludedWords: excludedWords,
     );
   }
@@ -60,6 +64,7 @@ class SearchParams {
       'd[]': searchGrade.apiCode,
       'm[]': searchMohdith.apiCode,
       's[]': searchBook.apiCode,
+      'rawi[]': searchRawi.apiCode,
     };
 
     // Add excluded words if present
@@ -80,6 +85,7 @@ class SearchParams {
     buffer.write('&d[]=${searchGrade.apiCode}');
     buffer.write('&m[]=${searchMohdith.apiCode}');
     buffer.write('&s[]=${searchBook.apiCode}');
+    buffer.write('&rawi[]=${searchRawi.apiCode}');
     if (excludedWords.isNotEmpty) {
       buffer.write(excludedWords);
     }

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import '../core/constants/app_config.dart';
 import 'package:http/http.dart' as http;
 import '../models/hadith.dart';
@@ -28,6 +29,7 @@ class ApiService {
       'grade': params.searchGrade.name,
       'mohdith': params.searchMohdith.apiCode,
       'book': params.searchBook.apiCode,
+      'rawi': params.searchRawi.apiCode,
     };
     if (params.page == 1) {
       TelemetryService.event('search_submitted', properties);
@@ -46,11 +48,8 @@ class ApiService {
     '/v1/data/$kind',
     operation: 'filter_catalog',
     event: 'filter_catalog_completed',
-    parse: (json) => ApiResult.success(
-      (json as List)
-          .map((item) => SearchOption.fromJson(item as Map<String, dynamic>))
-          .toList(),
-    ),
+    decode: (body) => compute(SearchOption.decodeCatalog, body),
+    parse: (options) => ApiResult.success(options as List<SearchOption>),
   );
 
   Future<ApiResult<List<Hadith>>> getSimilarHadith(String hadithId) {
@@ -123,6 +122,7 @@ class ApiService {
     required String operation,
     required String event,
     required ApiResult<T> Function(dynamic) parse,
+    FutureOr<dynamic> Function(String) decode = jsonDecode,
     Map<String, String>? query,
     Map<String, Object> properties = const {},
     Duration timeout = _timeout,
@@ -150,7 +150,7 @@ class ApiService {
           }
           return ApiResult<T>.error(ApiError.unknown);
         }
-        return parse(jsonDecode(utf8.decode(response.bodyBytes)));
+        return parse(await decode(utf8.decode(response.bodyBytes)));
       });
     } on http.ClientException {
       result = ApiResult.error(ApiError.noConnection);
