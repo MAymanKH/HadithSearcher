@@ -48,6 +48,26 @@ void main() {
     expect(restored.attribution, contains(hadith.book));
     expect(restored.attribution, contains(hadith.numberOrPage));
     expect(HadithCitation.tryParse('legacy citation'), isNull);
+    const sharedText =
+        'Hadith text\n\n'
+        'حكم Scholar: Exact source grading\nincluding additional details\n'
+        'الراوي: Narrator\nالمصدر: Source، الصفحة أو الرقم: 1/2';
+    expect(hadith.shareText, sharedText);
+    final saved = FavouriteHadith.fromDatabase({
+      'id': 1,
+      ...hadith.toDatabase(),
+    });
+    expect(saved.shareText, sharedText);
+    const legacy = FavouriteHadith(
+      id: 2,
+      hadithId: 'legacy',
+      hadithText: 'Legacy text',
+      hadithInfo: 'Legacy citation\nUnstructured extra details',
+    );
+    expect(
+      legacy.shareText,
+      'Legacy text\n\nLegacy citation\nUnstructured extra details',
+    );
   });
 
   for (final mode in ['light', 'dark']) {

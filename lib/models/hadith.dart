@@ -74,9 +74,7 @@ class Hadith {
   String get formattedInfo => citation.formattedInfo;
 
   /// Full text for sharing.
-  String get shareText {
-    return '$text\n\n$formattedInfo';
-  }
+  String get shareText => '$text\n\n${citation.combinedInfo}';
 
   @override
   bool operator ==(Object other) =>

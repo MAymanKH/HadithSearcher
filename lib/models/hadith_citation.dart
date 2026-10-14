@@ -37,6 +37,8 @@ class HadithCitation {
   String get attribution =>
       'الراوي: $rawi\nالمصدر: $book، الصفحة أو الرقم: $numberOrPage';
 
+  String get combinedInfo => '$grading\n$attribution';
+
   String get formattedInfo =>
       'الراوي: $rawi\n'
       'المحدث: $mohdith\n'

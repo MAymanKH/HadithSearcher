@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
+import '../models/hadith_citation.dart';
 import 'telemetry/telemetry_service.dart';
 
 /// Service for local SQLite database operations (favourites only).
@@ -254,5 +255,8 @@ class FavouriteHadith {
   String get displayText => '$hadithText\n\n$hadithInfo';
 
   /// Full text for sharing.
-  String get shareText => '$hadithText\n\n$hadithInfo';
+  String get shareText {
+    final citation = HadithCitation.tryParse(hadithInfo);
+    return '$hadithText\n\n${citation?.combinedInfo ?? hadithInfo}';
+  }
 }
