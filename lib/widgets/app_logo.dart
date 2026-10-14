@@ -8,14 +8,14 @@ class AppLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return SvgPicture.asset(
-      'assets/icons/logo.svg',
+      isDark ? 'assets/icons/logo.svg' : 'assets/icons/logo_light.svg',
       width: size,
       height: size,
-      colorFilter: ColorFilter.mode(
-        Theme.of(context).colorScheme.onSurface,
-        BlendMode.srcIn,
-      ),
+      colorFilter: isDark
+          ? const ColorFilter.mode(Colors.white, BlendMode.srcIn)
+          : null,
       excludeFromSemantics: true,
     );
   }
