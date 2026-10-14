@@ -1,0 +1,51 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:hadithsearcher/core/theme/app_theme.dart';
+import 'package:hadithsearcher/services/database_service.dart';
+import 'package:hadithsearcher/widgets/favourite_undo.dart';
+
+void main() {
+  for (final mode in ['light', 'dark']) {
+    testWidgets('undo is readable and expires in $mode mode', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          theme: mode == 'dark' ? AppTheme.darkTheme : AppTheme.lightTheme,
+          home: Scaffold(
+            body: Builder(
+              builder: (context) => TextButton(
+                onPressed: () => showFavouriteUndo(
+                  context,
+                  const FavouriteHadith(
+                    id: 1,
+                    hadithId: 'example',
+                    hadithText: 'text',
+                    hadithInfo: 'info',
+                  ),
+                ),
+                child: const Text('Remove'),
+              ),
+            ),
+          ),
+        ),
+      );
+      await tester.tap(find.text('Remove'));
+      await tester.pumpAndSettle();
+      final actionText = tester.widget<RichText>(
+        find.descendant(
+          of: find.byType(SnackBarAction),
+          matching: find.byType(RichText),
+        ),
+      );
+      expect(
+        actionText.text.style!.color,
+        mode == 'dark' ? Colors.black : Colors.white,
+      );
+      await tester.pump(const Duration(seconds: 3));
+      expect(find.text('تراجع'), findsOneWidget);
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpAndSettle();
+      expect(find.byType(SnackBar), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+  }
+}
