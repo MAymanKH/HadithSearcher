@@ -412,43 +412,53 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
 
     if (vm.isEmpty) {
       return Expanded(
-        child: ListView(
-          padding: const EdgeInsets.all(20),
-          children: [
-            const SizedBox(height: 40),
-            const Icon(Icons.search, size: 100, color: Colors.grey),
-            const Text(
-              'ابحث عن حديث',
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 20, color: Colors.grey),
-            ),
-            if (vm.recentSearches.isNotEmpty) ...[
-              const SizedBox(height: 30),
-              Row(
-                children: [
-                  const Expanded(child: Text('عمليات البحث الأخيرة')),
-                  TextButton(
-                    onPressed: vm.clearRecentSearches,
-                    child: const Text('مسح السجل'),
-                  ),
-                ],
-              ),
-              ...vm.recentSearches.map(
-                (query) => ListTile(
-                  leading: const Icon(Icons.history),
-                  title: Text(
-                    query,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  onTap: () {
-                    _textController.text = query;
-                    _onSearch();
-                  },
+        child: LayoutBuilder(
+          builder: (context, constraints) => SingleChildScrollView(
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: constraints.maxHeight),
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.search, size: 100, color: Colors.grey),
+                    const Text(
+                      'ابحث عن حديث',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 20, color: Colors.grey),
+                    ),
+                    if (vm.recentSearches.isNotEmpty) ...[
+                      const SizedBox(height: 30),
+                      Row(
+                        children: [
+                          const Expanded(child: Text('عمليات البحث الأخيرة')),
+                          TextButton(
+                            onPressed: vm.clearRecentSearches,
+                            child: const Text('مسح السجل'),
+                          ),
+                        ],
+                      ),
+                      ...vm.recentSearches.map(
+                        (query) => ListTile(
+                          leading: const Icon(Icons.history),
+                          title: Text(
+                            query,
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          onTap: () {
+                            _textController.text = query;
+                            _onSearch();
+                          },
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
-            ],
-          ],
+            ),
+          ),
         ),
       );
     }
