@@ -60,11 +60,7 @@ cd HadithSearcher
 
 ### 2. إعداد الخدمات
 
-رابط API الافتراضي موجود في `lib/core/constants/app_config.dart`، ومفاتيح إرسال Sentry وPostHog العامة موجودة في `lib/core/constants/telemetry_config.dart`. لا يحتاج البناء إلى ملف `.env`. تستخدم نسخة Google Play خدمة Shorebird، وتستخدم نسخة F-Droid مكتبة Flutter القياسية. لا تضع رموز إدارة الحسابات أو مفاتيح التوقيع الخاصة في ملفات المصدر.
-
-في نسخة F-Droid تتوقف تقارير الأعطال وإحصاءات الاستخدام افتراضياً، ويسأل التطبيق عند أول تشغيل، ويمكن تغيير كل اختيار من الإعدادات. في نسخة Google Play تعمل الخدمتان تلقائياً ولا تظهر شاشة الموافقة أو خيارات إيقاف القياس. تشمل الإحصاءات كلمات البحث والمرشحات ومعرّفات الأحاديث المتفاعل معها. يستخدم المتجران رابط سياسة الخصوصية نفسه.
-
-استخدم Flutter **3.47.2** لنسخة F-Droid. يحدد سكربت الإصدار Flutter **3.47.7** لنسخة Shorebird. يعتمد بناء Android على Gradle 8.14.3 وAndroid Gradle Plugin 8.11.1 وKotlin 2.2.20، مع الاعتماديات المحددة في `pubspec.lock`.
+رابط API الافتراضي موجود في `lib/core/constants/app_config.dart`، ومفاتيح إرسال Sentry وPostHog العامة موجودة في `lib/core/constants/telemetry_config.dart`. لا يحتاج البناء إلى ملف `.env`. لا تضع رموز إدارة الحسابات أو مفاتيح التوقيع الخاصة في ملفات المصدر.
 
 ### 3. تثبيت الاعتماديات
 
@@ -76,7 +72,7 @@ flutter pub get
 
 ```bash
 flutter run --flavor fdroid
-# لتجربة واجهة نسخة Google Play:
+# لتشغيل نسخة Google Play:
 flutter run --flavor play
 ```
 
@@ -98,34 +94,22 @@ flutter build ios --release
 
 | الأمر | الناتج |
 | --- | --- |
-| `./scripts/release.py play` | ملف AAB موقع مع Shorebird، وتسجيل الإصدار في حساب Shorebird الحالي |
-| `./scripts/release.py fdroid` | ملف APK غير موقع، دون Shorebird، مع شاشة الموافقة وإعدادات القياس |
+| `./scripts/release.py play` | ملف AAB لنسخة Google Play، وتسجيل الإصدار في Shorebird |
+| `./scripts/release.py fdroid` | ملف APK لنسخة F-Droid |
 | `./scripts/release.py all` | بناء نسختي المتجرين بالتتابع |
 | `./scripts/release.py play --dry-run` | بناء ملف Play دون تسجيل إصدار على الخادم |
 | `./scripts/release.py patch-play` | إرسال تحديث Dart لإصدار Play المحدد حالياً في `pubspec.yaml` |
 
-يحفظ السكربت ملفات المتجرين في `build/releases/play/` و`build/releases/fdroid/` بأسماء تتضمن رقم الإصدار. لا يرفع الملفات إلى Google Play أو F-Droid. يتطلب Play ملف `android/key.properties` ومفتاح التوقيع المحلي، بينما تبقى نسخة F-Droid غير موقعة حتى عند وجودهما. لا تُضمّن بيانات التوقيع الخاصة في المصدر.
+يحفظ السكربت ملفات المتجرين في `build/releases/play/` و`build/releases/fdroid/` بأسماء تتضمن رقم الإصدار. لا يرفع الملفات إلى Google Play أو F-Droid. لبناء نسخة Play، جهّز ملف `android/key.properties` ومفتاح التوقيع المحلي. لا تُضمّن بيانات التوقيع الخاصة في المصدر.
 
-يبني السكربت نسخة Play في مجلد مؤقت لتوافق فحص أصول Shorebird مع أصل خاص بالنكهة. لا يغير ملف `pubspec.yaml` الأصلي، ولا ينشئ تطبيق Shorebird لنسخة F-Droid. يتحقق من نوع محرك Flutter ووجود إعداد Shorebird أو غيابه داخل الناتج قبل حفظه.
+نسخة F-Droid متوافقة مع سياسات F-Droid. للبناء المباشر استخدم `flutter build apk --release --flavor fdroid`، والناتج هو `build/app/outputs/flutter-apk/app-fdroid-release.apk`.
 
-للبناء المباشر في F-Droid استخدم `flutter build apk --release --flavor fdroid`، والناتج هو `build/app/outputs/flutter-apk/app-fdroid-release.apk`. النكهة الافتراضية هي `fdroid` إذا لم تحدد نكهة. يستخدم المتجران معرّف Android نفسه، لكن مفتاح توقيع F-Droid قد يختلف عن مفتاح Play.
-
-المكتبتان Sentry وPostHog مرخصتان بـ MIT. في F-Droid تتوقف المكتبتان قبل الموافقة، ولا تُضمّن إعدادات Shorebird أو محركه. لا تستخدم أي نسخة تسجيل الشاشة. أهلية المستودع الرسمي تخضع أيضاً لفحص F-Droid للبناء والتراخيص والخدمات والأصول.
-
-للتحقق من اختيار المستخدم والبيانات المرسلة:
+للتحقق من المشروع:
 
 ```bash
 flutter analyze
 flutter test test
-flutter test integration_test/telemetry_test.dart --flavor fdroid -d emulator-5554
-flutter test integration_test/distribution_test.dart --flavor fdroid -d emulator-5554
-flutter test integration_test/distribution_test.dart --flavor play -d emulator-5554
-./scripts/release.py all --dry-run
 ```
-
-اختبار `integration_test/cloud_telemetry_test.dart` متوقف افتراضياً. تشغيله مع `--dart-define=VERIFY_TELEMETRY_CLOUD=true` يرسل حدثاً اصطناعياً إلى الحسابين المهيأين في المصدر، تحت بيئة `verification`.
-
-تفاصيل معالجة عرض الحواف وتحذيرات Google Play وخطوات التحقق موجودة في [دليل Android edge-to-edge](docs/android-edge-to-edge.md).
 
 ## الترخيص
 
