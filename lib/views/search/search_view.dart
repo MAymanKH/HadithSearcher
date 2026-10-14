@@ -267,6 +267,9 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     ),
   );
 
+  TextStyle? _filterLabelStyle(bool active) =>
+      active ? TextStyle(color: Theme.of(context).colorScheme.primary) : null;
+
   Widget _buildCatalogField(
     SearchFilter filter,
     SearchOption selected,
@@ -288,15 +291,14 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
       child: InputDecorator(
         decoration: InputDecoration(
           labelText: filter.arabicName,
+          labelStyle: _filterLabelStyle(selected.apiCode != '0'),
+          floatingLabelStyle: _filterLabelStyle(selected.apiCode != '0'),
           suffixIcon: const Icon(Icons.search),
         ),
         child: Text(
           selected.arabicName,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
-          style: selected.apiCode == '0'
-              ? Theme.of(context).inputDecorationTheme.hintStyle
-              : null,
         ),
       ),
     ),
@@ -315,19 +317,12 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
         key: ValueKey('$label:$value'),
         initialValue: value,
         isExpanded: true,
-        decoration: InputDecoration(labelText: label),
+        decoration: InputDecoration(
+          labelText: label,
+          labelStyle: _filterLabelStyle(!isDefault),
+          floatingLabelStyle: _filterLabelStyle(!isDefault),
+        ),
         onChanged: onChanged,
-        selectedItemBuilder: (context) => items
-            .map(
-              (item) => Text(
-                item,
-                overflow: TextOverflow.ellipsis,
-                style: isDefault
-                    ? Theme.of(context).inputDecorationTheme.hintStyle
-                    : null,
-              ),
-            )
-            .toList(),
         items: items
             .map(
               (item) => DropdownMenuItem(
@@ -345,9 +340,13 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
       padding: const EdgeInsets.all(10),
       child: TextField(
         controller: _excludedWordsController,
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
           labelText: 'كلمات مستثناة',
           hintText: 'كلمات أو جملة تريد استبعادها',
+          labelStyle: _filterLabelStyle(vm.excludedWords.trim().isNotEmpty),
+          floatingLabelStyle: _filterLabelStyle(
+            vm.excludedWords.trim().isNotEmpty,
+          ),
         ),
         onChanged: vm.setExcludedWords,
       ),
