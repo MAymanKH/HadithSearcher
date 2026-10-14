@@ -428,32 +428,6 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 20, color: Colors.grey),
                     ),
-                    if (vm.recentSearches.isNotEmpty) ...[
-                      const SizedBox(height: 30),
-                      Row(
-                        children: [
-                          const Expanded(child: Text('عمليات البحث الأخيرة')),
-                          TextButton(
-                            onPressed: vm.clearRecentSearches,
-                            child: const Text('مسح السجل'),
-                          ),
-                        ],
-                      ),
-                      ...vm.recentSearches.map(
-                        (query) => ListTile(
-                          leading: const Icon(Icons.history),
-                          title: Text(
-                            query,
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                          onTap: () {
-                            _textController.text = query;
-                            _onSearch();
-                          },
-                        ),
-                      ),
-                    ],
                   ],
                 ),
               ),

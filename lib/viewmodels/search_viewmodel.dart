@@ -33,11 +33,9 @@ class SearchViewModel extends ChangeNotifier {
   bool _catalogsRequested = false;
   List<SearchOption> _scholars = SearchOption.scholars;
   List<SearchOption> _books = SearchOption.books;
-  List<String> _recentSearches = [];
 
   List<SearchOption> get scholars => _scholars;
   List<SearchOption> get books => _books;
-  List<String> get recentSearches => _recentSearches;
   List<String> get activeFilters => [
     if (_searchWay != SearchWay.anyWord) _searchWay.arabicName,
     if (_searchRange != SearchRange.all) _searchRange.arabicName,
@@ -104,6 +102,7 @@ class SearchViewModel extends ChangeNotifier {
 
     _saveAdvancedSettings = prefs.getBool('advancedSaveCheckbox') ?? true;
     await prefs.remove('searchQuery');
+    await prefs.remove('recentSearches');
     if (!_saveAdvancedSettings) {
       notifyListeners();
       return;
@@ -140,7 +139,6 @@ class SearchViewModel extends ChangeNotifier {
 
   Future<void> _loadCachedCatalogs() async {
     final prefs = await SharedPreferences.getInstance();
-    _recentSearches = prefs.getStringList('recentSearches') ?? [];
     for (final kind in ['book', 'mohdith']) {
       final cached = prefs.getString('filterCatalog.$kind');
       if (cached == null) continue;
@@ -217,22 +215,6 @@ class SearchViewModel extends ChangeNotifier {
     );
   }
 
-  Future<void> clearRecentSearches() async {
-    _recentSearches = [];
-    notifyListeners();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove('recentSearches');
-  }
-
-  Future<void> _rememberSearch(String keyword) async {
-    _recentSearches = [
-      keyword,
-      ..._recentSearches.where((query) => query != keyword),
-    ].take(10).toList();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('recentSearches', _recentSearches);
-  }
-
   void resetFilters() {
     _searchWay = SearchWay.anyWord;
     _searchRange = SearchRange.all;
@@ -300,8 +282,6 @@ class SearchViewModel extends ChangeNotifier {
     );
 
     notifyListeners();
-    await _rememberSearch(keyword);
-    if (generation != _searchGeneration) return;
     final result = await _api.searchHadith(_currentParams!);
     if (generation != _searchGeneration) return;
 

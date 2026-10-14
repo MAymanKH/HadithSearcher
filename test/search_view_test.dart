@@ -40,11 +40,18 @@ void main() {
     (tester) async {
       SharedPreferences.setMockInitialValues({
         'searchQuery': 'old saved query',
+        'recentSearches': ['old saved query'],
       });
       await mount(tester, width: 800);
       expect(
         tester.widget<TextField>(find.byType(TextField)).controller!.text,
         isEmpty,
+      );
+      expect(find.text('عمليات البحث الأخيرة'), findsNothing);
+      expect(find.text('old saved query'), findsNothing);
+      expect(
+        (await SharedPreferences.getInstance()).containsKey('recentSearches'),
+        isFalse,
       );
       await tester.enterText(find.byType(TextField), 'session query');
       await tester.tap(find.text('الإعدادات').last);

@@ -74,35 +74,4 @@ void main() {
       expect(vm.searchBook, SearchOption.allBooks);
     },
   );
-
-  test(
-    'recent searches are deduplicated, bounded, and can be cleared',
-    () async {
-      final vm = SearchViewModel();
-      addTearDown(vm.dispose);
-      await http.runWithClient(
-        () async {
-          for (var i = 0; i < 12; i++) {
-            await vm.search('query$i');
-          }
-          await vm.search('query9');
-        },
-        () => MockClient(
-          (_) async => http.Response(
-            '{"metadata":{"hasNextPage":false},"data":[]}',
-            200,
-            headers: {'content-type': 'application/json; charset=utf-8'},
-          ),
-        ),
-      );
-      expect(vm.recentSearches.length, 10);
-      expect(vm.recentSearches.first, 'query9');
-      expect(vm.recentSearches.toSet().length, 10);
-      await vm.clearRecentSearches();
-      final restored = SearchViewModel();
-      addTearDown(restored.dispose);
-      await restored.init();
-      expect(restored.recentSearches, isEmpty);
-    },
-  );
 }
