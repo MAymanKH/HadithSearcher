@@ -33,17 +33,30 @@ void main() {
           ),
         );
         final message = find.text('Notice');
+        final slide = find.byKey(const ValueKey('app-snack-bar-slide'));
+        double offset() =>
+            tester.widget<SlideTransition>(slide).position.value.dy;
         await tester.pump();
-        await tester.pump(const Duration(milliseconds: 250));
-        final enteringY = tester.getTopLeft(message).dy;
-        await tester.pump(const Duration(milliseconds: 250));
-        await tester.pump(const Duration(milliseconds: 1));
-        final restingY = tester.getTopLeft(message).dy;
-        expect(enteringY, greaterThan(restingY + 10));
+        await tester.pump(const Duration(milliseconds: 200));
+        final earlyOffset = offset();
+        await tester.pump(const Duration(milliseconds: 200));
+        final middleOffset = offset();
+        await tester.pump(const Duration(milliseconds: 200));
+        final lateOffset = offset();
+        expect(earlyOffset, inInclusiveRange(0.7, 0.95));
+        expect(middleOffset, closeTo(0.5, 0.01));
+        expect(lateOffset, inInclusiveRange(0.05, 0.3));
+        await tester.pumpAndSettle();
         expect(visible, 1);
+        final restingY = tester.getTopLeft(message).dy;
         await tester.pump(const Duration(seconds: 1));
-        await tester.pump(const Duration(milliseconds: 250));
-        expect(tester.getTopLeft(message).dy, closeTo(enteringY, 0.01));
+        await tester.pump(const Duration(milliseconds: 200));
+        expect(offset(), closeTo(lateOffset, 0.01));
+        expect(tester.getTopLeft(message).dy, greaterThan(restingY));
+        await tester.pump(const Duration(milliseconds: 200));
+        expect(offset(), closeTo(middleOffset, 0.01));
+        await tester.pump(const Duration(milliseconds: 200));
+        expect(offset(), closeTo(earlyOffset, 0.01));
         expect(find.byType(SnackBar), findsOneWidget);
         await tester.pumpAndSettle();
         expect(message, findsNothing);

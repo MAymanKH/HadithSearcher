@@ -9,8 +9,8 @@ ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showAppSnackBar(
     snackBarAnimationStyle: MediaQuery.disableAnimationsOf(context)
         ? AnimationStyle.noAnimation
         : const AnimationStyle(
-            duration: Duration(milliseconds: 500),
-            reverseDuration: Duration(milliseconds: 500),
+            duration: Duration(milliseconds: 800),
+            reverseDuration: Duration(milliseconds: 800),
           ),
   );
 }
@@ -59,7 +59,7 @@ class _SlidingSnackBarState extends State<_SlidingSnackBar> {
       child: SlideTransition(
         key: const ValueKey('app-snack-bar-slide'),
         position: widget.animation!
-            .drive(CurveTween(curve: Curves.easeInOutCubic))
+            .drive(CurveTween(curve: Curves.easeInOutSine))
             .drive(Tween<Offset>(begin: const Offset(0, 1), end: Offset.zero)),
         child: content,
       ),
