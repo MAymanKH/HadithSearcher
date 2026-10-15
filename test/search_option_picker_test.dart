@@ -406,6 +406,20 @@ void main() {
               findsOneWidget,
             );
             expect(latestSelection, isEmpty);
+            final dialog = tester.getRect(
+              find
+                  .descendant(
+                    of: find.byType(AlertDialog),
+                    matching: find.byType(Material),
+                  )
+                  .first,
+            );
+            final close = tester.getRect(
+              find.widgetWithText(TextButton, 'إغلاق'),
+            );
+            final copy = tester.getRect(find.widgetWithText(TextButton, 'نسخ'));
+            expect(close.right, greaterThan(dialog.right - 40));
+            expect(copy.left, lessThan(dialog.left + 40));
             await tester.tap(find.text('إغلاق'));
             await tester.pumpAndSettle();
             expect(tester.widget<Checkbox>(checkbox).value, isFalse);

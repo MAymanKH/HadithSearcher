@@ -71,24 +71,36 @@ class _ApiDetailsDialogState<T extends Object>
                   ),
           ),
           actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('إغلاق'),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(
+                  child: TextButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('إغلاق'),
+                  ),
+                ),
+                if (!loading &&
+                    (result?.isError == true || snapshot.hasError) &&
+                    result?.error != ApiError.notFound)
+                  Flexible(
+                    child: TextButton(
+                      onPressed: () => setState(() {
+                        _result = widget.load();
+                      }),
+                      child: const Text('أعد المحاولة'),
+                    ),
+                  ),
+                if (text.isNotEmpty)
+                  Flexible(
+                    child: TextButton(
+                      onPressed: () =>
+                          Clipboard.setData(ClipboardData(text: text)),
+                      child: const Text('نسخ'),
+                    ),
+                  ),
+              ],
             ),
-            if (!loading &&
-                (result?.isError == true || snapshot.hasError) &&
-                result?.error != ApiError.notFound)
-              TextButton(
-                onPressed: () => setState(() {
-                  _result = widget.load();
-                }),
-                child: const Text('أعد المحاولة'),
-              ),
-            if (text.isNotEmpty)
-              TextButton(
-                onPressed: () => Clipboard.setData(ClipboardData(text: text)),
-                child: const Text('نسخ'),
-              ),
           ],
         );
       },
