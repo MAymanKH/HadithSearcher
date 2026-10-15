@@ -165,7 +165,7 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
               child: TextField(
                 decoration: const InputDecoration(
                   hintText: 'ابحث بالاسم...',
-                  prefixIcon: const Icon(Icons.search),
+                  prefixIcon: Icon(Icons.search),
                 ),
                 onChanged: _search,
               ),
