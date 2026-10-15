@@ -339,7 +339,6 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
         controller: _excludedWordsController,
         decoration: InputDecoration(
           labelText: 'كلمات مستثناة',
-          hintText: 'كلمات أو جملة تريد استبعادها',
           labelStyle: _filterLabelStyle(vm.excludedWords.trim().isNotEmpty),
           floatingLabelStyle: _filterLabelStyle(
             vm.excludedWords.trim().isNotEmpty,

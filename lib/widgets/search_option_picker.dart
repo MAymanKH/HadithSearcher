@@ -170,7 +170,6 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
                   labelText: widget.filter.arabicName,
                   labelStyle: labelStyle,
                   floatingLabelStyle: labelStyle,
-                  hintText: 'ابحث بالاسم...',
                   prefixIcon: const Icon(Icons.search),
                 ),
                 onChanged: _search,
