@@ -5,6 +5,20 @@ import 'package:flutter/services.dart';
 class AppTheme {
   AppTheme._();
 
+  static CheckboxThemeData _checkboxTheme(Color foreground, Color background) =>
+      CheckboxThemeData(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+        side: WidgetStateBorderSide.resolveWith(
+          (_) => BorderSide(color: foreground, width: 1.5),
+        ),
+        fillColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? foreground
+              : Colors.transparent,
+        ),
+        checkColor: WidgetStatePropertyAll(background),
+      );
+
   static SystemUiOverlayStyle systemUiOverlayStyle(Brightness brightness) {
     final icons = brightness == Brightness.dark
         ? Brightness.light
@@ -22,6 +36,7 @@ class AppTheme {
   static ThemeData get lightTheme {
     return ThemeData(
       brightness: Brightness.light,
+      checkboxTheme: _checkboxTheme(Colors.black, Colors.white),
       inputDecorationTheme: InputDecorationTheme(
         hintStyle: const TextStyle(color: Color(0xFF757575)),
         labelStyle: const TextStyle(color: Colors.black),
@@ -75,6 +90,7 @@ class AppTheme {
   static ThemeData get darkTheme {
     return ThemeData(
       brightness: Brightness.dark,
+      checkboxTheme: _checkboxTheme(Colors.white, Colors.black),
       inputDecorationTheme: InputDecorationTheme(
         hintStyle: const TextStyle(color: Color(0xFFAAAAAA)),
         labelStyle: const TextStyle(color: Colors.white),

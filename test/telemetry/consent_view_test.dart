@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hadithsearcher/core/theme/app_theme.dart';
 import 'package:hadithsearcher/services/telemetry/telemetry_service.dart';
 import 'package:hadithsearcher/views/privacy/telemetry_consent_view.dart';
 import 'fake_backend.dart';
@@ -16,8 +17,9 @@ void main() {
         preferences: await SharedPreferences.getInstance(), backend: backend);
     await tester.pumpWidget(ChangeNotifierProvider.value(
       value: service,
-      child: const MaterialApp(
-          home: Directionality(
+      child: MaterialApp(
+          theme: AppTheme.lightTheme,
+          home: const Directionality(
         textDirection: TextDirection.rtl,
         child: TelemetryConsentView(firstLaunch: true),
       )),
@@ -55,7 +57,9 @@ void main() {
         preferences: await SharedPreferences.getInstance(), backend: backend);
     await tester.pumpWidget(ChangeNotifierProvider.value(
       value: service,
-      child: const MaterialApp(home: TelemetryConsentView(firstLaunch: true)),
+      child: MaterialApp(
+          theme: AppTheme.darkTheme,
+          home: const TelemetryConsentView(firstLaunch: true)),
     ));
     await tester.ensureVisible(find.byKey(const Key('save-telemetry-consent')));
     await tester.tap(find.byKey(const Key('save-telemetry-consent')));

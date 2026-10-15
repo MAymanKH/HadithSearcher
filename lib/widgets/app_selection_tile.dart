@@ -32,18 +32,6 @@ class AppSelectionTile extends StatelessWidget {
             ? Checkbox(
                 value: selected,
                 tristate: true,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                side: WidgetStateBorderSide.resolveWith(
-                  (_) => BorderSide(color: colors.onSurface, width: 1.5),
-                ),
-                fillColor: WidgetStateProperty.resolveWith(
-                  (states) => states.contains(WidgetState.selected)
-                      ? colors.onSurface
-                      : Colors.transparent,
-                ),
-                checkColor: colors.surface,
                 onChanged: onTap == null ? null : (_) => onTap!(),
               )
             : selected == true
