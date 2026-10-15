@@ -238,8 +238,13 @@ void main() {
       ),
       findsOneWidget,
     );
+    final transition = find.byKey(const ValueKey('active-filters-transition'));
     await tester.tap(find.byTooltip('إخفاء الفلاتر النشطة'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(tester.getSize(transition).height, inExclusiveRange(0, 48));
     await tester.pumpAndSettle();
+    expect(tester.getSize(transition).height, 0);
     expect(find.byType(Chip), findsNothing);
     expect(find.text('مسح الفلاتر'), findsNothing);
     expect(vm.activeFilters, activeFilters);
@@ -250,7 +255,11 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(Chip), findsNothing);
     await tester.tap(find.byTooltip('إظهار الفلاتر النشطة'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(tester.getSize(transition).height, inExclusiveRange(0, 48));
     await tester.pumpAndSettle();
+    expect(tester.getSize(transition).height, 48);
     expect(find.byType(Chip), findsWidgets);
     expect(vm.activeFilters, activeFilters);
     await tester.tap(find.text('مسح الفلاتر'));

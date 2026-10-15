@@ -152,8 +152,21 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
           children: [
             _buildSearchBar(screenWidth),
             const SizedBox(height: 10),
-            if (vm.activeFilters.isNotEmpty && _showActiveFilters)
-              _buildActiveFilters(vm),
+            AnimatedSwitcher(
+              key: const ValueKey('active-filters-transition'),
+              duration: MediaQuery.disableAnimationsOf(context)
+                  ? Duration.zero
+                  : const Duration(milliseconds: 200),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: (child, animation) => SizeTransition(
+                sizeFactor: animation,
+                child: FadeTransition(opacity: animation, child: child),
+              ),
+              child: vm.activeFilters.isNotEmpty && _showActiveFilters
+                  ? _buildActiveFilters(vm)
+                  : const SizedBox.shrink(),
+            ),
             if (vm.isAdvancedSearchOpen)
               _buildAdvancedSearch(vm)
             else if (vm.isLoading)
@@ -263,6 +276,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
   }
 
   Widget _buildActiveFilters(SearchViewModel vm) => SizedBox(
+    key: const ValueKey('active-filters-row'),
     height: 48,
     child: ListView(
       scrollDirection: Axis.horizontal,
