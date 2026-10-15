@@ -408,7 +408,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
   }) {
     final colors = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
+      padding: const EdgeInsets.all(10),
       child: SwitchListTile.adaptive(
         value: value,
         onChanged: onChanged,
