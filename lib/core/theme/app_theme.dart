@@ -23,7 +23,7 @@ class AppTheme {
     return ThemeData(
       brightness: Brightness.light,
       inputDecorationTheme: InputDecorationTheme(
-        hintStyle: const TextStyle(color: Colors.black),
+        hintStyle: const TextStyle(color: Color(0xFF757575)),
         labelStyle: const TextStyle(color: Colors.black),
         floatingLabelStyle: const TextStyle(color: Colors.black),
         enabledBorder: OutlineInputBorder(
@@ -76,7 +76,7 @@ class AppTheme {
     return ThemeData(
       brightness: Brightness.dark,
       inputDecorationTheme: InputDecorationTheme(
-        hintStyle: const TextStyle(color: Colors.white),
+        hintStyle: const TextStyle(color: Color(0xFFAAAAAA)),
         labelStyle: const TextStyle(color: Colors.white),
         floatingLabelStyle: const TextStyle(color: Colors.white),
         enabledBorder: OutlineInputBorder(
