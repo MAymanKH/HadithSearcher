@@ -10,7 +10,7 @@ import '../viewmodels/similar_hadith_viewmodel.dart';
 import 'favourite_undo.dart';
 import 'hadith_card_layout.dart';
 import '../views/similar_hadith/similar_hadith_view.dart';
-import '../views/hadith_details/hadith_details_view.dart';
+import 'hadith_additional_info.dart';
 import 'message_dialog.dart';
 
 /// Displays a hadith with actions (sharh, similar, share, favourite).
@@ -35,14 +35,10 @@ class HadithCard extends StatelessWidget {
       text: hadith.text,
       grading: citation.grading,
       attribution: citation.attribution,
-      onDetails: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => HadithDetailsView(
-            hadith: hadith,
-            fetchDetails: hadith.bookId == null && hadith.mohdithId == null,
-          ),
-        ),
+      additionalInfo: HadithAdditionalInfo(
+        key: ValueKey(hadith.id),
+        hadith: hadith,
+        fetchDetails: hadith.bookId == null && hadith.mohdithId == null,
       ),
       isFavourite: isFavourite,
       onExplanation: () => _showSharh(context),

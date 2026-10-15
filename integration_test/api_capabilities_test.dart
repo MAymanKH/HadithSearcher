@@ -11,7 +11,7 @@ import 'package:hadithsearcher/core/constants/app_config.dart';
 import 'package:hadithsearcher/models/settings.dart';
 import 'package:hadithsearcher/services/telemetry/telemetry_service.dart';
 import 'package:hadithsearcher/viewmodels/settings_viewmodel.dart';
-import 'package:hadithsearcher/views/hadith_details/hadith_details_view.dart';
+import 'package:hadithsearcher/widgets/selection_sheet.dart';
 import 'package:hadithsearcher/widgets/hadith_card.dart';
 import '../test/telemetry/fake_backend.dart';
 
@@ -64,6 +64,14 @@ void main() {
           'data': [
             {'key': '6216', 'value': 'صحيح البخاري'},
             {'key': '3088', 'value': 'صحيح مسلم'},
+            {'key': '96', 'value': 'الصحيح المسند'},
+          ],
+        };
+      } else if (path == '/v1/data/mohdith') {
+        result = {
+          'data': [
+            {'key': '256', 'value': 'البخاري'},
+            {'key': '261', 'value': 'مسلم'},
           ],
         };
       } else if (path == '/v1/site/hadith/search') {
@@ -153,25 +161,67 @@ void main() {
     await tester.enterText(find.byType(TextField), 'إنما الأعمال بالنيات');
     await tester.tap(find.byTooltip('البحث المتقدم'));
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.text('جميع الكتب'),
-      200,
-      scrollable: find.byType(Scrollable).last,
+    await tester.ensureVisible(find.text('جميع الدرجات'));
+    await tester.tap(find.text('جميع الدرجات'));
+    await tester.pumpAndSettle();
+    expect(
+      find.descendant(
+        of: find.byType(SelectionSheet),
+        matching: find.byType(TextField),
+      ),
+      findsNothing,
     );
+    expect(
+      find.descendant(
+        of: find.byType(SelectionSheet),
+        matching: find.byType(Checkbox),
+      ),
+      findsNWidgets(5),
+    );
+    expect(tester.getSize(find.byType(SelectionSheet)).height, lessThan(500));
+    final allGrades = find.descendant(
+      of: find.byType(SelectionSheet),
+      matching: find.text('جميع الدرجات'),
+    );
+    await tester.tap(allGrades);
+    await tester.pumpAndSettle();
+    expect(find.text('المحدد: 4'), findsOneWidget);
+    await tester.tap(allGrades);
+    await tester.pumpAndSettle();
+    await capture('grades');
+    tester.state<NavigatorState>(find.byType(Navigator)).pop();
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('جميع الكتب'));
     await tester.tap(find.text('جميع الكتب'));
     await waitFor(find.text('صحيح مسلم'));
     await tester.tap(find.text('صحيح البخاري'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('صحيح مسلم'));
     await tester.pumpAndSettle();
+    expect(find.text('المحدد: 2'), findsOneWidget);
+    expect(find.textContaining('تطبيق'), findsNothing);
     await capture('picker');
-    await tester.tap(find.text('تطبيق (2)'));
+    await tester.tap(find.byTooltip('معلومات عن صحيح البخاري'));
+    await waitFor(find.textContaining('المؤلف: محمد بن إسماعيل البخاري'));
+    await capture('book');
+    await tester.tap(find.text('إغلاق'));
     await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.text('البحث للمتخصصين'),
-      180,
-      scrollable: find.byType(Scrollable).last,
+    expect(find.text('المحدد: 2'), findsOneWidget);
+    tester.state<NavigatorState>(find.byType(Navigator)).pop();
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('جميع المحدثين'));
+    await tester.tap(find.text('جميع المحدثين'));
+    await waitFor(find.text('البخاري'));
+    await tester.tap(find.byTooltip('معلومات عن البخاري'));
+    await waitFor(
+      find.textContaining('محمد بن إسماعيل البخاري، صاحب الجامع الصحيح.'),
     );
+    await tester.tap(find.text('إغلاق'));
+    await tester.pumpAndSettle();
+    expect(find.text('المحدد: 0'), findsOneWidget);
+    tester.state<NavigatorState>(find.byType(Navigator)).pop();
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('البحث للمتخصصين'));
     await tester.tap(find.text('البحث للمتخصصين'));
     await tester.pumpAndSettle();
     await capture('advanced');
@@ -180,46 +230,50 @@ void main() {
     expect(searches.single.queryParametersAll['s[]'], ['3088', '6216']);
     expect(searches.single.queryParameters['specialist'], 'true');
     expect(preferences.getBool('searchSpecialist'), isTrue);
+    expect(find.byTooltip('تفاصيل الحديث'), findsNothing);
     await capture('card');
-    await tester.tap(find.byTooltip('تفاصيل الحديث'));
+    await tester.ensureVisible(find.text('معلومات إضافية'));
+    await tester.tap(find.text('معلومات إضافية'));
     await tester.pumpAndSettle();
-    await capture('details-light');
-    await tester.scrollUntilVisible(
-      find.text('صحيح البخاري'),
-      160,
-      scrollable: find.byType(Scrollable).first,
-    );
-    await tester.tap(find.text('صحيح البخاري'));
-    await waitFor(find.textContaining('المؤلف: محمد بن إسماعيل البخاري'));
-    await capture('book');
-    await tester.tap(find.text('إغلاق'));
-    await tester.pumpAndSettle();
-    await tester.scrollUntilVisible(
-      find.text('أصول الحديث وطرق إخراجه'),
-      160,
-      scrollable: find.byType(Scrollable).first,
-    );
-    expect(find.text('رقائق وزهد - النية'), findsOneWidget);
-    await capture('details-topics');
+    expect(find.widgetWithText(AppBar, 'البحث'), findsOneWidget);
+    await tester.ensureVisible(find.text('أصول الحديث وطرق إخراجه'));
+    await capture('inline-light');
     await tester.tap(find.text('أصول الحديث وطرق إخراجه'));
     await waitFor(find.textContaining('الإسناد: الحميدي'));
     await capture('origins');
     await tester.tap(find.text('إغلاق'));
     await tester.pumpAndSettle();
     await settings.setTheme(ThemePreference.dark);
-    final list = find
-        .descendant(
-          of: find.byType(HadithDetailsView),
-          matching: find.byType(Scrollable),
-        )
-        .first;
-    await tester.scrollUntilVisible(
-      find.text('حكم المحدث'),
-      -300,
-      scrollable: list,
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('أصول الحديث وطرق إخراجه'));
+    await tester.pumpAndSettle();
+    expect(find.text('أصول الحديث وطرق إخراجه').hitTestable(), findsOneWidget);
+    await capture('inline-dark');
+    await Scrollable.ensureVisible(
+      tester.element(find.text('إخفاء المعلومات الإضافية')),
+      alignment: .5,
     );
     await tester.pumpAndSettle();
-    await capture('details-dark');
+    expect(find.text('إخفاء المعلومات الإضافية').hitTestable(), findsOneWidget);
+    await tester.tap(find.text('إخفاء المعلومات الإضافية'));
+    await tester.pumpAndSettle();
+    expect(find.text('التصنيف الموضوعي'), findsNothing);
+    await tester.tap(find.byTooltip('إخفاء الفلاتر النشطة'));
+    await tester.pumpAndSettle();
+    expect(preferences.getBool('showActiveFilters'), isFalse);
+    await tester.pumpWidget(const SizedBox());
+    await tester.pumpWidget(
+      HadithSearcherApp(initialThemeMode: ThemeMode.dark, telemetry: telemetry),
+    );
+    await tester.pumpAndSettle();
+    expect(find.byTooltip('إظهار الفلاتر النشطة'), findsOneWidget);
+    expect(find.byKey(const ValueKey('active-filters-row')), findsNothing);
+    await tester.tap(find.text('الإعدادات').last);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('حجم الخط'));
+    await tester.pumpAndSettle();
+    expect(tester.getSize(find.byType(SelectionSheet)).height, lessThan(500));
+    await capture('font-size');
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
   });

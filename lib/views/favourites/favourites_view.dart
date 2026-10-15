@@ -8,7 +8,7 @@ import '../../services/database_service.dart';
 import '../../viewmodels/favourites_viewmodel.dart';
 import '../../models/hadith_citation.dart';
 import '../../models/hadith.dart';
-import '../hadith_details/hadith_details_view.dart';
+import '../../widgets/hadith_additional_info.dart';
 import '../../widgets/hadith_card_layout.dart';
 import '../../widgets/back_to_top_button.dart';
 import '../../widgets/message_dialog.dart';
@@ -178,14 +178,10 @@ class _FavouriteHadithCard extends StatelessWidget {
       text: favourite.hadithText,
       grading: citation?.grading,
       attribution: citation?.attribution ?? favourite.hadithInfo,
-      onDetails: () => Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (_) => HadithDetailsView(
-            hadith: Hadith.fromDatabase(favourite.toDatabase()),
-            fetchDetails: true,
-          ),
-        ),
+      additionalInfo: HadithAdditionalInfo(
+        key: ValueKey(favourite.hadithId),
+        hadith: Hadith.fromDatabase(favourite.toDatabase()),
+        fetchDetails: true,
       ),
       isFavourite: true,
       onExplanation: onGetSharh,

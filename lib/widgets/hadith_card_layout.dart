@@ -12,7 +12,7 @@ class HadithCardLayout extends StatelessWidget {
   final VoidCallback onShare;
   final VoidCallback onFavourite;
   final VoidCallback? onAlternate;
-  final VoidCallback? onDetails;
+  final Widget? additionalInfo;
 
   const HadithCardLayout({
     super.key,
@@ -25,7 +25,7 @@ class HadithCardLayout extends StatelessWidget {
     required this.onShare,
     required this.onFavourite,
     required this.onAlternate,
-    this.onDetails,
+    this.additionalInfo,
   });
 
   @override
@@ -58,19 +58,9 @@ class HadithCardLayout extends StatelessWidget {
             if (onAlternate != null) _buildAlternateButton(),
             const SizedBox(height: 4),
           ],
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: SelectableText(attribution, style: textStyle)),
-              if (onDetails != null)
-                IconButton(
-                  tooltip: 'تفاصيل الحديث',
-                  onPressed: onDetails,
-                  icon: const Icon(Icons.info_outline),
-                ),
-            ],
-          ),
+          SelectableText(attribution, style: textStyle),
           if (grading == null && onAlternate != null) _buildAlternateButton(),
+          if (additionalInfo != null) additionalInfo!,
           const SizedBox(height: 14),
           Material(
             color: colors.secondaryContainer,
