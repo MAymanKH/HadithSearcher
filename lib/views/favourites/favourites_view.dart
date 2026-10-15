@@ -70,11 +70,11 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.star_border, size: 140),
-          SizedBox(height: 15),
+          const Icon(Icons.star_border, size: 100, color: Colors.grey),
           Text(
             context.l10n.emptyFavourites,
-            style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 20, color: Colors.grey),
           ),
         ],
       ),
