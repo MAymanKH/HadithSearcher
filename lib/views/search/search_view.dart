@@ -141,8 +141,21 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
                 vm.toggleAdvancedSearch();
               }
             },
-            icon: const Icon(Icons.filter_alt, size: 30),
             tooltip: 'البحث المتقدم',
+            icon: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Icon(Icons.tune, size: 22),
+                const SizedBox(width: 6),
+                const Text('الفلاتر', style: TextStyle(fontSize: 14)),
+              ],
+            ),
+            style: IconButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.onSurface,
+              backgroundColor: vm.isAdvancedSearchOpen
+                  ? Theme.of(context).colorScheme.primaryContainer
+                  : null,
+            ),
           ),
         ],
       ),
@@ -276,7 +289,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
         ),
         ...vm.activeFilters.map(
           (label) => Padding(
-            padding: const EdgeInsets.only(left: 6),
+            padding: const EdgeInsets.only(left: 10),
             child: Chip(label: Text(label)),
           ),
         ),

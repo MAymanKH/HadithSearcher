@@ -145,6 +145,12 @@ void main() {
               findsOneWidget,
             );
             expect(find.text('التخريج: ${hadith.takhrij}'), findsOneWidget);
+            final infoText = tester
+                .widgetList<SelectableText>(find.byType(SelectableText))
+                .firstWhere(
+                  (text) => text.data == 'التخريج: ${hadith.takhrij}',
+                );
+            expect(infoText.style!.color, dark ? Colors.white : Colors.black);
             expect(
               find.text('التصنيف الموضوعي: رقائق وزهد - النية'),
               findsOneWidget,
@@ -362,4 +368,40 @@ void main() {
       expect(find.text('معلومات إضافية'), findsNothing);
     },
   );
+  testWidgets('thousands of collapsed cards keep only viewport text mounted', (
+    tester,
+  ) async {
+    final settings = SettingsViewModel();
+    addTearDown(settings.dispose);
+    final controller = ScrollController();
+    addTearDown(controller.dispose);
+    await tester.pumpWidget(
+      ChangeNotifierProvider.value(
+        value: settings,
+        child: MaterialApp(
+          home: Scaffold(
+            body: ListView.builder(
+              controller: controller,
+              itemCount: 3000,
+              itemBuilder: (_, index) => HadithCard(
+                key: ValueKey(index),
+                hadith: Hadith.fromJson({...richJson, 'hadithId': '$index'}),
+                isFavourite: false,
+                onFavouriteToggle: () async {},
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    for (var i = 0; i < 30; i++) {
+      controller.jumpTo(i * 1500);
+      await tester.pump();
+      final cards = find.byType(HadithCard).evaluate().length;
+      expect(cards, lessThan(12));
+      expect(find.byType(SelectableText).evaluate().length, cards * 3);
+      expect(tester.takeException(), isNull);
+    }
+  });
 }

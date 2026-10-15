@@ -41,7 +41,19 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
       vsync: this,
       duration: const Duration(milliseconds: 250),
     );
+    _controller.addStatusListener((status) {
+      if (status == AnimationStatus.dismissed && mounted) setState(() {});
+    });
     _size = _controller.drive(CurveTween(curve: Curves.easeInOutCubic));
+  }
+
+  @override
+  void didUpdateWidget(covariant HadithAdditionalInfo oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (!identical(widget.hadith, oldWidget.hadith)) {
+      _hadith = widget.hadith;
+      _loaded = !widget.fetchDetails;
+    }
   }
 
   @override
@@ -67,7 +79,9 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
       _loading = true;
       _error = null;
     });
-    final result = await FavouriteDetailsService().getSavedDetails(widget.hadith.id);
+    final result = await FavouriteDetailsService().getSavedDetails(
+      widget.hadith.id,
+    );
     if (!mounted) return;
     setState(() {
       _loading = false;
@@ -95,105 +109,133 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
     if (!_hasContent && !(widget.fetchDetails && widget.hadith.id.isNotEmpty)) {
       return const SizedBox.shrink();
     }
-    final readingStyle = context.watch<SettingsViewModel>().readingTextStyle;
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Align(
-          alignment: AlignmentDirectional.centerStart,
-          child: TextButton.icon(
-            onPressed: _toggle,
-            icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
-            label: Text(
-              _expanded ? 'إخفاء المعلومات الإضافية' : 'معلومات إضافية',
-              style: readingStyle,
-            ),
-          ),
+    final colors = Theme.of(context).colorScheme;
+    final readingStyle = context
+        .watch<SettingsViewModel>()
+        .readingTextStyle
+        .copyWith(color: colors.secondaryContainer);
+    return Container(
+      margin: const EdgeInsets.only(top: 12),
+      decoration: BoxDecoration(
+        border: Border.all(
+          color: colors.secondaryContainer.withValues(alpha: 0.16),
         ),
-        AnimatedBuilder(
-          animation: _controller,
-          builder: (context, child) => Offstage(
-            offstage: _controller.isDismissed,
-            child: ClipRect(
-              child: Align(
-                alignment: Alignment.topCenter,
-                heightFactor: _size.value,
-                child: FadeTransition(opacity: _size, child: child),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Align(
+            alignment: AlignmentDirectional.centerStart,
+            child: TextButton.icon(
+              onPressed: _toggle,
+              style: TextButton.styleFrom(
+                foregroundColor: colors.secondaryContainer,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 10,
+                ),
+              ),
+              icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
+              label: Text(
+                _expanded ? 'إخفاء المعلومات الإضافية' : 'معلومات إضافية',
+                style: readingStyle,
               ),
             ),
           ),
-          child: TickerMode(
-            enabled: _expanded,
-            child: Padding(
-              padding: const EdgeInsets.only(top: 4, bottom: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  if (_loading) const LinearProgressIndicator(),
-                  if (_error != null) ...[
-                    Text(
-                      'تعذر تحميل المعلومات الإضافية. ${_error!.arabicTitle}',
-                    ),
-                    Align(
-                      alignment: AlignmentDirectional.centerStart,
-                      child: TextButton(
-                        onPressed: _load,
-                        child: const Text('أعد المحاولة'),
-                      ),
-                    ),
-                  ],
-                  if (_loaded && !_hasContent)
-                    const Text('لا تتوفر معلومات إضافية من المصدر'),
-                  if (_hasGradingNote)
-                    _infoLine(
-                      'توضيح الحكم',
-                      _hadith.explainGrade,
-                      readingStyle,
-                    ),
-                  if (_hadith.takhrij.trim().isNotEmpty)
-                    _infoLine('التخريج', _hadith.takhrij, readingStyle),
-                  if (_hadith.categories.isNotEmpty)
-                    _infoLine(
-                      'التصنيف الموضوعي',
-                      _hadith.categories
-                          .map((category) => category.name)
-                          .join('، '),
-                      readingStyle,
-                    ),
-                  if (_hadith.hasUsulHadith && _hadith.id.isNotEmpty)
-                    Align(
-                      alignment: AlignmentDirectional.centerStart,
-                      child: TextButton.icon(
-                        onPressed: () => showApiDetailsDialog<HadithOrigins>(
-                          context,
-                          title: 'أصول الحديث',
-                          load: () => FavouriteDetailsService().getOrigins(_hadith.id),
-                          format: (origins) => origins.sources
-                              .map(
-                                (source) => [
-                                  if (source.source.trim().isNotEmpty)
-                                    'المصدر: ${source.source}',
-                                  if (source.chain.trim().isNotEmpty)
-                                    'الإسناد: ${source.chain}',
-                                  if (source.text.trim().isNotEmpty)
-                                    'المتن: ${source.text}',
-                                ].join('\n\n'),
-                              )
-                              .join('\n\n'),
-                        ),
-                        icon: const Icon(Icons.account_tree_outlined),
-                        label: Text(
-                          'أصول الحديث وطرق إخراجه',
-                          style: readingStyle,
-                        ),
-                      ),
-                    ),
-                ],
+          AnimatedBuilder(
+            animation: _controller,
+            builder: (context, child) => Offstage(
+              offstage: _controller.isDismissed,
+              child: ClipRect(
+                child: Align(
+                  alignment: Alignment.topCenter,
+                  heightFactor: _size.value,
+                  child: FadeTransition(opacity: _size, child: child),
+                ),
               ),
             ),
+            child: !_expanded && _controller.isDismissed
+                ? null
+                : TickerMode(
+                    enabled: _expanded,
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (_loading) const LinearProgressIndicator(),
+                          if (_error != null) ...[
+                            Text(
+                              'تعذر تحميل المعلومات الإضافية. ${_error!.arabicTitle}',
+                            ),
+                            Align(
+                              alignment: AlignmentDirectional.centerStart,
+                              child: TextButton(
+                                onPressed: _load,
+                                child: const Text('أعد المحاولة'),
+                              ),
+                            ),
+                          ],
+                          if (_loaded && !_hasContent)
+                            const Text('لا تتوفر معلومات إضافية من المصدر'),
+                          if (_hasGradingNote)
+                            _infoLine(
+                              'توضيح الحكم',
+                              _hadith.explainGrade,
+                              readingStyle,
+                            ),
+                          if (_hadith.takhrij.trim().isNotEmpty)
+                            _infoLine('التخريج', _hadith.takhrij, readingStyle),
+                          if (_hadith.categories.isNotEmpty)
+                            _infoLine(
+                              'التصنيف الموضوعي',
+                              _hadith.categories
+                                  .map((category) => category.name)
+                                  .join('، '),
+                              readingStyle,
+                            ),
+                          if (_hadith.hasUsulHadith && _hadith.id.isNotEmpty)
+                            Align(
+                              alignment: AlignmentDirectional.centerStart,
+                              child: TextButton.icon(
+                                onPressed: () =>
+                                    showApiDetailsDialog<HadithOrigins>(
+                                      context,
+                                      title: 'أصول الحديث',
+                                      load: () => FavouriteDetailsService()
+                                          .getOrigins(_hadith.id),
+                                      format: (origins) => origins.sources
+                                          .map(
+                                            (source) => [
+                                              if (source.source
+                                                  .trim()
+                                                  .isNotEmpty)
+                                                'المصدر: ${source.source}',
+                                              if (source.chain
+                                                  .trim()
+                                                  .isNotEmpty)
+                                                'الإسناد: ${source.chain}',
+                                              if (source.text.trim().isNotEmpty)
+                                                'المتن: ${source.text}',
+                                            ].join('\n\n'),
+                                          )
+                                          .join('\n\n'),
+                                    ),
+                                icon: const Icon(Icons.account_tree_outlined),
+                                label: Text(
+                                  'أصول الحديث وطرق إخراجه',
+                                  style: readingStyle,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                  ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

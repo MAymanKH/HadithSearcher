@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../viewmodels/settings_viewmodel.dart';
 
 class HadithCardLayout extends StatelessWidget {
+  static const borderRadius = BorderRadius.all(Radius.circular(30));
   final String text;
   final String? grading;
   final String attribution;
@@ -40,7 +41,7 @@ class HadithCardLayout extends StatelessWidget {
       padding: settings.padding,
       decoration: BoxDecoration(
         color: colors.primaryContainer,
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: borderRadius,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -64,7 +65,7 @@ class HadithCardLayout extends StatelessWidget {
           const SizedBox(height: 14),
           Material(
             color: colors.secondaryContainer,
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: borderRadius,
             clipBehavior: Clip.antiAlias,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,9 +117,7 @@ class HadithCardLayout extends StatelessWidget {
           ),
           style: ElevatedButton.styleFrom(
             minimumSize: const Size(0, 45),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(30),
-            ),
+            shape: RoundedRectangleBorder(borderRadius: borderRadius),
           ),
         ),
       ),
