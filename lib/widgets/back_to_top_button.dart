@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/localization.dart';
 import 'package:flutter/rendering.dart';
 
 const _directionScrollThreshold = 100.0;
@@ -82,6 +83,7 @@ class _BackToTopButtonState extends State<BackToTopButton> {
       floatingActionButton: _showButton
           ? FloatingActionButton(
               onPressed: _scrollToTop,
+              tooltip: context.l10n.backToTop,
               child: const Icon(Icons.arrow_upward),
             )
           : null,
@@ -155,6 +157,7 @@ mixin ScrollToTopMixin<T extends StatefulWidget> on State<T> {
     if (!showBackToTopButton) return null;
     return FloatingActionButton(
       onPressed: scrollToTop,
+      tooltip: context.l10n.backToTop,
       child: const Icon(Icons.arrow_upward),
     );
   }

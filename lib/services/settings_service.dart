@@ -12,13 +12,12 @@ class SettingsService {
   static const String _fontWeightKey = 'fontWeight';
   static const String _fontSizeKey = 'fontSize';
   static const String _paddingKey = 'padding';
-
-  SharedPreferences? _prefs;
+  static const String _languageKey = 'language';
+  static const String _welcomeKey = 'welcomeCompleted';
 
   /// Initialize SharedPreferences instance.
   Future<SharedPreferences> get prefs async {
-    _prefs ??= await SharedPreferences.getInstance();
-    return _prefs!;
+    return SharedPreferences.getInstance();
   }
 
   /// Get app settings.
@@ -27,9 +26,11 @@ class SettingsService {
       final p = await prefs;
       return AppSettings(
         theme: ThemePreference.fromString(p.getString(_themeKey) ?? 'system'),
+        language: p.getString(_languageKey) == 'en' ? 'en' : 'ar',
         fontFamily: p.getString(_fontFamilyKey) ?? 'Roboto',
         fontWeight: FontWeightPreference.fromString(
-            p.getString(_fontWeightKey) ?? 'bold'),
+          p.getString(_fontWeightKey) ?? 'bold',
+        ),
         fontSize: p.getInt(_fontSizeKey) ?? 20,
         padding: p.getInt(_paddingKey) ?? 10,
       );
@@ -44,6 +45,15 @@ class SettingsService {
       );
     }
   }
+
+  Future<bool> hasCompletedWelcome() async =>
+      (await prefs).getBool(_welcomeKey) ?? false;
+
+  Future<bool> completeWelcome() async =>
+      (await prefs).setBool(_welcomeKey, true);
+
+  Future<bool> updateLanguage(String language) async =>
+      (await prefs).setString(_languageKey, language);
 
   /// Get theme string (for initial app load before full settings).
   Future<String> getTheme() async {
@@ -115,6 +125,7 @@ class SettingsService {
     try {
       final p = await prefs;
       await p.setString(_themeKey, 'system');
+      await p.setString(_languageKey, 'ar');
       await p.setString(_fontFamilyKey, 'Roboto');
       await p.setString(_fontWeightKey, 'bold');
       await p.setInt(_fontSizeKey, 20);

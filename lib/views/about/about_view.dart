@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../l10n/localization.dart';
 import '../../core/constants/app_config.dart';
 import '../../services/update_service.dart';
 import '../../widgets/app_logo.dart';
@@ -21,8 +22,8 @@ class AboutView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'حول',
+        title: Text(
+          context.l10n.about,
           style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
         ),
       ),
@@ -33,10 +34,7 @@ class AboutView extends StatelessWidget {
               const SizedBox(height: 16),
               const AppLogo(size: 128),
               const SizedBox(height: 20),
-              _buildInfoCard(
-                context,
-                'تطبيق Hadith Searcher هو تطبيق مجاني ومفتوح المصدر للبحث في آلاف الأحاديث النبوية الشريفة. يوفر التطبيق إمكانيات بحث وتصفية متقدمة، مع عرض تفصيلي لمعلومات سند الحديث ودرجة صحته.',
-              ),
+              _buildInfoCard(context, context.l10n.aboutDescription),
               _buildApiInfoCard(context),
               const SizedBox(height: 15),
               _buildActionButtons(context),
@@ -78,7 +76,7 @@ class AboutView extends StatelessWidget {
             color: Theme.of(context).colorScheme.onSurface,
           ),
           children: [
-            const TextSpan(text: 'جميع الأحاديث والمعلومات مأخوذة من موقع '),
+            TextSpan(text: context.l10n.sourceCredit),
             TextSpan(
               text: 'dorar.net',
               style: const TextStyle(
@@ -89,7 +87,7 @@ class AboutView extends StatelessWidget {
               recognizer: TapGestureRecognizer()
                 ..onTap = () => _launchUrl(Uri.parse('https://dorar.net/')),
             ),
-            const TextSpan(text: ' باستخدام '),
+            TextSpan(text: context.l10n.usingApi),
             TextSpan(
               text: 'Dorar Hadith API',
               style: const TextStyle(
@@ -99,9 +97,7 @@ class AboutView extends StatelessWidget {
               ),
               recognizer: TapGestureRecognizer()
                 ..onTap = () => _launchUrl(
-                  Uri.parse(
-                    'https://github.com/MAymanKH/dorar-hadith-api',
-                  ),
+                  Uri.parse('https://github.com/MAymanKH/dorar-hadith-api'),
                 ),
             ),
             const TextSpan(text: '.'),
@@ -118,7 +114,7 @@ class AboutView extends StatelessWidget {
       children: [
         _ActionIconButton(
           icon: Icons.share_rounded,
-          label: 'مشاركة',
+          label: context.l10n.share,
           onTap: () async {
             await SharePlus.instance.share(
               ShareParams(text: 'https://bit.ly/hadith-searcher'),
@@ -128,7 +124,7 @@ class AboutView extends StatelessWidget {
         const SizedBox(width: 24),
         _ActionIconButton(
           icon: Icons.code_rounded,
-          label: 'الكود',
+          label: context.l10n.code,
           onTap: () => _launchUrl(
             Uri.parse('https://github.com/MAymanKH/HadithSearcher'),
           ),
@@ -136,13 +132,13 @@ class AboutView extends StatelessWidget {
         const SizedBox(width: 24),
         _ActionIconButton(
           icon: Icons.attach_money_rounded,
-          label: 'دعم',
+          label: context.l10n.support,
           onTap: () => _launchUrl(Uri.parse('https://ko-fi.com/MAymanKH')),
         ),
         const SizedBox(width: 24),
         _ActionIconButton(
           icon: Icons.system_update_rounded,
-          label: 'تحديث',
+          label: context.l10n.update,
           onTap: updateService.isChecking
               ? null
               : () => checkForUpdates(context),
@@ -154,8 +150,8 @@ class AboutView extends StatelessWidget {
   Widget _buildDeveloperSection(BuildContext context) {
     return Column(
       children: [
-        const Text(
-          'تواصل مع المطور',
+        Text(
+          context.l10n.contactDeveloper,
           style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 15),
@@ -164,13 +160,13 @@ class AboutView extends StatelessWidget {
           children: [
             _ActionIconButton(
               icon: Icons.language,
-              label: 'الموقع',
+              label: context.l10n.website,
               onTap: () => _launchUrl(Uri.parse('https://mohamedayman.net')),
             ),
             const SizedBox(width: 40),
             _ActionIconButton(
               icon: Icons.email,
-              label: 'البريد',
+              label: context.l10n.email,
               onTap: () => _launchUrl(
                 Uri.parse('mailto:mohamed.ayman.khodeir@gmail.com'),
               ),
@@ -183,12 +179,12 @@ class AboutView extends StatelessWidget {
             context: context,
             applicationName: 'Hadith Searcher',
           ),
-          child: const Text('تراخيص المكتبات والخطوط'),
+          child: Text(context.l10n.licenses),
         ),
         GestureDetector(
           onTap: () => _launchUrl(Uri.parse(privacyPolicyUrl)),
-          child: const Text(
-            'سياسة الخصوصية',
+          child: Text(
+            context.l10n.privacyPolicy,
             style: TextStyle(
               decoration: TextDecoration.none,
               decorationColor: Colors.blue,

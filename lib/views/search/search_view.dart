@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/localization.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/app_dropdown.dart';
 import '../../models/search_params.dart';
@@ -88,8 +89,8 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     if (vm.errorMessage == 'emptySearch' && mounted) {
       showAppSnackBar(
         context,
-        const SnackBar(
-          content: Text('لا يمكنك ترك خانة البحث فارغة'),
+        SnackBar(
+          content: Text(context.l10n.emptySearch),
           duration: Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
         ),
@@ -106,8 +107,8 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'البحث',
+        title: Text(
+          context.l10n.search,
           style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
         ),
         actionsPadding: const EdgeInsetsDirectional.only(end: 10),
@@ -115,8 +116,8 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
           if (vm.activeFilters.isNotEmpty)
             IconButton(
               tooltip: vm.showActiveFilters
-                  ? 'إخفاء عوامل التصفية النشطة'
-                  : 'إظهار عوامل التصفية النشطة',
+                  ? context.l10n.hideActiveFilters
+                  : context.l10n.showActiveFilters,
               onPressed: () => vm.setShowActiveFilters(!vm.showActiveFilters),
               icon: Badge(
                 label: Text('${vm.activeFilters.length}'),
@@ -146,7 +147,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
               }
             },
             icon: const Icon(Icons.tune, size: 22),
-            label: const Text('التصفية', style: TextStyle(fontSize: 14)),
+            label: Text(context.l10n.filters, style: TextStyle(fontSize: 14)),
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 12),
               minimumSize: const Size(0, 48),
@@ -201,8 +202,8 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
               autofocus: false,
               textInputAction: TextInputAction.search,
               controller: _textController,
-              decoration: const InputDecoration(
-                hintText: 'تحقق من حديث...',
+              decoration: InputDecoration(
+                hintText: context.l10n.searchHint,
                 constraints: BoxConstraints(minHeight: 60),
               ),
               style: const TextStyle(fontSize: 16),
@@ -213,7 +214,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
           const SizedBox(width: 10),
           ElevatedButton.icon(
             icon: const Icon(Icons.search, size: 30),
-            label: const Text('بحث'),
+            label: Text(context.l10n.searchAction),
             onPressed: _onSearch,
             style: ElevatedButton.styleFrom(
               minimumSize: const Size(0, 60),
@@ -233,36 +234,42 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
         child: Column(
           children: [
             const SizedBox(height: 15),
-            const Text(
-              'البحث المتقدم',
+            Text(
+              context.l10n.advancedSearch,
               style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 15),
             _buildFilterSwitch(
-              title: 'تذكّر عوامل التصفية',
-              subtitle: 'حفظها عند إعادة فتح التطبيق',
+              title: context.l10n.rememberFilters,
+              subtitle: context.l10n.rememberFiltersHelp,
               value: vm.saveAdvancedSettings,
               onChanged: vm.setSaveAdvancedSettings,
             ),
             _buildFilterSwitch(
-              title: 'البحث للمتخصصين',
-              subtitle: 'يشمل اختلاف أحكام المحدثين وتفاصيل الأسانيد',
+              title: context.l10n.specialistSearch,
+              subtitle: context.l10n.specialistSearchHelp,
               value: vm.specialist,
               onChanged: vm.setSpecialist,
             ),
             _buildDropdownRow(
-              'طريقة البحث',
-              vm.searchWay.arabicName,
-              SearchWay.values.map((e) => e.arabicName).toList(),
-              (value) => vm.setSearchWay(SearchWay.fromArabic(value!)),
+              context.l10n.searchMethod,
+              vm.searchWay,
+              SearchWay.values,
+              (value) {
+                if (value != null) vm.setSearchWay(value);
+              },
+              itemLabel: (value) => value.label(context.l10n),
               isDefault: vm.searchWay == SearchWay.anyWord,
             ),
             _buildCatalogField(SearchFilter.grade, vm),
             _buildDropdownRow(
-              'نطاق البحث',
-              vm.searchRange.arabicName,
-              SearchRange.values.map((e) => e.arabicName).toList(),
-              (value) => vm.setSearchRange(SearchRange.fromArabic(value!)),
+              context.l10n.searchRange,
+              vm.searchRange,
+              SearchRange.values,
+              (value) {
+                if (value != null) vm.setSearchRange(value);
+              },
+              itemLabel: (value) => value.label(context.l10n),
               isDefault: vm.searchRange == SearchRange.all,
             ),
             for (final filter in SearchFilter.values)
@@ -291,14 +298,16 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
       children: [
         TextButton(
           onPressed: () => _clearFilters(vm),
-          child: const Text('مسح عوامل التصفية'),
+          child: Text(context.l10n.clearFilters),
         ),
-        ...vm.activeFilters.map(
-          (label) => Padding(
-            padding: const EdgeInsets.only(left: 10),
-            child: Chip(label: Text(label)),
-          ),
-        ),
+        ...vm
+            .localizedActiveFilters(context.l10n)
+            .map(
+              (label) => Padding(
+                padding: const EdgeInsets.only(left: 10),
+                child: Chip(label: Text(label)),
+              ),
+            ),
       ],
     ),
   );
@@ -330,7 +339,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
       },
       child: InputDecorator(
         decoration: InputDecoration(
-          labelText: filter.arabicName,
+          labelText: filter.label(context.l10n),
           labelStyle: _filterLabelStyle(
             vm.excludedOptions(filter).isNotEmpty ||
                 vm
@@ -350,7 +359,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
           ),
         ),
         child: Text(
-          vm.selectionLabel(filter),
+          vm.selectionLabel(filter, context.l10n),
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
@@ -358,16 +367,17 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     ),
   );
 
-  Widget _buildDropdownRow(
+  Widget _buildDropdownRow<T>(
     String label,
-    String value,
-    List<String> items,
-    void Function(String?) onChanged, {
+    T value,
+    List<T> items,
+    void Function(T?) onChanged, {
+    required String Function(T) itemLabel,
     required bool isDefault,
   }) {
     return Padding(
       padding: const EdgeInsets.all(10),
-      child: AppDropdown<String>(
+      child: AppDropdown<T>(
         title: label,
         key: ValueKey('$label:$value'),
         value: value,
@@ -381,7 +391,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
             .map(
               (item) => DropdownMenuItem(
                 value: item,
-                child: Text(item, overflow: TextOverflow.ellipsis),
+                child: Text(itemLabel(item), overflow: TextOverflow.ellipsis),
               ),
             )
             .toList(),
@@ -394,9 +404,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
       padding: const EdgeInsets.all(10),
       child: TextField(
         controller: _excludedWordsController,
-        decoration: const InputDecoration(
-          hintText: 'كلمات أو جملة تريد استبعادها',
-        ),
+        decoration: InputDecoration(hintText: context.l10n.excludeWordsHint),
         onChanged: vm.setExcludedWords,
       ),
     );
@@ -458,20 +466,20 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
 
       if (vm.errorMessage == 'noResults') {
         icon = Icons.search_off;
-        title = 'لا توجد نتائج';
-        description = 'جرب استخدام كلمات أو إعدادات أخرى';
+        title = context.l10n.noResults;
+        description = context.l10n.searchNoResultsHelp;
       } else if (vm.errorMessage!.contains('خطأ بالإتصال')) {
         icon = Icons.wifi_off;
-        title = 'خطأ بالإتصال بالإنترنت';
-        description = 'تأكد من إتصالك بالإنترنت وأعد المحاولة';
+        title = context.l10n.connectionError;
+        description = context.l10n.connectionHelp;
       } else if (vm.errorMessage!.contains('نفذ الوقت')) {
         icon = Icons.timer_off;
-        title = 'نفذ الوقت';
-        description = 'تأكد من إتصالك بإنترنت مستقر وأعد المحاولة';
+        title = context.l10n.timeout;
+        description = context.l10n.timeoutHelp;
       } else {
         icon = Icons.error_outline;
-        title = vm.errorMessage!;
-        description = 'حاول مرة أخرى';
+        title = localizedError(vm.errorMessage!, context.l10n);
+        description = context.l10n.tryAgain;
       }
 
       return Expanded(
@@ -502,7 +510,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
                 ElevatedButton.icon(
                   onPressed: () => _onSearch(),
                   icon: const Icon(Icons.refresh),
-                  label: const Text('أعد المحاولة'),
+                  label: Text(context.l10n.retry),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 30,
@@ -530,8 +538,8 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(Icons.search, size: 100, color: Colors.grey),
-                    const Text(
-                      'ابحث عن حديث',
+                    Text(
+                      context.l10n.searchEmpty,
                       textAlign: TextAlign.center,
                       style: TextStyle(fontSize: 20, color: Colors.grey),
                     ),
@@ -581,7 +589,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
                       showAppSnackBar(
                         context,
                         SnackBar(
-                          content: Text(error),
+                          content: Text(localizedError(error, context.l10n)),
                           duration: const Duration(seconds: 2),
                           behavior: SnackBarBehavior.floating,
                         ),

@@ -26,6 +26,10 @@ void main() {
     tester.view.physicalSize = Size(width, 850);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
+    await (await SharedPreferences.getInstance()).setBool(
+      'welcomeCompleted',
+      true,
+    );
     final telemetry = TelemetryService(
       preferences: await SharedPreferences.getInstance(),
       backend: FakeBackend(),
@@ -318,7 +322,10 @@ void main() {
     await tester.tap(find.widgetWithText(TextButton, 'التصفية'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    expect(find.byType(AppDropdown<String>), findsNWidgets(2));
+    expect(
+      find.byWidgetPredicate((widget) => widget is AppDropdown),
+      findsNWidgets(2),
+    );
     await tester.pumpWidget(const SizedBox());
   });
 
@@ -362,7 +369,10 @@ void main() {
     expect(vm.activeFilters, activeFilters);
     await tester.tap(find.widgetWithText(TextButton, 'التصفية'));
     await tester.pumpAndSettle();
-    expect(find.byType(AppDropdown<String>), findsNWidgets(2));
+    expect(
+      find.byWidgetPredicate((widget) => widget is AppDropdown),
+      findsNWidgets(2),
+    );
     await tester.tap(find.widgetWithText(TextButton, 'التصفية'));
     await tester.pumpAndSettle();
     expect(find.byType(Chip), findsNothing);

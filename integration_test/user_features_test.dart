@@ -30,6 +30,7 @@ void main() {
     (tester) async {
       final preferences = await SharedPreferences.getInstance();
       await preferences.clear();
+      await preferences.setBool('welcomeCompleted', true);
       final path = join(await getDatabasesPath(), 'hadithsearcher.db');
       await deleteDatabase(path);
       final legacy = await openDatabase(

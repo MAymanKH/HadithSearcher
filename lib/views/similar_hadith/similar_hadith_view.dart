@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/localization.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../viewmodels/similar_hadith_viewmodel.dart';
 import '../../widgets/back_to_top_button.dart';
@@ -44,7 +45,11 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.alternate ? 'البديل الصحيح' : 'أحاديث مشابهة'),
+        title: Text(
+          widget.alternate
+              ? context.l10n.alternate
+              : context.l10n.similarHadiths,
+        ),
       ),
       body: SafeArea(
         top: false,
@@ -69,8 +74,8 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
           const SizedBox(height: 20),
           Text(
             widget.alternate
-                ? 'لا يوجد بديل صحيح متاح'
-                : 'لا توجد أحاديث مشابهة',
+                ? context.l10n.noAlternate
+                : context.l10n.noSimilar,
             style: const TextStyle(fontSize: 20, color: Colors.grey),
           ),
         ],
@@ -84,16 +89,16 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
 
       if (vm.errorMessage!.contains('خطأ بالإتصال')) {
         icon = Icons.wifi_off;
-        title = 'خطأ بالإتصال بالإنترنت';
-        description = 'تأكد من إتصالك بالإنترنت وأعد المحاولة';
+        title = context.l10n.connectionError;
+        description = context.l10n.connectionHelp;
       } else if (vm.errorMessage!.contains('نفذ الوقت')) {
         icon = Icons.timer_off;
-        title = 'نفذ الوقت';
-        description = 'تأكد من إتصالك بإنترنت مستقر وأعد المحاولة';
+        title = context.l10n.timeout;
+        description = context.l10n.timeoutHelp;
       } else {
         icon = Icons.error_outline;
-        title = vm.errorMessage!;
-        description = 'حاول مرة أخرى';
+        title = localizedError(vm.errorMessage!, context.l10n);
+        description = context.l10n.tryAgain;
       }
 
       return Padding(
@@ -129,7 +134,7 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
                 }
               },
               icon: const Icon(Icons.refresh),
-              label: const Text('أعد المحاولة'),
+              label: Text(context.l10n.retry),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 30,
@@ -161,7 +166,7 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
               showAppSnackBar(
                 context,
                 SnackBar(
-                  content: Text(error),
+                  content: Text(localizedError(error, context.l10n)),
                   duration: const Duration(seconds: 2),
                   behavior: SnackBarBehavior.floating,
                 ),

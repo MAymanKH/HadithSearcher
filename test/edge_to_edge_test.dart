@@ -18,6 +18,7 @@ void main() {
     ) async {
       final preferences = await SharedPreferences.getInstance();
       await preferences.clear();
+      await preferences.setBool('welcomeCompleted', true);
       await preferences.setString('theme', brightness.name);
       final telemetry = TelemetryService(
         preferences: preferences,
@@ -66,6 +67,7 @@ void main() {
     (tester) async {
       final preferences = await SharedPreferences.getInstance();
       await preferences.clear();
+      await preferences.setBool('welcomeCompleted', true);
       final telemetry = TelemetryService(
         preferences: preferences,
         backend: FakeBackend(),
@@ -115,6 +117,7 @@ void main() {
   ) async {
     final preferences = await SharedPreferences.getInstance();
     await preferences.clear();
+    await preferences.setBool('welcomeCompleted', true);
     final telemetry = TelemetryService(
       preferences: preferences,
       backend: FakeBackend(),

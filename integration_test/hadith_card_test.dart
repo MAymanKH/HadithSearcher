@@ -22,6 +22,7 @@ void main() {
   ) async {
     final preferences = await SharedPreferences.getInstance();
     await preferences.clear();
+    await preferences.setBool('welcomeCompleted', true);
     final telemetry = TelemetryService(
       preferences: preferences,
       backend: FakeBackend(),

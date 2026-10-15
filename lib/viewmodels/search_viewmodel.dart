@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../l10n/localization.dart';
+import '../l10n/app_localizations_ar.dart';
 import '../models/hadith.dart';
 import '../models/search_params.dart';
 import '../models/search_option.dart';
@@ -32,16 +34,19 @@ class SearchViewModel extends ChangeNotifier {
   bool _initialized = false;
   bool _disposed = false;
   final _catalogs = FilterCatalogService();
-  List<String> get activeFilters => [
-    if (_searchWay != SearchWay.anyWord) _searchWay.arabicName,
-    if (_searchRange != SearchRange.all) _searchRange.arabicName,
-    if (_specialist) 'للمتخصصين',
+  List<String> get activeFilters =>
+      localizedActiveFilters(AppLocalizationsAr());
+
+  List<String> localizedActiveFilters(AppLocalizations l) => [
+    if (_searchWay != SearchWay.anyWord) _searchWay.label(l),
+    if (_searchRange != SearchRange.all) _searchRange.label(l),
+    if (_specialist) l.specialists,
     for (final filter in SearchFilter.values)
       if (excludedOptions(filter).isNotEmpty ||
           (selectedOptions(filter).isNotEmpty &&
               !selectedOptions(filter).any((option) => option.apiCode == '0')))
-        '${filter.arabicName}: ${selectionLabel(filter)}',
-    if (_excludedWords.trim().isNotEmpty) 'استبعاد: $_excludedWords',
+        '${filter.label(l)}: ${selectionLabel(filter, l)}',
+    if (_excludedWords.trim().isNotEmpty) l.excludedWords(_excludedWords),
   ];
 
   final _filters = <SearchFilter, List<SearchOption>>{};
@@ -65,23 +70,29 @@ class SearchViewModel extends ChangeNotifier {
   List<SearchOption> excludedOptions(SearchFilter filter) =>
       _exclusions[filter] ?? const [];
 
-  String selectionLabel(SearchFilter filter) {
+  String selectionLabel(
+    SearchFilter filter, [
+    AppLocalizations? localizations,
+  ]) {
+    final l = localizations ?? AppLocalizationsAr();
     final excluded = excludedOptions(filter);
     if (excluded.isNotEmpty) {
       final names = excluded
           .take(2)
-          .map((option) => option.arabicName)
-          .join('، ');
-      return 'الجميع باستثناء $names${excluded.length > 2 ? ' +${excluded.length - 2}' : ''}';
+          .map((option) => filter.optionLabel(option, l))
+          .join(l.localeName == 'ar' ? '، ' : ', ');
+      return l.allExcept(
+        "$names${excluded.length > 2 ? ' +${excluded.length - 2}' : ''}",
+      );
     }
     final selected = selectedOptions(filter);
     if (selected.isEmpty || selected.any((option) => option.apiCode == '0')) {
-      return filter.all.arabicName;
+      return filter.optionLabel(filter.all, l);
     }
     final names = selected
         .take(2)
-        .map((option) => option.arabicName)
-        .join('، ');
+        .map((option) => filter.optionLabel(option, l))
+        .join(l.localeName == 'ar' ? '، ' : ', ');
     return selected.length > 2 ? '$names +${selected.length - 2}' : names;
   }
 

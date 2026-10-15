@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../l10n/localization.dart';
 import '../services/api_service.dart';
 import '../viewmodels/settings_viewmodel.dart';
 
@@ -66,8 +67,11 @@ class _ApiDetailsDialogState<T extends Object>
                 : Text(
                     result?.error == ApiError.notFound ||
                             result?.isSuccess == true
-                        ? 'لا تتوفر معلومات إضافية من المصدر'
-                        : 'تعذر تحميل المعلومات. ${result?.error?.arabicTitle ?? 'أعد المحاولة'}',
+                        ? context.l10n.noAdditionalInfo
+                        : context.l10n.infoLoadFailed(
+                            result?.error?.title(context.l10n) ??
+                                context.l10n.retry,
+                          ),
                   ),
           ),
           actions: [
@@ -77,7 +81,7 @@ class _ApiDetailsDialogState<T extends Object>
                 Flexible(
                   child: TextButton(
                     onPressed: () => Navigator.pop(context),
-                    child: const Text('إغلاق'),
+                    child: Text(context.l10n.close),
                   ),
                 ),
                 if (!loading &&
@@ -88,7 +92,7 @@ class _ApiDetailsDialogState<T extends Object>
                       onPressed: () => setState(() {
                         _result = widget.load();
                       }),
-                      child: const Text('أعد المحاولة'),
+                      child: Text(context.l10n.retry),
                     ),
                   ),
                 if (text.isNotEmpty)
@@ -96,7 +100,7 @@ class _ApiDetailsDialogState<T extends Object>
                     child: TextButton(
                       onPressed: () =>
                           Clipboard.setData(ClipboardData(text: text)),
-                      child: const Text('نسخ'),
+                      child: Text(context.l10n.copy),
                     ),
                   ),
               ],

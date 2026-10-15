@@ -10,6 +10,10 @@ class SettingsViewModel extends ChangeNotifier {
 
   AppSettings _settings = AppSettings.defaults;
   bool _isLoading = true;
+  bool _welcomeCompleted = false;
+
+  bool get welcomeCompleted => _welcomeCompleted;
+  Locale get locale => Locale(_settings.language);
 
   /// Current settings.
   AppSettings get settings => _settings;
@@ -55,16 +59,34 @@ class SettingsViewModel extends ChangeNotifier {
     notifyListeners();
 
     _settings = await _settingsService.getSettings();
+    _welcomeCompleted = await _settingsService.hasCompletedWelcome();
 
     _isLoading = false;
     notifyListeners();
   }
 
+  Future<void> setLanguage(String language) async {
+    if (language != 'ar' && language != 'en') return;
+    if (await _settingsService.updateLanguage(language)) {
+      _settings = _settings.copyWith(language: language);
+      notifyListeners();
+    }
+  }
+
+  Future<bool> completeWelcome() async {
+    if (!await _settingsService.completeWelcome()) return false;
+    _welcomeCompleted = true;
+    notifyListeners();
+    return true;
+  }
+
   /// Update theme preference.
   Future<void> setTheme(ThemePreference theme) async {
     if (await _settingsService.updateTheme(theme)) {
-      TelemetryService.event(
-          'appearance_changed', {'setting': 'theme', 'value': theme.name});
+      TelemetryService.event('appearance_changed', {
+        'setting': 'theme',
+        'value': theme.name,
+      });
     }
     _settings = _settings.copyWith(theme: theme);
     notifyListeners();
@@ -73,8 +95,10 @@ class SettingsViewModel extends ChangeNotifier {
   /// Update font family.
   Future<void> setFontFamily(String fontFamily) async {
     if (await _settingsService.updateFontFamily(fontFamily)) {
-      TelemetryService.event('appearance_changed',
-          {'setting': 'font_family', 'value': fontFamily});
+      TelemetryService.event('appearance_changed', {
+        'setting': 'font_family',
+        'value': fontFamily,
+      });
     }
     _settings = _settings.copyWith(fontFamily: fontFamily);
     notifyListeners();
@@ -83,8 +107,10 @@ class SettingsViewModel extends ChangeNotifier {
   /// Update font weight.
   Future<void> setFontWeight(FontWeightPreference fontWeight) async {
     if (await _settingsService.updateFontWeight(fontWeight)) {
-      TelemetryService.event('appearance_changed',
-          {'setting': 'font_weight', 'value': fontWeight.name});
+      TelemetryService.event('appearance_changed', {
+        'setting': 'font_weight',
+        'value': fontWeight.name,
+      });
     }
     _settings = _settings.copyWith(fontWeight: fontWeight);
     notifyListeners();
@@ -93,8 +119,10 @@ class SettingsViewModel extends ChangeNotifier {
   /// Update font size.
   Future<void> setFontSize(int fontSize) async {
     if (await _settingsService.updateFontSize(fontSize)) {
-      TelemetryService.event(
-          'appearance_changed', {'setting': 'font_size', 'value': fontSize});
+      TelemetryService.event('appearance_changed', {
+        'setting': 'font_size',
+        'value': fontSize,
+      });
     }
     _settings = _settings.copyWith(fontSize: fontSize);
     notifyListeners();
@@ -103,8 +131,10 @@ class SettingsViewModel extends ChangeNotifier {
   /// Update padding.
   Future<void> setPadding(int padding) async {
     if (await _settingsService.updatePadding(padding)) {
-      TelemetryService.event(
-          'appearance_changed', {'setting': 'padding', 'value': padding});
+      TelemetryService.event('appearance_changed', {
+        'setting': 'padding',
+        'value': padding,
+      });
     }
     _settings = _settings.copyWith(padding: padding);
     notifyListeners();

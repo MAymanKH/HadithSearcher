@@ -63,7 +63,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     final arrows = find.byIcon(Icons.expand_more_rounded);
-    expect(arrows, findsNWidgets(5));
+    expect(arrows, findsNWidgets(6));
     final arrowPositions = tester.getTopLeft(arrows.first).dx;
     for (final arrow in arrows.evaluate()) {
       expect(tester.getTopLeft(find.byWidget(arrow.widget)).dx, arrowPositions);

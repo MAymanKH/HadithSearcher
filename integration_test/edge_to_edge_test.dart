@@ -22,6 +22,7 @@ void main() {
       await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
       final preferences = await SharedPreferences.getInstance();
       await preferences.clear();
+      await preferences.setBool('welcomeCompleted', true);
       final telemetry = TelemetryService(
         preferences: preferences,
         backend: FakeBackend(),

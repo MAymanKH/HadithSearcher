@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import '../l10n/localization.dart';
 import '../models/search_option.dart';
 import '../models/hadith_details.dart';
 import 'api_details_dialog.dart';
@@ -250,12 +251,12 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
           load: () => ApiService().getBookDetails(option.apiCode),
           format: (book) => _fields([
             if (book.name.trim() != option.arabicName.trim())
-              ('الكتاب', book.name),
-            ('المؤلف', book.author),
-            ('المراجع', book.reviewer),
-            ('دار النشر', book.publisher),
-            ('الطبعة', book.edition),
-            ('سنة الطبعة', book.editionYear),
+              (context.l10n.book, book.name),
+            (context.l10n.author, book.author),
+            (context.l10n.reviewer, book.reviewer),
+            (context.l10n.publisher, book.publisher),
+            (context.l10n.edition, book.edition),
+            (context.l10n.editionYear, book.editionYear),
           ]),
         );
       case SearchFilter.scholar:
@@ -281,7 +282,7 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
         (widget.filter == SearchFilter.book ||
             widget.filter == SearchFilter.scholar);
     return AppSelectionTile(
-      title: Text(option.arabicName),
+      title: Text(widget.filter.optionLabel(option, context.l10n)),
       multiple: true,
       selected: all
           ? _everythingSelected
@@ -292,7 +293,7 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
           : _excluding != _selected.containsKey(option.apiCode),
       leading: supportsInfo
           ? IconButton(
-              tooltip: 'معلومات عن ${option.arabicName}',
+              tooltip: context.l10n.infoAbout(option.arabicName),
               icon: const Icon(Icons.error_outline_rounded),
               onPressed: () => _showInfo(option),
             )
@@ -303,14 +304,14 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
 
   @override
   Widget build(BuildContext context) => SelectionSheet(
-    title: widget.filter.arabicName,
-    trailing: Text('المحدد: $_selectionCount'),
+    title: widget.filter.label(context.l10n),
+    trailing: Text(context.l10n.selectedCount(_selectionCount)),
     search: widget.filter == SearchFilter.grade
         ? null
         : TextField(
             autofocus: false,
-            decoration: const InputDecoration(
-              hintText: 'ابحث بالاسم...',
+            decoration: InputDecoration(
+              hintText: context.l10n.searchByName,
               prefixIcon: Icon(Icons.search),
             ),
             onChanged: _search,
@@ -330,13 +331,12 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
                 children: [
                   Expanded(
                     child: Text(
-                      'تعذر تحميل جميع الخيارات. ${_error!.arabicTitle}',
+                      context.l10n.optionsLoadFailed(
+                        _error!.title(context.l10n),
+                      ),
                     ),
                   ),
-                  TextButton(
-                    onPressed: _load,
-                    child: const Text('أعد المحاولة'),
-                  ),
+                  TextButton(onPressed: _load, child: Text(context.l10n.retry)),
                 ],
               ),
             ),
@@ -347,7 +347,9 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
               padding: const EdgeInsets.all(24),
               child: Center(
                 child: Text(
-                  _loading ? 'جارٍ تحميل الخيارات...' : 'لا توجد خيارات مطابقة',
+                  _loading
+                      ? context.l10n.loadingOptions
+                      : context.l10n.noMatchingOptions,
                 ),
               ),
             ),

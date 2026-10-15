@@ -36,6 +36,7 @@ void main() {
     });
     final preferences = await SharedPreferences.getInstance();
     await preferences.clear();
+    await preferences.setBool('welcomeCompleted', true);
     final backend = SdkTelemetryBackend(
       sentryDsn: 'http://public@127.0.0.1:${server.port}/1',
       posthogToken: 'phc_local_test',

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 /// App settings for theme and hadith display preferences.
 class AppSettings {
   final ThemePreference theme;
+  final String language;
   final String fontFamily;
   final FontWeightPreference fontWeight;
   final int fontSize;
@@ -10,6 +11,7 @@ class AppSettings {
 
   const AppSettings({
     this.theme = ThemePreference.system,
+    this.language = 'ar',
     this.fontFamily = 'Roboto',
     this.fontWeight = FontWeightPreference.bold,
     this.fontSize = 20,
@@ -20,6 +22,7 @@ class AppSettings {
   factory AppSettings.fromDatabase(Map<String, dynamic> row) {
     return AppSettings(
       theme: ThemePreference.fromString(row['theme'] ?? 'system'),
+      language: row['language'] == 'en' ? 'en' : 'ar',
       fontFamily: row['fontfamily'] ?? 'Roboto',
       fontWeight: FontWeightPreference.fromString(row['fontweight'] ?? 'bold'),
       fontSize: row['fontsize'] ?? 20,
@@ -42,6 +45,7 @@ class AppSettings {
   /// Creates a copy with updated values.
   AppSettings copyWith({
     ThemePreference? theme,
+    String? language,
     String? fontFamily,
     FontWeightPreference? fontWeight,
     int? fontSize,
@@ -49,6 +53,7 @@ class AppSettings {
   }) {
     return AppSettings(
       theme: theme ?? this.theme,
+      language: language ?? this.language,
       fontFamily: fontFamily ?? this.fontFamily,
       fontWeight: fontWeight ?? this.fontWeight,
       fontSize: fontSize ?? this.fontSize,
@@ -98,18 +103,6 @@ enum ThemePreference {
         return ThemeMode.system;
     }
   }
-
-  /// Arabic display name.
-  String get arabicName {
-    switch (this) {
-      case ThemePreference.system:
-        return 'إتباع النظام';
-      case ThemePreference.light:
-        return 'الوضع النهاري';
-      case ThemePreference.dark:
-        return 'الوضع الليلي';
-    }
-  }
 }
 
 /// Font weight preference enum.
@@ -144,16 +137,6 @@ enum FontWeightPreference {
         return FontWeight.normal;
       case FontWeightPreference.bold:
         return FontWeight.bold;
-    }
-  }
-
-  /// Arabic display name.
-  String get arabicName {
-    switch (this) {
-      case FontWeightPreference.normal:
-        return 'عادي';
-      case FontWeightPreference.bold:
-        return 'عريض';
     }
   }
 }

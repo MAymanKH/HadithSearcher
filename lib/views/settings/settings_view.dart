@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../l10n/localization.dart';
 import '../../widgets/app_dropdown.dart';
+import '../../widgets/appearance_preferences.dart';
 import '../../models/settings.dart';
 import '../../viewmodels/settings_viewmodel.dart';
 import '../../services/telemetry/telemetry_service.dart';
@@ -15,8 +17,8 @@ class SettingsView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'الإعدادات',
+        title: Text(
+          context.l10n.settings,
           style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
         ),
       ),
@@ -26,14 +28,14 @@ class SettingsView extends StatelessWidget {
             child: Column(
               children: [
                 const SizedBox(height: 15),
-                _buildThemeSection(context, vm),
+                const AppearancePreferences(),
                 const SizedBox(height: 20),
-                const Padding(
+                Padding(
                   padding: EdgeInsets.fromLTRB(20, 4, 20, 12),
                   child: Align(
                     alignment: AlignmentDirectional.centerStart,
                     child: Text(
-                      'إعدادات نص الأحاديث والشرح',
+                      context.l10n.readingSettings,
                       style: TextStyle(
                         fontSize: 23,
                         fontWeight: FontWeight.bold,
@@ -61,8 +63,8 @@ class SettingsView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                     clipBehavior: Clip.antiAlias,
                     child: ListTile(
-                      title: const Text(
-                        'الخصوصية والقياس الاختياري',
+                      title: Text(
+                        context.l10n.privacySettings,
                         style: TextStyle(fontSize: 18),
                       ),
                       trailing: const Icon(Icons.chevron_right),
@@ -82,29 +84,9 @@ class SettingsView extends StatelessWidget {
     );
   }
 
-  Widget _buildThemeSection(BuildContext context, SettingsViewModel vm) {
-    return AppDropdown<ThemePreference>.settings(
-      title: 'المظهر العام',
-      value: vm.settings.theme,
-      onChanged: (value) {
-        if (value != null) {
-          vm.setTheme(value);
-        }
-      },
-      items: ThemePreference.values
-          .map(
-            (t) => DropdownMenuItem(
-              value: t,
-              child: Text(t.arabicName, style: const TextStyle(fontSize: 18)),
-            ),
-          )
-          .toList(),
-    );
-  }
-
   Widget _buildFontFamilySection(BuildContext context, SettingsViewModel vm) {
     return AppDropdown<String>.settings(
-      title: 'نوع الخط',
+      title: context.l10n.fontFamily,
       value: vm.fontFamily,
       onChanged: (value) {
         if (value != null) vm.setFontFamily(value);
@@ -126,7 +108,7 @@ class SettingsView extends StatelessWidget {
 
   Widget _buildFontWeightSection(BuildContext context, SettingsViewModel vm) {
     return AppDropdown<FontWeightPreference>.settings(
-      title: 'ثقل الخط',
+      title: context.l10n.fontWeight,
       value: vm.settings.fontWeight,
       onChanged: (value) {
         if (value != null) vm.setFontWeight(value);
@@ -135,7 +117,10 @@ class SettingsView extends StatelessWidget {
           .map(
             (w) => DropdownMenuItem(
               value: w,
-              child: Text(w.arabicName, style: const TextStyle(fontSize: 18)),
+              child: Text(
+                w.label(context.l10n),
+                style: const TextStyle(fontSize: 18),
+              ),
             ),
           )
           .toList(),
@@ -144,7 +129,7 @@ class SettingsView extends StatelessWidget {
 
   Widget _buildFontSizeSection(BuildContext context, SettingsViewModel vm) {
     return AppDropdown<int>.settings(
-      title: 'حجم الخط',
+      title: context.l10n.fontSize,
       value: vm.settings.fontSize,
       onChanged: (value) {
         if (value != null) vm.setFontSize(value);
@@ -162,7 +147,7 @@ class SettingsView extends StatelessWidget {
 
   Widget _buildPaddingSection(BuildContext context, SettingsViewModel vm) {
     return AppDropdown<int>.settings(
-      title: 'الحشو',
+      title: context.l10n.padding,
       value: vm.settings.padding,
       onChanged: (value) {
         if (value != null) vm.setPadding(value);
@@ -184,8 +169,8 @@ class SettingsView extends StatelessWidget {
       child: ElevatedButton.icon(
         onPressed: () => vm.resetToDefaults(),
         icon: const Icon(Icons.restore_outlined, size: 25),
-        label: const Text(
-          'العودة للإعدادات الافتراضية',
+        label: Text(
+          context.l10n.resetSettings,
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         style: ElevatedButton.styleFrom(

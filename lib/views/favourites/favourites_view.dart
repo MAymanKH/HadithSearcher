@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../l10n/localization.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../services/telemetry/telemetry_service.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -46,8 +47,8 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'المفضلة',
+        title: Text(
+          context.l10n.favourites,
           style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
         ),
       ),
@@ -65,14 +66,14 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
   Widget _buildEmptyState() {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
-      child: const Column(
+      child: Column(
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.star_border, size: 140),
           SizedBox(height: 15),
           Text(
-            'لم يتم إضافة أحاديث للمفضلة',
+            context.l10n.emptyFavourites,
             style: TextStyle(fontSize: 23, fontWeight: FontWeight.bold),
           ),
         ],
@@ -96,7 +97,7 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
               showAppSnackBar(
                 context,
                 SnackBar(
-                  content: Text(error),
+                  content: Text(localizedError(error, context.l10n)),
                   duration: const Duration(seconds: 2),
                   behavior: SnackBarBehavior.floating,
                 ),
@@ -113,8 +114,8 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
     // Show searching snackbar
     showAppSnackBar(
       context,
-      const SnackBar(
-        content: Text('جارٍ البحث عن الشرح...'),
+      SnackBar(
+        content: Text(context.l10n.loadingExplanation),
         duration: Duration(seconds: 30),
       ),
     );
@@ -129,7 +130,7 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
     if (result.isSuccess) {
       showMessageDialog(
         context,
-        title: 'الشرح',
+        title: context.l10n.explanation,
         content: result.data!,
         useReadingSettings: true,
       );
@@ -137,13 +138,13 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
       // Show error as snackbar for all errors
       String errorMessage;
       if (result.error == ApiError.notFound) {
-        errorMessage = 'لا يوجد شرح لهذا الحديث';
+        errorMessage = context.l10n.noExplanation;
       } else if (result.error == ApiError.noConnection) {
-        errorMessage = 'تأكد من إتصالك بالإنترنت وأعد المحاولة';
+        errorMessage = context.l10n.connectionHelp;
       } else if (result.error == ApiError.timeout) {
-        errorMessage = 'نفذ الوقت - تأكد من إتصالك بإنترنت مستقر';
+        errorMessage = context.l10n.explanationTimeout;
       } else {
-        errorMessage = 'حدث خطأ غير متوقع، حاول مرة أخرى';
+        errorMessage = context.l10n.unexpectedHelp;
       }
 
       showAppSnackBar(
@@ -154,7 +155,7 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
           behavior: SnackBarBehavior.floating,
           action: result.error != ApiError.notFound
               ? SnackBarAction(
-                  label: 'أعد المحاولة',
+                  label: context.l10n.retry,
                   onPressed: () => _getSharh(vm, hadithId),
                 )
               : null,
@@ -180,8 +181,9 @@ class _FavouriteHadithCard extends StatelessWidget {
     final citation = HadithCitation.tryParse(favourite.hadithInfo);
     return HadithCardLayout(
       text: favourite.hadithText,
-      grading: citation?.grading,
-      attribution: citation?.attribution ?? favourite.hadithInfo,
+      grading: citation?.localizedGrading(context.l10n),
+      attribution:
+          citation?.localizedAttribution(context.l10n) ?? favourite.hadithInfo,
       additionalInfo: HadithAdditionalInfo(
         key: ValueKey(favourite.hadithId),
         hadith:
@@ -198,7 +200,7 @@ class _FavouriteHadithCard extends StatelessWidget {
         await SharePlus.instance.share(
           ShareParams(
             text:
-                '${favourite.shareText}\n\nHadith Searcher:\nhttps://bit.ly/hadith-searcher',
+                '${favourite.hadithText}\n\n${citation?.localizedInfo(context.l10n) ?? favourite.hadithInfo}\n\nHadith Searcher:\nhttps://bit.ly/hadith-searcher',
           ),
         );
       },

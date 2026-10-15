@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../l10n/localization.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../core/constants/app_config.dart';
 import '../../widgets/app_logo.dart';
@@ -44,7 +45,7 @@ class _TelemetryConsentViewState extends State<TelemetryConsentView> {
     if (!opened && mounted) {
       showAppSnackBar(
         context,
-        const SnackBar(content: Text('تعذر فتح سياسة الخصوصية.')),
+        SnackBar(content: Text(context.l10n.privacyOpenFailed)),
       );
     }
   }
@@ -73,8 +74,8 @@ class _TelemetryConsentViewState extends State<TelemetryConsentView> {
                     children: [
                       const AppLogo(),
                       const SizedBox(height: 20),
-                      const Text(
-                        'الموافقة على مشاركة البيانات',
+                      Text(
+                        context.l10n.consentTitle,
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 28,
@@ -82,8 +83,8 @@ class _TelemetryConsentViewState extends State<TelemetryConsentView> {
                         ),
                       ),
                       const SizedBox(height: 12),
-                      const Text(
-                        'المشاركة اختيارية ويمكن تغيير اختيارك لاحقاً.',
+                      Text(
+                        context.l10n.consentDescription,
                         textAlign: TextAlign.center,
                         style: TextStyle(fontSize: 16, height: 1.5),
                       ),
@@ -92,9 +93,7 @@ class _TelemetryConsentViewState extends State<TelemetryConsentView> {
                         key: const Key('analytics-consent'),
                         contentPadding: EdgeInsets.zero,
                         controlAffinity: ListTileControlAffinity.leading,
-                        title: const Text(
-                          'أوافق على مشاركة إحصاءات الاستخدام.',
-                        ),
+                        title: Text(context.l10n.analyticsConsent),
                         value: _analytics,
                         onChanged: telemetry.saving
                             ? null
@@ -104,7 +103,7 @@ class _TelemetryConsentViewState extends State<TelemetryConsentView> {
                         key: const Key('diagnostics-consent'),
                         contentPadding: EdgeInsets.zero,
                         controlAffinity: ListTileControlAffinity.leading,
-                        title: const Text('أوافق على مشاركة تقارير الأعطال.'),
+                        title: Text(context.l10n.diagnosticsConsent),
                         value: _diagnostics,
                         onChanged: telemetry.saving
                             ? null
@@ -114,7 +113,7 @@ class _TelemetryConsentViewState extends State<TelemetryConsentView> {
                         Padding(
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           child: Text(
-                            telemetry.error!,
+                            localizedError(telemetry.error!, context.l10n),
                             style: TextStyle(
                               color: Theme.of(context).colorScheme.error,
                             ),
@@ -129,12 +128,12 @@ class _TelemetryConsentViewState extends State<TelemetryConsentView> {
                         onPressed: telemetry.saving
                             ? null
                             : () => _save(_diagnostics, _analytics),
-                        child: const Text('متابعة'),
+                        child: Text(context.l10n.continueAction),
                       ),
                       const SizedBox(height: 8),
                       TextButton(
                         onPressed: _openPrivacyPolicy,
-                        child: const Text('سياسة الخصوصية'),
+                        child: Text(context.l10n.privacyPolicy),
                       ),
                     ],
                   ),

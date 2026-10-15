@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import '../l10n/localization.dart';
 import '../viewmodels/settings_viewmodel.dart';
 
 /// Shows a dialog with a message.
@@ -29,6 +30,7 @@ Future<void> showMessageDialog(
               const SizedBox(height: 20),
               SelectableText(
                 content,
+                textDirection: useReadingSettings ? TextDirection.rtl : null,
                 style:
                     settings?.readingTextStyle ?? const TextStyle(fontSize: 20),
               ),
@@ -41,13 +43,13 @@ Future<void> showMessageDialog(
             children: [
               TextButton(
                 onPressed: () => Navigator.of(context).pop(),
-                child: const Text('إغلاق'),
+                child: Text(context.l10n.close),
               ),
               TextButton(
                 onPressed: () async {
                   await Clipboard.setData(ClipboardData(text: content));
                 },
-                child: const Text('نسخ'),
+                child: Text(context.l10n.copy),
               ),
             ],
           ),

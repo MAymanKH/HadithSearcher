@@ -32,6 +32,12 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    expect(find.byKey(const Key('complete-welcome')), findsOneWidget);
+    expect(find.byKey(const Key('analytics-consent')), findsNothing);
+    await tester.ensureVisible(find.byKey(const Key('complete-welcome')));
+    await tester.tap(find.byKey(const Key('complete-welcome')));
+    await tester.pumpAndSettle();
+    expect(preferences.getBool('welcomeCompleted'), isTrue);
     expect(backend.analytics, isPlay);
     expect(backend.diagnostics, isPlay);
     expect(

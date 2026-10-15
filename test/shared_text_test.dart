@@ -42,7 +42,7 @@ void main() {
   );
 
   testWidgets(
-    'cold shares wait for consent; warm shares open editable search once',
+    'cold shares wait for welcome and consent; warm shares open editable search once',
     (tester) async {
       SharedPreferences.setMockInitialValues({});
       final messenger =
@@ -70,6 +70,13 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.byType(NavigationBar), findsNothing);
+      expect(find.byKey(const Key('complete-welcome')), findsOneWidget);
+      expect(find.text('initial shared text'), findsNothing);
+      await tester.ensureVisible(find.byKey(const Key('complete-welcome')));
+      await tester.tap(find.byKey(const Key('complete-welcome')));
+      await tester.pumpAndSettle();
+      expect(find.byType(NavigationBar), findsNothing);
+      expect(find.byKey(const Key('analytics-consent')), findsOneWidget);
       await telemetry.save(diagnostics: false, analytics: false);
       await tester.pumpAndSettle();
       expect(find.text('initial shared text'), findsOneWidget);

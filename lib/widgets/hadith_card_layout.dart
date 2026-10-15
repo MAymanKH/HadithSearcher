@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/localization.dart';
 import '../viewmodels/settings_viewmodel.dart';
 import 'hadith_detail_button.dart';
 
@@ -50,7 +51,11 @@ class HadithCardLayout extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SelectableText(text, style: textStyle),
+          SelectableText(
+            text,
+            style: textStyle,
+            textDirection: TextDirection.rtl,
+          ),
           Padding(
             padding: const EdgeInsets.only(top: 14, bottom: 12),
             child: Divider(
@@ -60,11 +65,12 @@ class HadithCardLayout extends StatelessWidget {
           ),
           if (grading != null) ...[
             SelectableText(grading!, style: textStyle),
-            if (onAlternate != null) _buildAlternateButton(),
+            if (onAlternate != null) _buildAlternateButton(context),
             const SizedBox(height: 4),
           ],
           SelectableText(attribution, style: textStyle),
-          if (grading == null && onAlternate != null) _buildAlternateButton(),
+          if (grading == null && onAlternate != null)
+            _buildAlternateButton(context),
           if (additionalInfo != null) additionalInfo!,
           const SizedBox(height: 14),
           Material(
@@ -78,26 +84,26 @@ class HadithCardLayout extends StatelessWidget {
               children: [
                 _CardAction(
                   icon: Icons.article_outlined,
-                  label: 'الشرح',
+                  label: context.l10n.explanation,
                   onPressed: onExplanation,
                   foregroundColor: colors.surface,
                 ),
                 if (onSimilar != null)
                   _CardAction(
                     icon: Icons.library_books_outlined,
-                    label: 'مشابهة',
+                    label: context.l10n.similar,
                     onPressed: onSimilar!,
                     foregroundColor: colors.surface,
                   ),
                 _CardAction(
                   icon: Icons.share_outlined,
-                  label: 'مشاركة',
+                  label: context.l10n.share,
                   onPressed: onShare,
                   foregroundColor: colors.surface,
                 ),
                 _CardAction(
                   icon: isFavourite ? Icons.star : Icons.star_border,
-                  label: 'المفضلة',
+                  label: context.l10n.favourites,
                   onPressed: onFavourite,
                   foregroundColor: colors.surface,
                 ),
@@ -109,9 +115,9 @@ class HadithCardLayout extends StatelessWidget {
     );
   }
 
-  Widget _buildAlternateButton() => HadithDetailButton(
+  Widget _buildAlternateButton(BuildContext context) => HadithDetailButton(
     icon: Icons.fact_check_outlined,
-    label: 'البديل الصحيح',
+    label: context.l10n.alternate,
     onPressed: onAlternate,
   );
 }

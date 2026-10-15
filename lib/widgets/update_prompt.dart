@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../l10n/localization.dart';
 import 'app_snack_bar.dart';
 import '../services/update_service.dart';
 
@@ -18,8 +19,8 @@ Future<void> checkForUpdates(
         SnackBar(
           content: Text(
             service.failed
-                ? 'تعذر التحقق من التحديثات. حاول مرة أخرى لاحقاً.'
-                : 'أنت تستخدم أحدث إصدار متاح.',
+                ? context.l10n.updateCheckFailed
+                : context.l10n.upToDate,
           ),
         ),
       );
@@ -29,20 +30,20 @@ Future<void> checkForUpdates(
   final accepted = await showDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
-      title: const Text('تحديث جديد متاح'),
+      title: Text(context.l10n.updateAvailable),
       content: Text(
         update.version == null
-            ? 'يتوفر تحديث جديد للتطبيق على Google Play.'
-            : 'يتوفر الإصدار ${update.version}. هل تريد التحديث الآن؟',
+            ? context.l10n.playUpdateAvailable
+            : context.l10n.versionAvailable(update.version!),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.pop(context, false),
-          child: const Text('لاحقاً'),
+          child: Text(context.l10n.later),
         ),
         FilledButton(
           onPressed: () => Navigator.pop(context, true),
-          child: const Text('تحديث الآن'),
+          child: Text(context.l10n.updateNow),
         ),
       ],
     ),
@@ -56,9 +57,7 @@ Future<void> checkForUpdates(
   if (context.mounted) {
     showAppSnackBar(
       context,
-      const SnackBar(
-        content: Text('تعذر فتح صفحة التحديث. حاول مرة أخرى لاحقاً.'),
-      ),
+      SnackBar(content: Text(context.l10n.updateOpenFailed)),
     );
   }
 }
@@ -117,7 +116,9 @@ class UpdateCheckButton extends StatelessWidget {
     return TextButton.icon(
       icon: const Icon(Icons.system_update),
       label: Text(
-        service.isChecking ? 'جارٍ التحقق…' : 'التحقق من التحديثات',
+        service.isChecking
+            ? context.l10n.checkingUpdates
+            : context.l10n.checkUpdates,
       ),
       onPressed: service.isChecking ? null : () => checkForUpdates(context),
     );

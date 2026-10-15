@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/localization.dart';
 import '../services/telemetry/telemetry_service.dart';
 import '../services/shared_text_service.dart';
 import 'about/about_view.dart';
@@ -94,25 +95,25 @@ class _MainShellState extends State<MainShell> {
             tooltip: '',
             icon: const Icon(Icons.search_outlined),
             selectedIcon: Icon(Icons.search, color: activeColor),
-            label: 'البحث',
+            label: context.l10n.search,
           ),
           NavigationDestination(
             tooltip: '',
             icon: const Icon(Icons.star_outline),
             selectedIcon: Icon(Icons.star, color: activeColor),
-            label: 'المفضلة',
+            label: context.l10n.favourites,
           ),
           NavigationDestination(
             tooltip: '',
             icon: const Icon(Icons.settings_outlined),
             selectedIcon: Icon(Icons.settings, color: activeColor),
-            label: 'الإعدادات',
+            label: context.l10n.settings,
           ),
           NavigationDestination(
             tooltip: '',
             icon: const Icon(Icons.info_outline),
             selectedIcon: Icon(Icons.info, color: activeColor),
-            label: 'حول',
+            label: context.l10n.about,
           ),
         ],
       ),

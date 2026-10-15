@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../l10n/localization.dart';
 import '../models/hadith.dart';
 import '../models/hadith_details.dart';
 import '../services/api_service.dart';
@@ -145,7 +146,9 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
               ),
               icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
               label: Text(
-                _expanded ? 'إخفاء المعلومات الإضافية' : 'معلومات إضافية',
+                _expanded
+                    ? context.l10n.hideAdditionalInfo
+                    : context.l10n.additionalInfo,
                 style: readingStyle,
               ),
             ),
@@ -174,29 +177,35 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
                           if (_loading) const LinearProgressIndicator(),
                           if (_error != null) ...[
                             Text(
-                              'تعذر تحميل المعلومات الإضافية. ${_error!.arabicTitle}',
+                              context.l10n.additionalInfoLoadFailed(
+                                _error!.title(context.l10n),
+                              ),
                             ),
                             Align(
                               alignment: AlignmentDirectional.centerStart,
                               child: TextButton(
                                 onPressed: _load,
-                                child: const Text('أعد المحاولة'),
+                                child: Text(context.l10n.retry),
                               ),
                             ),
                           ],
                           if (_loaded && !_hasContent)
-                            const Text('لا تتوفر معلومات إضافية من المصدر'),
+                            Text(context.l10n.noAdditionalInfo),
                           if (_hasGradingNote)
                             _infoLine(
-                              'توضيح الحكم',
+                              context.l10n.gradeExplanation,
                               _hadith.explainGrade,
                               readingStyle,
                             ),
                           if (_hadith.takhrij.trim().isNotEmpty)
-                            _infoLine('التخريج', _hadith.takhrij, readingStyle),
+                            _infoLine(
+                              context.l10n.takhrij,
+                              _hadith.takhrij,
+                              readingStyle,
+                            ),
                           if (_hadith.categories.isNotEmpty)
                             _infoLine(
-                              'التصنيف الموضوعي',
+                              context.l10n.categories,
                               _hadith.categories
                                   .map((category) => category.name)
                                   .join('، '),
@@ -207,24 +216,30 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
                               onPressed: () =>
                                   showApiDetailsDialog<HadithOrigins>(
                                     context,
-                                    title: 'أصول الحديث',
+                                    title: context.l10n.hadithSources,
                                     load: () => FavouriteDetailsService()
                                         .getOrigins(_hadith.id),
                                     format: (origins) => origins.sources
                                         .map(
                                           (source) => [
                                             if (source.source.trim().isNotEmpty)
-                                              'المصدر: ${source.source}',
+                                              context.l10n.sourceLabel(
+                                                source.source,
+                                              ),
                                             if (source.chain.trim().isNotEmpty)
-                                              'الإسناد: ${source.chain}',
+                                              context.l10n.chainLabel(
+                                                source.chain,
+                                              ),
                                             if (source.text.trim().isNotEmpty)
-                                              'المتن: ${source.text}',
+                                              context.l10n.textLabel(
+                                                source.text,
+                                              ),
                                           ].join('\n\n'),
                                         )
                                         .join('\n\n'),
                                   ),
                               icon: Icons.account_tree_outlined,
-                              label: 'أصول الحديث وطرق إخراجه',
+                              label: context.l10n.hadithChains,
                             ),
                         ],
                       ),

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
+import 'l10n/localization.dart';
+import 'views/welcome/welcome_view.dart';
 import 'core/constants/routes.dart';
 import 'core/theme/app_theme.dart';
 import 'viewmodels/favourites_viewmodel.dart';
@@ -35,32 +36,21 @@ class HadithSearcherApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => SettingsViewModel()..loadSettings(),
         ),
-        ChangeNotifierProvider(
-          create: (_) => SearchViewModel(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => FavouritesViewModel(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => SimilarHadithViewModel(),
-        ),
+        ChangeNotifierProvider(create: (_) => SearchViewModel()),
+        ChangeNotifierProvider(create: (_) => FavouritesViewModel()),
+        ChangeNotifierProvider(create: (_) => SimilarHadithViewModel()),
       ],
       child: Consumer<SettingsViewModel>(
         builder: (context, settingsVm, _) {
           // Use initial theme until settings are loaded
-          final themeMode =
-              settingsVm.isLoading ? initialThemeMode : settingsVm.themeMode;
+          final themeMode = settingsVm.isLoading
+              ? initialThemeMode
+              : settingsVm.themeMode;
 
           return MaterialApp(
-            localizationsDelegates: const [
-              GlobalCupertinoLocalizations.delegate,
-              GlobalMaterialLocalizations.delegate,
-              GlobalWidgetsLocalizations.delegate,
-            ],
-            supportedLocales: const [
-              Locale('ar', 'AE'),
-            ],
-            locale: const Locale('ar', 'AE'),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            locale: settingsVm.locale,
             title: 'Hadith Searcher',
             theme: AppTheme.lightTheme,
             darkTheme: AppTheme.darkTheme,
@@ -76,11 +66,17 @@ class HadithSearcherApp extends StatelessWidget {
                 ),
               );
             },
-            home: Consumer<TelemetryService>(
-              builder: (context, service, child) => !service.needsConsent
-                  ? const UpdatePrompt(child: MainShell())
-                  : const TelemetryConsentView(firstLaunch: true),
-            ),
+            home: settingsVm.isLoading
+                ? const Scaffold(
+                    body: Center(child: CircularProgressIndicator()),
+                  )
+                : !settingsVm.welcomeCompleted
+                ? const WelcomeView()
+                : Consumer<TelemetryService>(
+                    builder: (context, service, child) => service.needsConsent
+                        ? const TelemetryConsentView(firstLaunch: true)
+                        : const UpdatePrompt(child: MainShell()),
+                  ),
             routes: {
               searchRoute: (context) => const MainShell(initialIndex: 0),
               similarHadithRoute: (context) => const SimilarHadithView(),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../l10n/localization.dart';
 import 'app_snack_bar.dart';
 import '../services/telemetry/telemetry_service.dart';
 import 'package:provider/provider.dart';
@@ -37,8 +38,8 @@ class HadithCard extends StatelessWidget {
     return HadithCardLayout(
       margin: margin,
       text: hadith.text,
-      grading: citation.grading,
-      attribution: citation.attribution,
+      grading: citation.localizedGrading(context.l10n),
+      attribution: citation.localizedAttribution(context.l10n),
       additionalInfo: HadithAdditionalInfo(
         key: ValueKey(hadith.id),
         hadith: hadith,
@@ -47,7 +48,7 @@ class HadithCard extends StatelessWidget {
       isFavourite: isFavourite,
       onExplanation: () => _showSharh(context),
       onSimilar: showSimilarButton ? () => _showSimilar(context) : null,
-      onShare: _share,
+      onShare: () => _share(context),
       onFavourite: () => _toggleFavourite(context),
       onAlternate: hadith.hasAlternateHadithSahih
           ? () => _showSimilar(context, alternate: true)
@@ -59,8 +60,8 @@ class HadithCard extends StatelessWidget {
     if (!hadith.hasSharhMetadata || hadith.sharhId == null) {
       showAppSnackBar(
         context,
-        const SnackBar(
-          content: Text('لا يوجد شرح لهذا الحديث'),
+        SnackBar(
+          content: Text(context.l10n.noExplanation),
           duration: Duration(seconds: 2),
           behavior: SnackBarBehavior.floating,
         ),
@@ -71,8 +72,8 @@ class HadithCard extends StatelessWidget {
     // Show searching snackbar
     showAppSnackBar(
       context,
-      const SnackBar(
-        content: Text('جارٍ البحث عن الشرح...'),
+      SnackBar(
+        content: Text(context.l10n.loadingExplanation),
         duration: Duration(seconds: 30),
       ),
     );
@@ -90,7 +91,7 @@ class HadithCard extends StatelessWidget {
     if (result.isSuccess) {
       showMessageDialog(
         context,
-        title: 'الشرح',
+        title: context.l10n.explanation,
         content: result.data!,
         useReadingSettings: true,
       );
@@ -98,13 +99,13 @@ class HadithCard extends StatelessWidget {
       // Show error as snackbar
       String errorMessage;
       if (result.error == ApiError.notFound) {
-        errorMessage = 'لا يوجد شرح لهذا الحديث';
+        errorMessage = context.l10n.noExplanation;
       } else if (result.error == ApiError.noConnection) {
-        errorMessage = 'تأكد من إتصالك بالإنترنت وأعد المحاولة';
+        errorMessage = context.l10n.connectionHelp;
       } else if (result.error == ApiError.timeout) {
-        errorMessage = 'نفذ الوقت - تأكد من إتصالك بإنترنت مستقر';
+        errorMessage = context.l10n.explanationTimeout;
       } else {
-        errorMessage = 'حدث خطأ غير متوقع، حاول مرة أخرى';
+        errorMessage = context.l10n.unexpectedHelp;
       }
 
       showAppSnackBar(
@@ -115,7 +116,7 @@ class HadithCard extends StatelessWidget {
           behavior: SnackBarBehavior.floating,
           action: result.error != ApiError.notFound
               ? SnackBarAction(
-                  label: 'أعد المحاولة',
+                  label: context.l10n.retry,
                   onPressed: () => _showSharh(context),
                 )
               : null,
@@ -153,12 +154,12 @@ class HadithCard extends StatelessWidget {
     }
   }
 
-  Future<void> _share() async {
+  Future<void> _share(BuildContext context) async {
     TelemetryService.event('share_opened', {'hadith_id': hadith.id});
     await SharePlus.instance.share(
       ShareParams(
         text:
-            '${hadith.shareText}\n\nHadith Searcher:\nhttps://bit.ly/hadith-searcher',
+            '${hadith.text}\n\n${hadith.citation.localizedInfo(context.l10n)}\n\nHadith Searcher:\nhttps://bit.ly/hadith-searcher',
       ),
     );
   }

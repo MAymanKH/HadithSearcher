@@ -1,0 +1,265 @@
+{
+  "@@locale": "en",
+  "search": "Search",
+  "favourites": "Favourites",
+  "settings": "Settings",
+  "about": "About",
+  "readingSettings": "Hadith and explanation text",
+  "privacySettings": "Privacy and optional analytics",
+  "theme": "Theme",
+  "fontFamily": "Font family",
+  "fontWeight": "Font weight",
+  "fontSize": "Font size",
+  "padding": "Padding",
+  "resetSettings": "Reset to defaults",
+  "systemTheme": "System default",
+  "lightTheme": "Light",
+  "darkTheme": "Dark",
+  "normalWeight": "Normal",
+  "boldWeight": "Bold",
+  "close": "Close",
+  "copy": "Copy",
+  "retry": "Try again",
+  "tryAgain": "Try again",
+  "explanation": "Explanation",
+  "similar": "Similar",
+  "share": "Share",
+  "alternate": "Authentic alternative",
+  "similarHadiths": "Similar hadiths",
+  "noAlternate": "No authentic alternative available",
+  "noSimilar": "No similar hadiths",
+  "noExplanation": "No explanation available for this hadith",
+  "loadingExplanation": "Finding the explanation...",
+  "connectionError": "Connection error",
+  "timeout": "Request timed out",
+  "noResults": "No results",
+  "unexpectedError": "Unexpected error",
+  "connectionHelp": "Check your internet connection and try again",
+  "timeoutHelp": "Check that your internet connection is stable and try again",
+  "explanationTimeout": "Request timed out. Check that your internet connection is stable",
+  "unexpectedHelp": "Something went wrong. Try again",
+  "noResultsHelp": "Try different words or filters",
+  "searchNoResultsHelp": "Try different words or filters",
+  "serverUpdateRequired": "The search server needs an update to support filter exclusions",
+  "serverUpdateHelp": "Update the server or select fewer search options",
+  "favouriteAddFailed": "Could not add the hadith to favourites",
+  "favouriteRemoveFailed": "Could not remove the hadith from favourites",
+  "favouriteAdded": "Hadith added to favourites",
+  "favouriteRemoved": "Hadith removed from favourites",
+  "undo": "Undo",
+  "restoreFailed": "Could not restore the hadith",
+  "emptyFavourites": "No hadiths added to favourites",
+  "additionalInfo": "Additional information",
+  "hideAdditionalInfo": "Hide additional information",
+  "noAdditionalInfo": "No additional information available from the source",
+  "gradeExplanation": "Grading explanation",
+  "takhrij": "References",
+  "categories": "Categories",
+  "hadithSources": "Hadith sources",
+  "hadithChains": "Sources and chains of transmission",
+  "author": "Author",
+  "reviewer": "Reviewer",
+  "publisher": "Publisher",
+  "edition": "Edition",
+  "editionYear": "Publication year",
+  "searchByName": "Search by name...",
+  "loadingOptions": "Loading options...",
+  "noMatchingOptions": "No matching options",
+  "emptySearch": "Enter a search term",
+  "hideActiveFilters": "Hide active filters",
+  "showActiveFilters": "Show active filters",
+  "filters": "Filters",
+  "searchHint": "Check a hadith...",
+  "searchAction": "Search",
+  "advancedSearch": "Advanced search",
+  "rememberFilters": "Remember filters",
+  "rememberFiltersHelp": "Keep filters when you reopen the app",
+  "specialistSearch": "Specialist search",
+  "specialistSearchHelp": "Include differences in scholarly grading and chain details",
+  "searchMethod": "Search method",
+  "searchRange": "Search scope",
+  "clearFilters": "Clear filters",
+  "excludeWordsHint": "Words or a phrase to exclude",
+  "searchEmpty": "Search for a hadith",
+  "anyWord": "Any word",
+  "allWords": "All words",
+  "exactMatch": "Exact match",
+  "allHadiths": "All hadiths",
+  "marfoo": "Prophetic hadiths",
+  "qudsi": "Qudsi hadiths",
+  "athar": "Companion reports",
+  "sharh": "Hadith explanations",
+  "grade": "Hadith grade",
+  "scholar": "Scholar",
+  "book": "Book",
+  "narrator": "Narrator",
+  "allGrades": "All grades",
+  "sahih": "Authentic hadiths",
+  "sahihChains": "Hadiths with authentic chains",
+  "weak": "Weak hadiths",
+  "weakChains": "Hadiths with weak chains",
+  "allScholars": "All scholars",
+  "allBooks": "All books",
+  "allNarrators": "All narrators",
+  "specialists": "Specialists",
+  "consentTitle": "Data sharing",
+  "consentDescription": "Sharing is optional. You can change your choice later.",
+  "analyticsConsent": "I agree to share usage analytics.",
+  "diagnosticsConsent": "I agree to share crash reports.",
+  "continueAction": "Continue",
+  "privacyPolicy": "Privacy policy",
+  "privacyOpenFailed": "Could not open the privacy policy.",
+  "consentSaveFailed": "Could not save your choice or start the service. Try again.",
+  "diagnosticsFailed": "Crash reporting is currently unavailable.",
+  "analyticsFailed": "Usage analytics are currently unavailable.",
+  "updateCheckFailed": "Could not check for updates. Try again later.",
+  "upToDate": "You are using the latest version.",
+  "updateAvailable": "Update available",
+  "playUpdateAvailable": "An app update is available on Google Play.",
+  "later": "Later",
+  "updateNow": "Update now",
+  "updateOpenFailed": "Could not open the update page. Try again later.",
+  "checkingUpdates": "Checking...",
+  "checkUpdates": "Check for updates",
+  "aboutDescription": "Hadith Searcher is a free, open source app for searching thousands of prophetic hadiths, with advanced search filters and detailed information about chains of transmission and authenticity.",
+  "sourceCredit": "All hadiths and information are provided by ",
+  "usingApi": " using ",
+  "code": "Code",
+  "support": "Support",
+  "update": "Update",
+  "contactDeveloper": "Contact the developer",
+  "website": "Website",
+  "email": "Email",
+  "licenses": "Library and font licenses",
+  "language": "Language",
+  "welcomeTitle": "Welcome to Hadith Searcher",
+  "welcomeDescription": "Choose your app language and theme. You can change them later in settings.",
+  "apiLanguageNotice": "Hadiths and source content remain in Arabic.",
+  "preferencesSaveFailed": "Could not save your preferences. Try again.",
+  "backToTop": "Back to top",
+  "versionAvailable": "Version {version} is available. Update now?",
+  "@versionAvailable": {
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "selectedCount": "Selected: {count}",
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "infoAbout": "Information about {name}",
+  "@infoAbout": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "optionsLoadFailed": "Could not load all options. {error}",
+  "@optionsLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "infoLoadFailed": "Could not load information. {error}",
+  "@infoLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "additionalInfoLoadFailed": "Could not load additional information. {error}",
+  "@additionalInfoLoadFailed": {
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "allExcept": "All except {names}",
+  "@allExcept": {
+    "placeholders": {
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "excludedWords": "Exclude: {words}",
+  "@excludedWords": {
+    "placeholders": {
+      "words": {
+        "type": "String"
+      }
+    }
+  },
+  "sourceLabel": "Source: {source}",
+  "@sourceLabel": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "chainLabel": "Chain: {chain}",
+  "@chainLabel": {
+    "placeholders": {
+      "chain": {
+        "type": "String"
+      }
+    }
+  },
+  "textLabel": "Text: {text}",
+  "@textLabel": {
+    "placeholders": {
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "narratorLabel": "Narrator: {name}",
+  "@narratorLabel": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "pageLabel": "Page or number: {number}",
+  "@pageLabel": {
+    "placeholders": {
+      "number": {
+        "type": "String"
+      }
+    }
+  },
+  "gradeLabel": "Grading: {grade}",
+  "@gradeLabel": {
+    "placeholders": {
+      "grade": {
+        "type": "String"
+      }
+    }
+  },
+  "scholarGradeLabel": "Grading by {scholar}: {grade}",
+  "@scholarGradeLabel": {
+    "placeholders": {
+      "scholar": {
+        "type": "String"
+      },
+      "grade": {
+        "type": "String"
+      }
+    }
+  },
+  "arabicLanguage": "العربية",
+  "englishLanguage": "English"
+}
