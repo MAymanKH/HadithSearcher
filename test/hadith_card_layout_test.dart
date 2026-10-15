@@ -51,7 +51,7 @@ void main() {
     const sharedText =
         'Hadith text\n\n'
         'حكم Scholar: Exact source grading\nincluding additional details\n'
-        'الراوي: Narrator\nالمصدر: Source، الصفحة أو الرقم: 1/2';
+        'الراوي: Narrator\nالمصدر: Source\nالصفحة أو الرقم: 1/2';
     expect(hadith.shareText, sharedText);
     final saved = FavouriteHadith.fromDatabase({
       'id': 1,
