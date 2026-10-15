@@ -110,7 +110,7 @@ void main() {
           await tester.pumpAndSettle();
           await tester.tap(find.text('المفضلة').last);
           await tester.pumpAndSettle();
-          final remove = find.byTooltip('أزل من المفضلة').first;
+          final remove = find.widgetWithText(TextButton, 'المفضلة').first;
           await tester.tap(remove);
           await tester.pumpAndSettle();
           expect(await db.getFavourite(hadith.id), isNull);

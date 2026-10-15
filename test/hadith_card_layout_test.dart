@@ -127,16 +127,23 @@ void main() {
           hadith.citation.grading,
           hadith.citation.attribution,
         ]);
-        for (final tooltip in [
+        expect(
+          find.descendant(
+            of: find.byType(HadithCardLayout),
+            matching: find.byType(Tooltip),
+          ),
+          findsNothing,
+        );
+        for (final label in [
           'البديل الصحيح',
           'الشرح',
-          'أحاديث مشابهة',
+          'مشابهة',
           'مشاركة',
-          'أزل من المفضلة',
+          'المفضلة',
         ]) {
-          final action = tooltip == 'البديل الصحيح'
-              ? find.widgetWithText(ElevatedButton, tooltip)
-              : find.byTooltip(tooltip);
+          final action = label == 'البديل الصحيح'
+              ? find.widgetWithText(ElevatedButton, label)
+              : find.widgetWithText(TextButton, label);
           await tester.ensureVisible(action);
           await tester.pumpAndSettle();
           await tester.tap(action);

@@ -76,7 +76,6 @@ class HadithCardLayout extends StatelessWidget {
                   _CardAction(
                     icon: Icons.library_books_outlined,
                     label: 'مشابهة',
-                    tooltip: 'أحاديث مشابهة',
                     onPressed: onSimilar!,
                     foregroundColor: colors.surface,
                   ),
@@ -89,7 +88,6 @@ class HadithCardLayout extends StatelessWidget {
                 _CardAction(
                   icon: isFavourite ? Icons.star : Icons.star_border,
                   label: 'المفضلة',
-                  tooltip: isFavourite ? 'أزل من المفضلة' : 'أضف إلى المفضلة',
                   onPressed: onFavourite,
                   foregroundColor: colors.surface,
                 ),
@@ -128,49 +126,40 @@ class HadithCardLayout extends StatelessWidget {
 class _CardAction extends StatelessWidget {
   final IconData icon;
   final String label;
-  final String? tooltip;
   final VoidCallback onPressed;
   final Color foregroundColor;
 
   const _CardAction({
     required this.icon,
     required this.label,
-    this.tooltip,
     required this.onPressed,
     required this.foregroundColor,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Tooltip(
-        message: tooltip ?? label,
-        child: TextButton(
-          onPressed: onPressed,
-          style: TextButton.styleFrom(
-            foregroundColor: foregroundColor,
-            padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
-            minimumSize: const Size(0, 62),
-            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-            shape: const RoundedRectangleBorder(),
+    final button = TextButton(
+      onPressed: onPressed,
+      style: TextButton.styleFrom(
+        foregroundColor: foregroundColor,
+        padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
+        minimumSize: const Size(0, 62),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        shape: const RoundedRectangleBorder(),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 22),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(icon, size: 22),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                textAlign: TextAlign.center,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ],
-          ),
-        ),
+        ],
       ),
     );
+    return Expanded(child: button);
   }
 }

@@ -139,7 +139,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(alternateRequests, 1);
     expect(find.text('Alternative returned by the source'), findsOneWidget);
-    expect(find.byTooltip('أحاديث مشابهة'), findsNothing);
+    expect(find.widgetWithText(TextButton, 'مشابهة'), findsNothing);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
   });
