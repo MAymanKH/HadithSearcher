@@ -1,4 +1,5 @@
 import 'package:hadithsearcher/widgets/app_dropdown.dart';
+import 'package:hadithsearcher/widgets/hadith_card_layout.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -283,7 +284,7 @@ void main() {
     await tester.tap(find.byTooltip('إخفاء عوامل التصفية النشطة'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
-    expect(tester.getSize(transition).height, inExclusiveRange(0, 48));
+    expect(tester.getSize(transition).height, inExclusiveRange(0, 58));
     await tester.pumpAndSettle();
     expect(tester.getSize(transition).height, 0);
     expect(find.byType(Chip), findsNothing);
@@ -298,9 +299,9 @@ void main() {
     await tester.tap(find.byTooltip('إظهار عوامل التصفية النشطة'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
-    expect(tester.getSize(transition).height, inExclusiveRange(0, 48));
+    expect(tester.getSize(transition).height, inExclusiveRange(0, 58));
     await tester.pumpAndSettle();
-    expect(tester.getSize(transition).height, 48);
+    expect(tester.getSize(transition).height, 58);
     expect(find.byType(Chip), findsWidgets);
     expect(vm.activeFilters, activeFilters);
     await tester.tap(find.text('مسح عوامل التصفية'));
@@ -310,6 +311,69 @@ void main() {
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
   });
+
+  testWidgets(
+    'filter row has equal gaps above and below, including while results scroll',
+    (tester) async {
+      await http.runWithClient(
+        () async {
+          await mount(tester);
+          final vm = tester
+              .element(find.byType(SearchView))
+              .read<SearchViewModel>();
+          vm.setSelectedOptions(SearchFilter.grade, [SearchOption.grades[1]]);
+          await vm.search('الصلاة');
+          await tester.pumpAndSettle();
+          final row = find.byKey(const ValueKey('active-filters-row'));
+          final field = find.byType(TextField).first;
+          final results = find.byWidgetPredicate(
+            (widget) =>
+                widget is ListView && widget.scrollDirection == Axis.vertical,
+          );
+          final firstCard = find.byType(HadithCardLayout).first;
+          final surface = find
+              .descendant(of: firstCard, matching: find.byType(DecoratedBox))
+              .first;
+          final above =
+              tester.getTopLeft(row).dy - tester.getBottomLeft(field).dy;
+          final below =
+              tester.getTopLeft(results).dy - tester.getBottomLeft(row).dy;
+          expect(above, 10);
+          expect(below, above);
+          expect(tester.getTopLeft(surface).dy, tester.getTopLeft(results).dy);
+          await tester.drag(results, const Offset(0, -400));
+          await tester.pumpAndSettle();
+          expect(
+            tester.getTopLeft(results).dy - tester.getBottomLeft(row).dy,
+            above,
+          );
+          expect(tester.takeException(), isNull);
+        },
+        () => MockClient(
+          (_) async => http.Response(
+            jsonEncode({
+              'metadata': {'hasNextPage': false},
+              'data': List.generate(
+                20,
+                (index) => {
+                  'hadithId': 'spacing-$index',
+                  'hadith': List.filled(30, 'نص الحديث').join(' '),
+                  'grade': 'صحيح',
+                  'rawi': 'راو',
+                  'mohdith': 'محدث',
+                  'book': 'كتاب',
+                  'bookId': '1',
+                  'mohdithId': '1',
+                },
+              ),
+            }),
+            200,
+            headers: {'content-type': 'application/json; charset=utf-8'},
+          ),
+        ),
+      );
+    },
+  );
 
   testWidgets('the search field remains editable during a request', (
     tester,

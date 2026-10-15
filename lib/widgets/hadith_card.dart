@@ -15,6 +15,7 @@ import 'message_dialog.dart';
 
 /// Displays a hadith with actions (sharh, similar, share, favourite).
 class HadithCard extends StatelessWidget {
+  final EdgeInsetsGeometry margin;
   final Hadith hadith;
   final bool isFavourite;
   final bool showSimilarButton;
@@ -22,6 +23,7 @@ class HadithCard extends StatelessWidget {
 
   const HadithCard({
     super.key,
+    this.margin = const EdgeInsets.all(10),
     required this.hadith,
     required this.isFavourite,
     required this.onFavouriteToggle,
@@ -32,6 +34,7 @@ class HadithCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final citation = hadith.citation;
     return HadithCardLayout(
+      margin: margin,
       text: hadith.text,
       grading: citation.grading,
       attribution: citation.attribution,

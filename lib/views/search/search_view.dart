@@ -20,6 +20,7 @@ class SearchView extends StatefulWidget {
 }
 
 class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
+  static const _filterGap = 10.0;
   final _textController = TextEditingController();
   final _excludedWordsController = TextEditingController();
 
@@ -159,7 +160,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
         child: Column(
           children: [
             _buildSearchBar(screenWidth),
-            const SizedBox(height: 10),
+            const SizedBox(height: _filterGap),
             AnimatedSwitcher(
               key: const ValueKey('active-filters-transition'),
               duration: MediaQuery.disableAnimationsOf(context)
@@ -172,7 +173,10 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
                 child: FadeTransition(opacity: animation, child: child),
               ),
               child: vm.activeFilters.isNotEmpty && vm.showActiveFilters
-                  ? _buildActiveFilters(vm)
+                  ? Padding(
+                      padding: const EdgeInsets.only(bottom: _filterGap),
+                      child: _buildActiveFilters(vm),
+                    )
                   : const SizedBox.shrink(),
             ),
             if (vm.isAdvancedSearchOpen)
@@ -198,7 +202,10 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
               autofocus: false,
               textInputAction: TextInputAction.search,
               controller: _textController,
-              decoration: const InputDecoration(hintText: 'تحقق من حديث...'),
+              decoration: const InputDecoration(
+                hintText: 'تحقق من حديث...',
+                constraints: BoxConstraints(minHeight: 60),
+              ),
               style: const TextStyle(fontSize: 16),
               onChanged: context.read<SearchViewModel>().setSearchQuery,
               onSubmitted: (_) => _onSearch(),
@@ -520,6 +527,12 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
                 return HadithCard(
                   key: PageStorageKey<String>('search-hadith-${hadith.id}'),
                   hadith: hadith,
+                  margin:
+                      index == 0 &&
+                          vm.activeFilters.isNotEmpty &&
+                          vm.showActiveFilters
+                      ? const EdgeInsets.fromLTRB(10, 0, 10, 10)
+                      : const EdgeInsets.all(10),
                   isFavourite: vm.isFavourite(hadith.id),
                   onFavouriteToggle: () async {
                     final error = await vm.toggleFavourite(hadith);

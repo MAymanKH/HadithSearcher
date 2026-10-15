@@ -6,6 +6,7 @@ import 'hadith_detail_button.dart';
 class HadithCardLayout extends StatelessWidget {
   static const borderRadius = BorderRadius.all(Radius.circular(30));
   static const panelBorderRadius = BorderRadius.all(Radius.circular(20));
+  final EdgeInsetsGeometry margin;
   final String text;
   final String? grading;
   final String attribution;
@@ -19,6 +20,7 @@ class HadithCardLayout extends StatelessWidget {
 
   const HadithCardLayout({
     super.key,
+    this.margin = const EdgeInsets.all(10),
     required this.text,
     required this.grading,
     required this.attribution,
@@ -39,7 +41,7 @@ class HadithCardLayout extends StatelessWidget {
       color: colors.secondaryContainer,
     );
     return Container(
-      margin: const EdgeInsets.all(10),
+      margin: margin,
       padding: settings.padding,
       decoration: BoxDecoration(
         color: colors.primaryContainer,
