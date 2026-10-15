@@ -42,18 +42,18 @@ def keep_artifact(source, store, version):
     print(f"Release artifact: {target}", flush=True)
 
 
-def build_fdroid(version):
+def build_unsigned_apk():
     run("flutter", "build", "apk", "--release", "--flavor", "fdroid")
     apk = ROOT / "build/app/outputs/flutter-apk/app-fdroid-release.apk"
     verify_artifact(apk, shorebird=False)
-    keep_artifact(apk, "fdroid", version)
+    return apk
+
+
+def build_fdroid(version):
+    keep_artifact(build_unsigned_apk(), "fdroid", version)
 
 
 def build_github(version):
-    apk = ROOT / "build/releases/fdroid" / f"HadithSearcher-{version}-fdroid.apk"
-    if not apk.is_file():
-        raise RuntimeError("Build the unsigned APK first: ./scripts/release.py fdroid")
-    verify_artifact(apk, shorebird=False)
     properties = dict(re.findall(
         r"^\s*(\w+)\s*=\s*(.*?)\s*$",
         (ROOT / "android/key.properties").read_text(), re.MULTILINE,
@@ -81,6 +81,7 @@ def build_github(version):
                   and (path / "zipalign").is_file()), None)
     if tools is None:
         raise RuntimeError("Install Android SDK Build Tools with apksigner and zipalign")
+    apk = build_unsigned_apk()
     env = os.environ.copy()
     env["HADITH_STORE_PASSWORD"] = properties["storePassword"]
     env["HADITH_KEY_PASSWORD"] = properties["keyPassword"]
@@ -169,12 +170,12 @@ def main():
         parser.error("pubspec.yaml has no version")
     if args.store in ("fdroid", "all"):
         build_fdroid(version.group(1))
+    if args.store in ("github", "all"):
+        build_github(version.group(1))
     if args.store in ("play", "all"):
         build_play(version.group(1), args.dry_run)
     if args.store == "patch-play":
         build_play(version.group(1), args.dry_run, patch=True)
-    if args.store == "github":
-        build_github(version.group(1))
 
 
 if __name__ == "__main__":

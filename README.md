@@ -82,7 +82,7 @@ flutter run --flavor play
 
 ### 5. بناء التطبيق
 
-**لبناء نسختي Android:**
+**لبناء نسخ Android الثلاث:**
 ```bash
 ./scripts/release.py all
 ```
@@ -100,16 +100,16 @@ flutter build ios --release
 | --- | --- |
 | `./scripts/release.py play` | ملف AAB لنسخة Google Play، وتسجيل الإصدار في Shorebird |
 | `./scripts/release.py fdroid` | ملف APK غير موقّع لنسخة F-Droid |
-| `./scripts/release.py github` | ملف APK موقّع لنسخة GitHub من ملف F-Droid المبني مسبقاً |
-| `./scripts/release.py all` | بناء نسختي المتجرين بالتتابع |
+| `./scripts/release.py github` | بناء ملف APK لنسخة GitHub وتوقيعه للتثبيت المباشر |
+| `./scripts/release.py all` | بناء نسخ F-Droid وGitHub وGoogle Play بالتتابع |
 | `./scripts/release.py play --dry-run` | بناء ملف Play دون تسجيل إصدار على الخادم |
 | `./scripts/release.py patch-play` | إرسال تحديث Dart لإصدار Play المحدد حالياً في `pubspec.yaml` |
 
-يحفظ السكربت ملفات المتجرين في `build/releases/play/` و`build/releases/fdroid/` بأسماء تتضمن رقم الإصدار. لا يرفع الملفات إلى Google Play أو F-Droid. لبناء نسخة Play، جهّز ملف `android/key.properties` ومفتاح التوقيع المحلي. لا تُضمّن بيانات التوقيع الخاصة في المصدر.
+يحفظ السكربت ملفات الإصدارات في `build/releases/play/` و`build/releases/fdroid/` و`build/releases/github/` بأسماء تتضمن رقم الإصدار. لا يرفع الملفات إلى Google Play أو F-Droid أو GitHub. لبناء نسختي Play وGitHub، جهّز ملف `android/key.properties` ومفتاح التوقيع المحلي. لا تُضمّن بيانات التوقيع الخاصة في المصدر.
 
 نسخة F-Droid متوافقة مع سياسات F-Droid. للبناء المباشر استخدم `flutter build apk --release --flavor fdroid`، والناتج هو `build/app/outputs/flutter-apk/app-fdroid-release.apk`.
 
-ملف F-Droid غير موقّع، ولا يمكن تثبيته مباشرة على الهاتف. لإنشاء نسخة GitHub للتثبيت المباشر، جهّز `android/key.properties` ومفتاح التوقيع المحلي، ثم شغّل `./scripts/release.py fdroid` وبعده `./scripts/release.py github`. يحفظ أمر GitHub نسخة منفصلة باسم `HadithSearcher-<version>-github.apk` في `build/releases/github/` ويتحقق من توقيعها. يبقى الملف الأصلي غير موقّع لكي يوقّعه F-Droid عند النشر. تتطلب تحديثات التطبيق استخدام مفتاح التوقيع نفسه؛ قد تختلف مفاتيح نسخ Google Play وF-Droid المنشورة عن المفتاح المحلي.
+ملف F-Droid غير موقّع، ولا يمكن تثبيته مباشرة على الهاتف. لإنشاء نسخة GitHub للتثبيت المباشر، جهّز `android/key.properties` ومفتاح التوقيع المحلي، ثم شغّل `./scripts/release.py github`. يبني الأمر ملف APK من المصدر باستخدام إعدادات F-Droid ثم يوقّعه، دون الحاجة إلى بناء نسخة F-Droid مسبقاً. يحفظ الناتج باسم `HadithSearcher-<version>-github.apk` في `build/releases/github/` ويتحقق من توقيعه. تظل نسخة F-Droid غير موقّعة لكي يوقّعها F-Droid عند النشر. تتطلب تحديثات التطبيق استخدام مفتاح التوقيع نفسه؛ قد تختلف مفاتيح نسخ Google Play وF-Droid المنشورة عن المفتاح المحلي.
 
 للتحقق من المشروع:
 
