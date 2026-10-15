@@ -94,7 +94,7 @@ void main() {
         (widget) =>
             widget is SelectableText && widget.data == 'حكم البخاري: [صحيح]',
       );
-      final alternate = find.widgetWithText(ElevatedButton, 'البديل الصحيح');
+      final alternate = find.widgetWithText(OutlinedButton, 'البديل الصحيح');
       final attribution = find.byWidgetPredicate(
         (widget) =>
             widget is SelectableText &&
@@ -128,7 +128,7 @@ void main() {
         ).writeAsBytes(bytes);
       }
     }
-    await tester.tap(find.widgetWithText(ElevatedButton, 'البديل الصحيح'));
+    await tester.tap(find.widgetWithText(OutlinedButton, 'البديل الصحيح'));
     await tester.pumpAndSettle();
     expect(find.widgetWithText(AppBar, 'البديل الصحيح'), findsOneWidget);
     await tester.runAsync(() async {

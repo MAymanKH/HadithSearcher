@@ -57,11 +57,12 @@ class HadithCardLayout extends StatelessWidget {
           ),
           if (grading != null) ...[
             SelectableText(grading!, style: textStyle),
-            if (onAlternate != null) _buildAlternateButton(),
+            if (onAlternate != null) _buildAlternateButton(context),
             const SizedBox(height: 4),
           ],
           SelectableText(attribution, style: textStyle),
-          if (grading == null && onAlternate != null) _buildAlternateButton(),
+          if (grading == null && onAlternate != null)
+            _buildAlternateButton(context),
           if (additionalInfo != null) additionalInfo!,
           const SizedBox(height: 14),
           Material(
@@ -106,21 +107,36 @@ class HadithCardLayout extends StatelessWidget {
     );
   }
 
-  Widget _buildAlternateButton() {
+  Widget _buildAlternateButton(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
     return Align(
       alignment: AlignmentDirectional.centerStart,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: ElevatedButton.icon(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: OutlinedButton.icon(
           onPressed: onAlternate,
-          icon: const Icon(Icons.fact_check_outlined, size: 22),
-          label: const Text(
-            'البديل الصحيح',
-            style: TextStyle(fontWeight: FontWeight.bold),
-          ),
-          style: ElevatedButton.styleFrom(
-            minimumSize: const Size(0, 45),
-            shape: RoundedRectangleBorder(borderRadius: borderRadius),
+          icon: const Icon(Icons.fact_check_outlined, size: 18),
+          label: const Text('البديل الصحيح'),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: colors.secondaryContainer,
+            backgroundColor: Color.lerp(
+              colors.primaryContainer,
+              colors.surface,
+              0.45,
+            ),
+            side: BorderSide(
+              color: colors.secondaryContainer.withValues(alpha: 0.38),
+            ),
+            minimumSize: const Size(0, 36),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            tapTargetSize: MaterialTapTargetSize.padded,
+            textStyle: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         ),
       ),

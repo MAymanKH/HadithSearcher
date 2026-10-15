@@ -142,7 +142,7 @@ void main() {
           'المفضلة',
         ]) {
           final action = label == 'البديل الصحيح'
-              ? find.widgetWithText(ElevatedButton, label)
+              ? find.widgetWithText(OutlinedButton, label)
               : find.widgetWithText(TextButton, label);
           await tester.ensureVisible(action);
           await tester.pumpAndSettle();
@@ -202,7 +202,7 @@ void main() {
         findsOneWidget,
       );
       expect(
-        find.widgetWithText(ElevatedButton, 'البديل الصحيح'),
+        find.widgetWithText(OutlinedButton, 'البديل الصحيح'),
         findsOneWidget,
       );
       final saved = tester.widget<HadithCardLayout>(
