@@ -107,6 +107,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
           'البحث',
           style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
         ),
+        actionsPadding: const EdgeInsetsDirectional.only(end: 10),
         actions: [
           if (vm.activeFilters.isNotEmpty)
             IconButton(
@@ -123,38 +124,36 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
                 ),
               ),
             ),
-          IconButton(
-            onPressed: () async {
-              final vm = context.read<SearchViewModel>();
-              if (vm.isAdvancedSearchOpen) {
-                // Closing the panel - check if settings changed
-                final hasChanged = vm.hasSettingsChanged();
-                await vm.saveAdvancedPrefs();
-                vm.toggleAdvancedSearch();
+          Tooltip(
+            message: 'البحث المتقدم',
+            child: TextButton.icon(
+              onPressed: () async {
+                final vm = context.read<SearchViewModel>();
+                if (vm.isAdvancedSearchOpen) {
+                  // Closing the panel - check if settings changed
+                  final hasChanged = vm.hasSettingsChanged();
+                  await vm.saveAdvancedPrefs();
+                  vm.toggleAdvancedSearch();
 
-                // If settings changed and there's a search query, re-search
-                if (hasChanged && _textController.text.trim().isNotEmpty) {
-                  await _onSearch();
+                  // If settings changed and there's a search query, re-search
+                  if (hasChanged && _textController.text.trim().isNotEmpty) {
+                    await _onSearch();
+                  }
+                } else {
+                  // Opening the panel
+                  vm.toggleAdvancedSearch();
                 }
-              } else {
-                // Opening the panel
-                vm.toggleAdvancedSearch();
-              }
-            },
-            tooltip: 'البحث المتقدم',
-            icon: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.tune, size: 22),
-                const SizedBox(width: 6),
-                const Text('الفلاتر', style: TextStyle(fontSize: 14)),
-              ],
-            ),
-            style: IconButton.styleFrom(
-              foregroundColor: Theme.of(context).colorScheme.onSurface,
-              backgroundColor: vm.isAdvancedSearchOpen
-                  ? Theme.of(context).colorScheme.primaryContainer
-                  : null,
+              },
+              icon: const Icon(Icons.tune, size: 22),
+              label: const Text('الفلاتر', style: TextStyle(fontSize: 14)),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                minimumSize: const Size(0, 48),
+                foregroundColor: Theme.of(context).colorScheme.onSurface,
+                backgroundColor: vm.isAdvancedSearchOpen
+                    ? Theme.of(context).colorScheme.primaryContainer
+                    : null,
+              ),
             ),
           ),
         ],

@@ -257,7 +257,14 @@ void main() {
     expect(find.byType(Chip), findsWidgets);
     final actions = tester.widget<AppBar>(find.byType(AppBar)).actions!;
     expect((actions.first as IconButton).tooltip, 'إخفاء الفلاتر النشطة');
-    expect((actions.last as IconButton).tooltip, 'البحث المتقدم');
+    expect((actions.last as Tooltip).message, 'البحث المتقدم');
+    final filtersButton = tester.getRect(
+      find.widgetWithText(TextButton, 'الفلاتر'),
+    );
+    final filtersLabel = tester.getRect(find.text('الفلاتر'));
+    expect(filtersButton.left, greaterThanOrEqualTo(10));
+    expect(filtersLabel.left, greaterThanOrEqualTo(filtersButton.left + 10));
+    expect(filtersLabel.right, lessThanOrEqualTo(filtersButton.right - 10));
     expect(
       find.descendant(
         of: find.byType(Badge),
