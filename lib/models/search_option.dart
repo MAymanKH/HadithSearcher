@@ -74,4 +74,11 @@ enum SearchFilter {
   );
 
   SearchOption get all => fallbackOptions.first;
+
+  String? get exclusionQueryKey => switch (this) {
+    SearchFilter.grade => null,
+    SearchFilter.scholar => 'excludeMohdith[]',
+    SearchFilter.book => 'excludeBook[]',
+    SearchFilter.narrator => 'excludeRawi[]',
+  };
 }

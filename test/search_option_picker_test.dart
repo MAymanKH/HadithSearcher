@@ -10,21 +10,25 @@ import 'package:hadithsearcher/viewmodels/settings_viewmodel.dart';
 import 'package:hadithsearcher/viewmodels/search_viewmodel.dart';
 import 'package:hadithsearcher/widgets/selection_sheet.dart';
 import 'package:hadithsearcher/models/search_option.dart';
+import 'package:hadithsearcher/models/search_params.dart';
 import 'package:hadithsearcher/services/api_service.dart';
 import 'package:hadithsearcher/widgets/search_option_picker.dart';
 
 void main() {
   List<SearchOption> latestSelection = [];
+  List<SearchOption> latestExcluded = [];
 
   Future<void> openPicker(
     WidgetTester tester, {
     required Future<ApiResult<List<SearchOption>>> Function() load,
     List<SearchOption> selected = const [],
+    List<SearchOption> excluded = const [],
     SearchFilter filter = SearchFilter.narrator,
     Size size = const Size(320, 850),
     ValueChanged<List<SearchOption>>? onChanged,
   }) async {
     latestSelection = List.of(selected);
+    latestExcluded = List.of(excluded);
     SharedPreferences.setMockInitialValues({});
     final settings = SettingsViewModel();
     addTearDown(settings.dispose);
@@ -45,8 +49,10 @@ void main() {
                   filter: filter,
                   loadOptions: load,
                   selected: selected,
-                  onChanged: (values) {
+                  excluded: excluded,
+                  onChanged: (values, exclusions) {
                     latestSelection = List.of(values);
+                    latestExcluded = List.of(exclusions);
                     onChanged?.call(values);
                   },
                 ),
@@ -165,8 +171,8 @@ void main() {
     expect(optionCount(tester), 85);
     await tester.tap(find.text('راوي 84'));
     await tester.pumpAndSettle();
-    expect(latestSelection, hasLength(84));
-    expect(latestSelection.any((option) => option.apiCode == '85'), isFalse);
+    expect(latestSelection.single.apiCode, '0');
+    expect(latestExcluded.single.apiCode, '85');
     expect(tester.takeException(), isNull);
   });
 
@@ -203,8 +209,8 @@ void main() {
     );
     await tester.tap(find.text('أسماء 118'));
     await tester.pumpAndSettle();
-    expect(latestSelection, hasLength(119));
-    expect(latestSelection.any((option) => option.apiCode == '119'), isFalse);
+    expect(latestSelection.single.apiCode, '0');
+    expect(latestExcluded.single.apiCode, '119');
     expect(tester.takeException(), isNull);
   });
 
@@ -225,7 +231,7 @@ void main() {
         tester
             .widgetList<Checkbox>(find.byType(Checkbox))
             .where((box) => box.value == true),
-        hasLength(2),
+        hasLength(1),
       );
       expect(find.text('أعد المحاولة'), findsOneWidget);
       await tester.tap(find.text('أعد المحاولة'));
@@ -489,6 +495,51 @@ void main() {
       );
     },
   );
+  testWidgets(
+    'two unchecked narrators stay compact across reopening and requests',
+    (tester) async {
+      final options = List.generate(
+        11435,
+        (index) => SearchOption('${index + 1}', 'راوٍ $index'),
+      );
+      await openPicker(tester, load: () async => ApiResult.success(options));
+      await settle(tester);
+      for (final index in [0, 1]) {
+        await tester.tap(find.text('راوٍ $index'));
+        await tester.pumpAndSettle();
+      }
+      expect(find.text('المحدد: 11433'), findsOneWidget);
+      expect(latestSelection.single.apiCode, '0');
+      expect(latestExcluded.map((option) => option.apiCode), ['1', '2']);
+      final params = SearchParams(
+        keyword: 'query',
+        filters: {SearchFilter.narrator: latestSelection},
+        exclusions: {SearchFilter.narrator: latestExcluded},
+      );
+      expect(params.toQueryString().length, lessThan(500));
+      expect(params.toQueryParams()['excludeRawi[]'], ['1', '2']);
+      final selected = List.of(latestSelection);
+      final excluded = List.of(latestExcluded);
+      tester.state<NavigatorState>(find.byType(Navigator)).pop();
+      await tester.pumpAndSettle();
+      await openPicker(
+        tester,
+        selected: selected,
+        excluded: excluded,
+        load: () async => ApiResult.success(options),
+      );
+      await settle(tester);
+      expect(find.text('المحدد: 11433'), findsOneWidget);
+      for (final index in [0, 1, 2]) {
+        final checkbox = find.descendant(
+          of: find.widgetWithText(ListTile, 'راوٍ $index'),
+          matching: find.byType(Checkbox),
+        );
+        expect(tester.widget<Checkbox>(checkbox).value, index == 2);
+      }
+    },
+  );
+
   testWidgets(
     'reopening a nearly full large selection avoids quadratic matching',
     (tester) async {

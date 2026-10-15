@@ -67,6 +67,13 @@ void main() {
             {'key': '96', 'value': 'الصحيح المسند'},
           ],
         };
+      } else if (path == '/v1/data/rawi') {
+        result = {
+          'data': List.generate(
+            11435,
+            (index) => {'key': '${index + 1}', 'value': 'راوٍ $index'},
+          ),
+        };
       } else if (path == '/v1/data/mohdith') {
         result = {
           'data': [
@@ -84,7 +91,7 @@ void main() {
       } else if (path == '/v1/site/hadith/search') {
         searches.add(request.uri);
         result = {
-          'metadata': {'hasNextPage': false},
+          'metadata': {'hasNextPage': false, 'exclusionsApplied': true},
           'data': [_hadith],
         };
       } else if (path == '/v1/site/book/6216') {
@@ -271,13 +278,28 @@ void main() {
     await capture('picker-scrolled');
     tester.state<NavigatorState>(find.byType(Navigator)).pop();
     await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('جميع الرواة'));
+    await tester.tap(find.text('جميع الرواة'));
+    await waitFor(find.text('راوٍ 0'));
+    await tester.tap(find.text('راوٍ 0'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('راوٍ 1'));
+    await tester.pumpAndSettle();
+    expect(find.text('المحدد: 11433'), findsOneWidget);
+    await capture('compact-narrators');
+    tester.state<NavigatorState>(find.byType(Navigator)).pop();
+    await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('البحث للمتخصصين'));
     await tester.tap(find.text('البحث للمتخصصين'));
     await tester.pumpAndSettle();
     await capture('advanced');
     await tester.tap(find.widgetWithText(ElevatedButton, 'بحث'));
     await waitFor(find.byType(HadithCard));
-    expect(searches.single.queryParametersAll['s[]'], ['3088', '6216']);
+    expect(searches.single.queryParametersAll['s[]'], ['0']);
+    expect(searches.single.queryParametersAll['excludeBook[]'], ['96']);
+    expect(searches.single.queryParametersAll['rawi[]'], ['0']);
+    expect(searches.single.queryParametersAll['excludeRawi[]'], ['1', '2']);
+    expect(searches.single.toString().length, lessThan(1000));
     expect(searches.single.queryParameters['specialist'], 'true');
     expect(preferences.getBool('searchSpecialist'), isTrue);
     expect(find.byTooltip('تفاصيل الحديث'), findsNothing);

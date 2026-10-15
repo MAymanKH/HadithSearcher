@@ -37,13 +37,15 @@ class SearchViewModel extends ChangeNotifier {
     if (_searchRange != SearchRange.all) _searchRange.arabicName,
     if (_specialist) 'للمتخصصين',
     for (final filter in SearchFilter.values)
-      if (selectedOptions(filter).isNotEmpty &&
-          !selectedOptions(filter).any((option) => option.apiCode == '0'))
+      if (excludedOptions(filter).isNotEmpty ||
+          (selectedOptions(filter).isNotEmpty &&
+              !selectedOptions(filter).any((option) => option.apiCode == '0')))
         '${filter.arabicName}: ${selectionLabel(filter)}',
     if (_excludedWords.trim().isNotEmpty) 'استبعاد: $_excludedWords',
   ];
 
   final _filters = <SearchFilter, List<SearchOption>>{};
+  final _exclusions = <SearchFilter, List<SearchOption>>{};
   bool _specialist = false;
   bool _showActiveFilters = true;
   bool get showActiveFilters => _showActiveFilters;
@@ -60,7 +62,18 @@ class SearchViewModel extends ChangeNotifier {
   List<SearchOption> selectedOptions(SearchFilter filter) =>
       _filters[filter] ?? const [];
 
+  List<SearchOption> excludedOptions(SearchFilter filter) =>
+      _exclusions[filter] ?? const [];
+
   String selectionLabel(SearchFilter filter) {
+    final excluded = excludedOptions(filter);
+    if (excluded.isNotEmpty) {
+      final names = excluded
+          .take(2)
+          .map((option) => option.arabicName)
+          .join('، ');
+      return 'الجميع باستثناء $names${excluded.length > 2 ? ' +${excluded.length - 2}' : ''}';
+    }
     final selected = selectedOptions(filter);
     if (selected.isEmpty || selected.any((option) => option.apiCode == '0')) {
       return filter.all.arabicName;
@@ -72,8 +85,22 @@ class SearchViewModel extends ChangeNotifier {
     return selected.length > 2 ? '$names +${selected.length - 2}' : names;
   }
 
-  void setSelectedOptions(SearchFilter filter, List<SearchOption> options) {
-    final all = options.any((option) => option.apiCode == '0');
+  void setSelectedOptions(
+    SearchFilter filter,
+    List<SearchOption> options, {
+    List<SearchOption> excluded = const [],
+  }) {
+    final uniqueExcluded = {
+      for (final option in excluded)
+        if (option.apiCode != '0') option.apiCode: option,
+    };
+    _exclusions[filter] = List.unmodifiable(
+      uniqueExcluded.values.toList()
+        ..sort((a, b) => a.apiCode.compareTo(b.apiCode)),
+    );
+    final all =
+        uniqueExcluded.isNotEmpty ||
+        options.any((option) => option.apiCode == '0');
     final unique = {
       for (final option in options)
         if (option.apiCode != '0') option.apiCode: option,
@@ -97,6 +124,7 @@ class SearchViewModel extends ChangeNotifier {
     searchWay: _searchWay,
     searchRange: _searchRange,
     filters: _filters,
+    exclusions: _exclusions,
     specialist: _specialist,
     excludedWords: _excludedWords,
   );
@@ -199,6 +227,26 @@ class SearchViewModel extends ChangeNotifier {
       }
     }
 
+    final savedExclusions = prefs.getString('searchFilterExclusions');
+    if (savedExclusions != null) {
+      try {
+        final decoded = jsonDecode(savedExclusions) as Map<String, dynamic>;
+        for (final filter in SearchFilter.values) {
+          final options = (decoded[filter.name] as List? ?? const [])
+              .map(
+                (item) => SearchOption.fromJson(item as Map<String, dynamic>),
+              )
+              .toList();
+          if (options.isNotEmpty) {
+            setSelectedOptions(filter, [filter.all], excluded: options);
+          }
+        }
+      } on FormatException {
+        _exclusions.clear();
+      } on TypeError {
+        _exclusions.clear();
+      }
+    }
     _excludedWords = prefs.getString('searchExcludedWords') ?? '';
     notifyListeners();
   }
@@ -228,6 +276,7 @@ class SearchViewModel extends ChangeNotifier {
     _searchWay = SearchWay.anyWord;
     _searchRange = SearchRange.all;
     _filters.clear();
+    _exclusions.clear();
     _specialist = false;
     _excludedWords = '';
     notifyListeners();
@@ -278,11 +327,35 @@ class SearchViewModel extends ChangeNotifier {
     _errorMessage = null;
     _results = [];
     _hasMoreResults = true;
-    _currentParams = _params(keyword);
-
     notifyListeners();
-    final result = await _api.searchHadith(_currentParams!);
+    for (final filter in SearchFilter.values) {
+      final selected = selectedOptions(filter);
+      if (filter.exclusionQueryKey == null || selected.length < 100) continue;
+      final catalog = await _catalogs.load(filter);
+      if (generation != _searchGeneration) return;
+      if (catalog.isSuccess) {
+        final options = catalog.data!
+            .where((option) => option.apiCode != '0')
+            .toList();
+        final codes = selected.map((option) => option.apiCode).toSet();
+        final catalogCodes = options.map((option) => option.apiCode).toSet();
+        if (selected.length > options.length / 2 &&
+            codes.every(catalogCodes.contains)) {
+          setSelectedOptions(
+            filter,
+            [filter.all],
+            excluded: options
+                .where((option) => !codes.contains(option.apiCode))
+                .toList(),
+          );
+          await saveAdvancedPrefs();
+        }
+      }
+    }
     if (generation != _searchGeneration) return;
+    _currentParams = _params(keyword);
+    final result = await _loadMatchingPage(_currentParams!, generation);
+    if (generation != _searchGeneration || result == null) return;
 
     if (result.isSuccess) {
       _results = result.data!;
@@ -314,21 +387,38 @@ class SearchViewModel extends ChangeNotifier {
     _isLoadingMore = true;
     notifyListeners();
 
-    var result = await _api.searchHadith(params);
-    if (generation != _searchGeneration) return;
-    if (result.isError) {
-      result = await _api.searchHadith(params);
-      if (generation != _searchGeneration) return;
-    }
-
-    // After two failures, the next load moves past this page silently.
-    _currentParams = params;
+    final result = await _loadMatchingPage(params, generation, retry: true);
+    if (generation != _searchGeneration || result == null) return;
     if (result.isSuccess) {
       _results.addAll(result.data!);
       _hasMoreResults = result.hasNextPage ?? false;
     }
     _isLoadingMore = false;
     notifyListeners();
+  }
+
+  Future<ApiResult<List<Hadith>>?> _loadMatchingPage(
+    SearchParams params,
+    int generation, {
+    bool retry = false,
+  }) async {
+    while (generation == _searchGeneration) {
+      var result = await _api.searchHadith(params);
+      if (generation != _searchGeneration) return null;
+      if (retry && result.isError) {
+        result = await _api.searchHadith(params);
+        if (generation != _searchGeneration) return null;
+      }
+      _currentParams = params;
+      if (result.isError ||
+          result.data!.isNotEmpty ||
+          params.exclusions.values.every((options) => options.isEmpty) ||
+          result.hasNextPage != true) {
+        return result;
+      }
+      params = params.nextPage();
+    }
+    return null;
   }
 
   /// Toggle favourite status for a hadith.
@@ -439,6 +529,7 @@ class SearchViewModel extends ChangeNotifier {
         'searchWay',
         'searchRange',
         'searchFilters',
+        'searchFilterExclusions',
         'searchSpecialist',
         'searchExcludedWords',
       ]) {
@@ -454,6 +545,16 @@ class SearchViewModel extends ChangeNotifier {
       jsonEncode({
         for (final entry in _filters.entries)
           entry.key.name: entry.value.map((option) => option.toJson()).toList(),
+      }),
+    );
+    await prefs.setString(
+      'searchFilterExclusions',
+      jsonEncode({
+        for (final entry in _exclusions.entries)
+          if (entry.value.isNotEmpty)
+            entry.key.name: entry.value
+                .map((option) => option.toJson())
+                .toList(),
       }),
     );
     await prefs.setString('searchExcludedWords', _excludedWords);

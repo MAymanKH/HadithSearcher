@@ -13,7 +13,12 @@ Future<void> showSearchOptionPicker(
   required SearchFilter filter,
   required Future<ApiResult<List<SearchOption>>> Function() loadOptions,
   required List<SearchOption> selected,
-  required ValueChanged<List<SearchOption>> onChanged,
+  List<SearchOption> excluded = const [],
+  required void Function(
+    List<SearchOption> selected,
+    List<SearchOption> excluded,
+  )
+  onChanged,
 }) => showModalBottomSheet<void>(
   context: context,
   isScrollControlled: true,
@@ -22,6 +27,7 @@ Future<void> showSearchOptionPicker(
     filter: filter,
     loadOptions: loadOptions,
     selected: selected,
+    excluded: excluded,
     onChanged: onChanged,
   ),
 );
@@ -30,11 +36,14 @@ class _SearchOptionPicker extends StatefulWidget {
   final SearchFilter filter;
   final Future<ApiResult<List<SearchOption>>> Function() loadOptions;
   final List<SearchOption> selected;
-  final ValueChanged<List<SearchOption>> onChanged;
+  final List<SearchOption> excluded;
+  final void Function(List<SearchOption> selected, List<SearchOption> excluded)
+  onChanged;
   const _SearchOptionPicker({
     required this.filter,
     required this.loadOptions,
     required this.selected,
+    required this.excluded,
     required this.onChanged,
   });
 
@@ -54,16 +63,18 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
   ApiError? _error;
   late List<_IndexedOption> _options;
   late final Map<String, SearchOption> _selected;
-  late bool _allSelected;
+  late bool _excluding;
 
   @override
   void initState() {
     super.initState();
-    _allSelected =
+    _excluding =
+        widget.excluded.isNotEmpty ||
         widget.selected.isEmpty ||
         widget.selected.any((option) => option.apiCode == '0');
     _selected = {
-      for (final option in widget.selected)
+      for (final option
+          in widget.excluded.isNotEmpty ? widget.excluded : widget.selected)
         if (option.apiCode != '0') option.apiCode: option,
     };
     _options = _indexOptions(widget.filter.fallbackOptions);
@@ -99,12 +110,15 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
       if (result.isSuccess) {
         final options = await compute(_indexOptions, result.data!);
         if (!mounted) return;
+        var compacted = false;
         setState(() {
           _options = options;
           _includeSelection();
+          compacted = _compactSelection();
           _resetVisibleOptions();
           _loading = false;
         });
+        if (compacted) _emitSelection();
       } else {
         setState(() {
           _error = result.error;
@@ -168,40 +182,63 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
     super.dispose();
   }
 
-  int get _selectionCount => _allSelected ? _options.length : _selected.length;
+  int get _selectionCount =>
+      _excluding ? _options.length - _selected.length : _selected.length;
 
-  bool get _everythingSelected =>
-      _allSelected ||
-      (_options.isNotEmpty && _selected.length == _options.length);
+  bool get _everythingSelected => _excluding && _selected.isEmpty;
+
+  bool _compactSelection() {
+    if (_options.isNotEmpty &&
+        (_selected.length > _options.length / 2 ||
+            (_excluding && _selected.length == _options.length / 2))) {
+      final complement = {
+        for (final entry in _options)
+          if (!_selected.containsKey(entry.option.apiCode))
+            entry.option.apiCode: entry.option,
+      };
+      _selected
+        ..clear()
+        ..addAll(complement);
+      _excluding = !_excluding;
+      return true;
+    }
+    return false;
+  }
+
+  void _emitSelection() {
+    if (_excluding &&
+        _selected.isNotEmpty &&
+        widget.filter == SearchFilter.grade) {
+      widget.onChanged(
+        _options
+            .where((entry) => !_selected.containsKey(entry.option.apiCode))
+            .map((entry) => entry.option)
+            .toList(),
+        [],
+      );
+    } else {
+      widget.onChanged(
+        _excluding ? [widget.filter.all] : _selected.values.toList(),
+        _excluding ? _selected.values.toList() : [],
+      );
+    }
+  }
 
   void _toggle(SearchOption option) {
     setState(() {
       if (option.apiCode == '0') {
-        _allSelected = !_everythingSelected;
+        _excluding = !_everythingSelected;
         _selected.clear();
       } else {
-        if (_allSelected) {
-          _allSelected = false;
-          _selected.addEntries(
-            _options.map(
-              (entry) => MapEntry(entry.option.apiCode, entry.option),
-            ),
-          );
-        }
         if (_selected.containsKey(option.apiCode)) {
           _selected.remove(option.apiCode);
         } else {
           _selected[option.apiCode] = option;
         }
-        if (_everythingSelected) {
-          _allSelected = true;
-          _selected.clear();
-        }
+        _compactSelection();
       }
     });
-    widget.onChanged(
-      _allSelected ? [widget.filter.all] : _selected.values.toList(),
-    );
+    _emitSelection();
   }
 
   Future<void> _showInfo(SearchOption option) async {
@@ -249,10 +286,10 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
       selected: all
           ? _everythingSelected
                 ? true
-                : _selected.isEmpty
+                : _selectionCount == 0
                 ? false
                 : null
-          : _allSelected || _selected.containsKey(option.apiCode),
+          : _excluding != _selected.containsKey(option.apiCode),
       leading: supportsInfo
           ? IconButton(
               tooltip: 'معلومات عن ${option.arabicName}',

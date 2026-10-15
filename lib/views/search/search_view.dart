@@ -297,8 +297,9 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
           filter: filter,
           loadOptions: () => vm.loadFilterOptions(filter),
           selected: vm.selectedOptions(filter),
-          onChanged: (value) {
-            vm.setSelectedOptions(filter, value);
+          excluded: vm.excludedOptions(filter),
+          onChanged: (value, excluded) {
+            vm.setSelectedOptions(filter, value, excluded: excluded);
             unawaited(vm.saveAdvancedPrefs());
           },
         );
@@ -308,10 +309,16 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
         decoration: InputDecoration(
           labelText: filter.arabicName,
           labelStyle: _filterLabelStyle(
-            vm.selectedOptions(filter).any((option) => option.apiCode != '0'),
+            vm.excludedOptions(filter).isNotEmpty ||
+                vm
+                    .selectedOptions(filter)
+                    .any((option) => option.apiCode != '0'),
           ),
           floatingLabelStyle: _filterLabelStyle(
-            vm.selectedOptions(filter).any((option) => option.apiCode != '0'),
+            vm.excludedOptions(filter).isNotEmpty ||
+                vm
+                    .selectedOptions(filter)
+                    .any((option) => option.apiCode != '0'),
           ),
           suffixIcon: Icon(
             filter == SearchFilter.grade

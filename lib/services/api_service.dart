@@ -43,7 +43,13 @@ class ApiService {
       event: params.page == 1 ? 'search_completed' : 'pagination_completed',
       query: params.toQueryParams(),
       properties: properties,
-      parse: _parseHadiths,
+      parse: (json) {
+        if (params.exclusions.values.any((options) => options.isNotEmpty) &&
+            json['metadata']?['exclusionsApplied'] != true) {
+          return ApiResult.error(ApiError.unsupportedFilters);
+        }
+        return _parseHadiths(json);
+      },
     );
   }
 
@@ -228,6 +234,7 @@ enum ApiError {
   noConnection,
   timeout,
   notFound,
+  unsupportedFilters,
   unknown;
 
   /// Arabic error title.
@@ -239,6 +246,8 @@ enum ApiError {
         return 'نفذ الوقت';
       case ApiError.notFound:
         return 'لا توجد نتائج';
+      case ApiError.unsupportedFilters:
+        return 'يحتاج خادم البحث إلى تحديث لدعم استبعاد الفلاتر';
       case ApiError.unknown:
         return 'خطأ غير متوقع';
     }
@@ -253,6 +262,8 @@ enum ApiError {
         return 'تأكد من إتصالك بإنترنت مستقر وأعد المحاولة';
       case ApiError.notFound:
         return 'استخدم كلمات أو إعدادات أخرى';
+      case ApiError.unsupportedFilters:
+        return 'حدّث الخادم أو اختر عددًا أقل من الخيارات للبحث';
       case ApiError.unknown:
         return 'حدث خطأ غير متوقع، حاول مرة أخرى';
     }

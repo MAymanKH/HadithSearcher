@@ -6,6 +6,7 @@ class SearchParams {
   final SearchWay searchWay;
   final SearchRange searchRange;
   final Map<SearchFilter, List<SearchOption>> filters;
+  final Map<SearchFilter, List<SearchOption>> exclusions;
   final bool specialist;
   final String excludedWords;
 
@@ -15,10 +16,17 @@ class SearchParams {
     this.searchWay = SearchWay.anyWord,
     this.searchRange = SearchRange.all,
     Map<SearchFilter, List<SearchOption>> filters = const {},
+    Map<SearchFilter, List<SearchOption>> exclusions = const {},
     this.specialist = false,
     this.excludedWords = '',
   }) : filters = Map.unmodifiable(
          filters.map(
+           (filter, options) =>
+               MapEntry(filter, List<SearchOption>.unmodifiable(options)),
+         ),
+       ),
+       exclusions = Map.unmodifiable(
+         exclusions.map(
            (filter, options) =>
                MapEntry(filter, List<SearchOption>.unmodifiable(options)),
          ),
@@ -30,6 +38,7 @@ class SearchParams {
     searchWay: searchWay,
     searchRange: searchRange,
     filters: filters,
+    exclusions: exclusions,
     specialist: specialist,
     excludedWords: excludedWords,
   );
@@ -47,6 +56,11 @@ class SearchParams {
       filter.queryKey: filters[filter]?.isNotEmpty == true
           ? filters[filter]!.map((option) => option.apiCode).toList()
           : ['0'],
+    for (final entry in exclusions.entries)
+      if (entry.value.isNotEmpty && entry.key.exclusionQueryKey != null)
+        entry.key.exclusionQueryKey!: entry.value
+            .map((option) => option.apiCode)
+            .toList(),
     if (excludedWords.isNotEmpty) 'xclude': excludedWords,
   };
 
