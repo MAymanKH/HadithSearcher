@@ -61,6 +61,17 @@ void main() {
       )
       .opacity;
 
+  double textOpacity(WidgetTester tester) => tester
+      .widget<Opacity>(
+        find
+            .ancestor(
+              of: find.text('ابحث عن حديث'),
+              matching: find.byType(Opacity),
+            )
+            .first,
+      )
+      .opacity;
+
   Future<void> expectTransition(WidgetTester tester, Type from, Type to) async {
     await waitFor(tester, to);
     expect(find.byType(from), findsOneWidget);
@@ -106,15 +117,17 @@ void main() {
   }
 
   testWidgets(
-    'search icon fades in on direct startup without restarting on rebuild',
+    'search icon and text fade together without restarting on rebuild',
     (tester) async {
       SharedPreferences.setMockInitialValues({'welcomeCompleted': true});
       await mount(tester, TelemetryPolicy.alwaysOn);
       await waitFor(tester, MainShell);
       expect(iconOpacity(tester), 0);
+      expect(textOpacity(tester), 0);
       await tester.pump(const Duration(milliseconds: 350));
       final midway = iconOpacity(tester);
       expect(midway, inExclusiveRange(0, 1));
+      expect(textOpacity(tester), midway);
       final search = tester
           .element(find.byType(MainShell))
           .read<SearchViewModel>();
@@ -123,6 +136,7 @@ void main() {
       expect(iconOpacity(tester), midway);
       await tester.pumpAndSettle();
       expect(iconOpacity(tester), 1);
+      expect(textOpacity(tester), 1);
       expect(tester.takeException(), isNull);
       await tester.pumpWidget(const SizedBox());
     },
@@ -149,6 +163,7 @@ void main() {
     expect(find.byType(TelemetryConsentView), findsNothing);
     expect(pageOpacity(tester, MainShell), 1);
     expect(iconOpacity(tester), 1);
+    expect(textOpacity(tester), 1);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
   });

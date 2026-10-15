@@ -533,34 +533,33 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
               constraints: BoxConstraints(minHeight: constraints.maxHeight),
               child: Padding(
                 padding: const EdgeInsets.all(20),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TweenAnimationBuilder<double>(
-                      key: const ValueKey('search-placeholder-fade'),
-                      tween: Tween(
-                        begin: MediaQuery.disableAnimationsOf(context) ? 1 : 0,
-                        end: 1,
+                child: TweenAnimationBuilder<double>(
+                  key: const ValueKey('search-placeholder-fade'),
+                  tween: Tween(
+                    begin: MediaQuery.disableAnimationsOf(context) ? 1 : 0,
+                    end: 1,
+                  ),
+                  duration: MediaQuery.disableAnimationsOf(context)
+                      ? Duration.zero
+                      : const Duration(milliseconds: 700),
+                  curve: Curves.easeOutCubic,
+                  builder: (context, opacity, child) =>
+                      Opacity(opacity: opacity, child: child),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.search, size: 100, color: Colors.grey),
+                      Text(
+                        context.l10n.searchEmpty,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          color: Colors.grey,
+                        ),
                       ),
-                      duration: MediaQuery.disableAnimationsOf(context)
-                          ? Duration.zero
-                          : const Duration(milliseconds: 700),
-                      curve: Curves.easeOutCubic,
-                      builder: (context, opacity, child) =>
-                          Opacity(opacity: opacity, child: child),
-                      child: const Icon(
-                        Icons.search,
-                        size: 100,
-                        color: Colors.grey,
-                      ),
-                    ),
-                    Text(
-                      context.l10n.searchEmpty,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 20, color: Colors.grey),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
