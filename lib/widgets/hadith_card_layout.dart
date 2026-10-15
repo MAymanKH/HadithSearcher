@@ -115,7 +115,7 @@ class HadithCardLayout extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: OutlinedButton.icon(
           onPressed: onAlternate,
-          icon: const Icon(Icons.fact_check_outlined, size: 18),
+          icon: const Icon(Icons.fact_check_outlined, size: 22),
           label: const Text('البديل الصحيح'),
           style: OutlinedButton.styleFrom(
             foregroundColor: colors.secondaryContainer,
@@ -127,11 +127,11 @@ class HadithCardLayout extends StatelessWidget {
             side: BorderSide(
               color: colors.secondaryContainer.withValues(alpha: 0.38),
             ),
-            minimumSize: const Size(0, 36),
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+            minimumSize: const Size(0, 44),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             tapTargetSize: MaterialTapTargetSize.padded,
             textStyle: const TextStyle(
-              fontSize: 13,
+              fontSize: 16,
               fontWeight: FontWeight.w600,
             ),
             shape: RoundedRectangleBorder(
