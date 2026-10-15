@@ -30,6 +30,7 @@ class SettingsViewModel extends ChangeNotifier {
 
   TextStyle get readingTextStyle => TextStyle(
     fontFamily: fontFamily,
+    fontFamilyFallback: const [],
     fontWeight: fontWeight,
     fontSize: fontSize,
   );

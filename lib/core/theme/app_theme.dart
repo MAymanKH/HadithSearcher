@@ -35,7 +35,7 @@ class AppTheme {
   /// Light theme.
   static ThemeData get lightTheme {
     return ThemeData(
-      fontFamilyFallback: const ['Cairo'],
+      fontFamily: 'Cairo',
       brightness: Brightness.light,
       checkboxTheme: _checkboxTheme(Colors.black, Colors.white),
       inputDecorationTheme: InputDecorationTheme(
@@ -90,7 +90,7 @@ class AppTheme {
   /// Dark theme.
   static ThemeData get darkTheme {
     return ThemeData(
-      fontFamilyFallback: const ['Cairo'],
+      fontFamily: 'Cairo',
       brightness: Brightness.dark,
       checkboxTheme: _checkboxTheme(Colors.white, Colors.black),
       inputDecorationTheme: InputDecorationTheme(
