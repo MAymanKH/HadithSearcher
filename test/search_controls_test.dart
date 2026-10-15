@@ -40,8 +40,11 @@ void main() {
         fail('Startup requested ${request.url}');
       }),
     );
-    expect(vm.searchRawi.apiCode, '999');
-    expect(vm.searchRawi.arabicName, 'راوٍ محفوظ');
+    expect(vm.selectedOptions(SearchFilter.narrator).single.apiCode, '999');
+    expect(
+      vm.selectedOptions(SearchFilter.narrator).single.arabicName,
+      'راوٍ محفوظ',
+    );
   });
 
   for (final wrapped in [true, false]) {
@@ -69,17 +72,18 @@ void main() {
       () async {
         final books = await vm.loadFilterOptions(SearchFilter.book);
         expect(requests, ['/v1/data/book']);
-        vm.setSearchBook(books.data!.last);
+        vm.setSelectedOptions(SearchFilter.book, [books.data!.last]);
         final scholars = await vm.loadFilterOptions(SearchFilter.scholar);
-        vm.setSearchMohdith(scholars.data!.last);
+        vm.setSelectedOptions(SearchFilter.scholar, [scholars.data!.last]);
         final narrators = await vm.loadFilterOptions(SearchFilter.narrator);
-        vm.setSearchRawi(narrators.data!.last);
+        vm.setSelectedOptions(SearchFilter.narrator, [narrators.data!.last]);
         await vm.loadFilterOptions(SearchFilter.narrator);
         expect(requests, [
           '/v1/data/book',
           '/v1/data/mohdith',
           '/v1/data/rawi',
         ]);
+        await vm.loadFilterOptions(SearchFilter.grade);
         await vm.saveAdvancedPrefs();
       },
       () => MockClient((request) async {
@@ -90,9 +94,15 @@ void main() {
     final restored = SearchViewModel();
     addTearDown(restored.dispose);
     await restored.init();
-    expect(restored.searchBook.apiCode, '999');
-    expect(restored.searchMohdith.apiCode, '999');
-    expect(restored.searchRawi.apiCode, '999');
+    expect(restored.selectedOptions(SearchFilter.book).single.apiCode, '999');
+    expect(
+      restored.selectedOptions(SearchFilter.scholar).single.apiCode,
+      '999',
+    );
+    expect(
+      restored.selectedOptions(SearchFilter.narrator).single.apiCode,
+      '999',
+    );
     await http.runWithClient(
       () async {
         for (final filter in SearchFilter.values) {
@@ -197,11 +207,11 @@ void main() {
     final vm = SearchViewModel();
     addTearDown(vm.dispose);
     await vm.init();
-    expect(vm.searchBook.apiCode, '6216');
-    expect(vm.searchMohdith.apiCode, '179');
+    expect(vm.selectedOptions(SearchFilter.book).single.apiCode, '6216');
+    expect(vm.selectedOptions(SearchFilter.scholar).single.apiCode, '179');
     vm.resetFilters();
     expect(vm.activeFilters, isEmpty);
-    expect(vm.searchBook, SearchOption.allBooks);
+    expect(vm.selectedOptions(SearchFilter.book), isEmpty);
   });
 
   test('narrator is sent on every search page and reset removes it', () async {
@@ -211,9 +221,9 @@ void main() {
     await vm.init();
     vm.toggleAdvancedSearch();
     expect(vm.hasSettingsChanged(), isFalse);
-    vm.setSearchRawi(narrator);
+    vm.setSelectedOptions(SearchFilter.narrator, [narrator]);
     expect(vm.hasSettingsChanged(), isTrue);
-    expect(vm.activeFilters, contains(narrator.arabicName));
+    expect(vm.activeFilters, contains('الراوي: ${narrator.arabicName}'));
     final pages = <String>[];
     await http.runWithClient(
       () async {
@@ -236,16 +246,20 @@ void main() {
       }),
     );
     expect(pages, ['1', '2']);
-    final params = const SearchParams(
+    final params = SearchParams(
       keyword: 'العمل',
-      searchRawi: narrator,
+      filters: {
+        SearchFilter.narrator: [narrator],
+      },
     ).nextPage().resetPage();
-    expect(params.toQueryParams()['rawi[]'], '8918');
-    expect(params.toQueryString(), contains('&rawi[]=8918'));
+    expect(params.toQueryParams()['rawi[]'], ['8918']);
+    expect(Uri(query: params.toQueryString()).queryParametersAll['rawi[]'], [
+      '8918',
+    ]);
     vm.resetFilters();
-    expect(vm.searchRawi, SearchOption.allNarrators);
+    expect(vm.selectedOptions(SearchFilter.narrator), isEmpty);
     expect(vm.activeFilters, isEmpty);
-    vm.setSearchRawi(narrator);
+    vm.setSelectedOptions(SearchFilter.narrator, [narrator]);
     await vm.saveAdvancedPrefs();
     await vm.setSaveAdvancedSettings(false);
     final prefs = await SharedPreferences.getInstance();

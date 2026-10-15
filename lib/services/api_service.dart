@@ -26,10 +26,12 @@ class ApiService {
       'page': params.page,
       'search_way': params.searchWay.name,
       'search_range': params.searchRange.name,
-      'grade': params.searchGrade.name,
-      'mohdith': params.searchMohdith.apiCode,
-      'book': params.searchBook.apiCode,
-      'rawi': params.searchRawi.apiCode,
+      'specialist': params.specialist,
+      for (final filter in SearchFilter.values)
+        (filter == SearchFilter.grade ? 'grade' : filter.endpoint):
+            (params.filters[filter] ?? const <SearchOption>[])
+                .map((option) => option.apiCode)
+                .toList(),
     };
     if (params.page == 1) {
       TelemetryService.event('search_submitted', properties);
@@ -123,7 +125,7 @@ class ApiService {
     required String event,
     required ApiResult<T> Function(dynamic) parse,
     FutureOr<dynamic> Function(String) decode = jsonDecode,
-    Map<String, String>? query,
+    Map<String, Object>? query,
     Map<String, Object> properties = const {},
     Duration timeout = _timeout,
   }) async {

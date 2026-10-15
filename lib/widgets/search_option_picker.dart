@@ -5,12 +5,12 @@ import '../models/search_option.dart';
 import 'app_selection_tile.dart';
 import '../services/api_service.dart';
 
-Future<SearchOption?> showSearchOptionPicker(
+Future<List<SearchOption>?> showSearchOptionPicker(
   BuildContext context, {
   required SearchFilter filter,
   required Future<ApiResult<List<SearchOption>>> Function() loadOptions,
-  required SearchOption selected,
-}) => showModalBottomSheet<SearchOption>(
+  required List<SearchOption> selected,
+}) => showModalBottomSheet<List<SearchOption>>(
   context: context,
   isScrollControlled: true,
   useSafeArea: true,
@@ -24,7 +24,7 @@ Future<SearchOption?> showSearchOptionPicker(
 class _SearchOptionPicker extends StatefulWidget {
   final SearchFilter filter;
   final Future<ApiResult<List<SearchOption>>> Function() loadOptions;
-  final SearchOption selected;
+  final List<SearchOption> selected;
   const _SearchOptionPicker({
     required this.filter,
     required this.loadOptions,
@@ -46,10 +46,15 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
   bool _loading = true;
   ApiError? _error;
   late List<_IndexedOption> _options;
+  late final Map<String, SearchOption> _selected;
 
   @override
   void initState() {
     super.initState();
+    _selected = {
+      for (final option in widget.selected)
+        if (option.apiCode != '0') option.apiCode: option,
+    };
     _options = _indexOptions(widget.filter.fallbackOptions);
     _includeSelection();
     _resetVisibleOptions();
@@ -58,10 +63,10 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
   }
 
   void _includeSelection() {
-    final selected = widget.selected;
-    if (selected.apiCode != '0' &&
-        !_options.any((entry) => entry.option.apiCode == selected.apiCode)) {
-      _options.insert(0, _IndexedOption(selected));
+    for (final selected in _selected.values) {
+      if (!_options.any((entry) => entry.option.apiCode == selected.apiCode)) {
+        _options.insert(0, _IndexedOption(selected));
+      }
     }
   }
 
@@ -147,8 +152,18 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
 
   Widget _tile(SearchOption option) => AppSelectionTile(
     title: Text(option.arabicName),
-    selected: option.apiCode == widget.selected.apiCode,
-    onTap: () => Navigator.pop(context, option),
+    selected: option.apiCode == '0'
+        ? _selected.isEmpty
+        : _selected.containsKey(option.apiCode),
+    onTap: () => setState(() {
+      if (option.apiCode == '0') {
+        _selected.clear();
+      } else if (_selected.containsKey(option.apiCode)) {
+        _selected.remove(option.apiCode);
+      } else {
+        _selected[option.apiCode] = option;
+      }
+    }),
   );
 
   @override
@@ -161,6 +176,32 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
         child: Column(
           children: [
             Padding(
+              padding: const EdgeInsetsDirectional.only(
+                start: 16,
+                end: 8,
+                top: 8,
+              ),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.filter.arabicName,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+                  TextButton(
+                    onPressed: () =>
+                        Navigator.pop(context, _selected.values.toList()),
+                    child: Text(
+                      _selected.isEmpty
+                          ? 'تطبيق'
+                          : 'تطبيق (${_selected.length})',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Padding(
               padding: const EdgeInsets.all(16),
               child: TextField(
                 decoration: const InputDecoration(
@@ -170,11 +211,11 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
                 onChanged: _search,
               ),
             ),
-            _tile(widget.filter.all),
             Expanded(
               child: CustomScrollView(
                 controller: _scrollController,
                 slivers: [
+                  SliverToBoxAdapter(child: _tile(widget.filter.all)),
                   if (_loading)
                     const SliverToBoxAdapter(child: LinearProgressIndicator()),
                   if (_error != null)

@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:hadithsearcher/models/search_params.dart';
+import 'package:hadithsearcher/models/search_option.dart';
 import 'package:hadithsearcher/viewmodels/search_viewmodel.dart';
 
 http.Response page(String prefix, {int count = 2, bool hasNext = false}) =>
@@ -159,7 +159,7 @@ void main() {
     () async {
       final vm = SearchViewModel();
       addTearDown(vm.dispose);
-      vm.setSearchGrade(SearchGrade.daif);
+      vm.setSelectedOptions(SearchFilter.grade, [SearchOption.grades[3]]);
       vm.setExcludedWords('old exclusion');
       await vm.saveAdvancedPrefs();
       await vm.setSaveAdvancedSettings(false);
@@ -167,7 +167,7 @@ void main() {
       addTearDown(restored.dispose);
       await restored.init();
       expect(restored.saveAdvancedSettings, isFalse);
-      expect(restored.searchGrade, SearchGrade.all);
+      expect(restored.selectedOptions(SearchFilter.grade), isEmpty);
       expect(restored.excludedWords, isEmpty);
       final prefs = await SharedPreferences.getInstance();
       expect(prefs.containsKey('searchGrade'), isFalse);

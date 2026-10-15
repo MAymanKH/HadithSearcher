@@ -9,7 +9,7 @@ void main() {
   Future<void> openPicker(
     WidgetTester tester, {
     required Future<ApiResult<List<SearchOption>>> Function() load,
-    SearchOption selected = SearchOption.allNarrators,
+    List<SearchOption> selected = const [],
     Size size = const Size(320, 850),
   }) async {
     tester.view.physicalSize = size;
@@ -31,7 +31,11 @@ void main() {
                   );
                   if (context.mounted && option != null) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('اختيار: ${option.apiCode}')),
+                      SnackBar(
+                        content: Text(
+                          'اختيار: ${option.map((item) => item.apiCode).join(',')}',
+                        ),
+                      ),
                     );
                   }
                 },
@@ -112,6 +116,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('أَسْمَاء بنت أبى بكر'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('تطبيق (1)'));
+    await tester.pumpAndSettle();
     expect(find.text('اختيار: 20000'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -147,6 +153,8 @@ void main() {
     await tester.pumpAndSettle();
     expect(optionCount(tester), 85);
     await tester.tap(find.text('راوي 84'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('تطبيق (1)'));
     await tester.pumpAndSettle();
     expect(find.text('اختيار: 85'), findsOneWidget);
     expect(tester.takeException(), isNull);
@@ -185,6 +193,8 @@ void main() {
     );
     await tester.tap(find.text('أسماء 118'));
     await tester.pumpAndSettle();
+    await tester.tap(find.text('تطبيق (1)'));
+    await tester.pumpAndSettle();
     expect(find.text('اختيار: 119'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
@@ -195,7 +205,7 @@ void main() {
       var calls = 0;
       await openPicker(
         tester,
-        selected: const SearchOption('999', 'راوٍ محفوظ'),
+        selected: const [SearchOption('999', 'راوٍ محفوظ')],
         load: () async => ++calls == 1
             ? ApiResult.error(ApiError.noConnection)
             : ApiResult.success([const SearchOption('2', 'راوٍ جديد')]),
@@ -215,7 +225,9 @@ void main() {
       expect(find.text('لا توجد خيارات مطابقة'), findsOneWidget);
       await tester.tap(find.text('جميع الرواة'));
       await tester.pumpAndSettle();
-      expect(find.text('اختيار: 0'), findsOneWidget);
+      await tester.tap(find.text('تطبيق'));
+      await tester.pumpAndSettle();
+      expect(find.text('اختيار: '), findsOneWidget);
     },
   );
 
@@ -225,7 +237,7 @@ void main() {
     final response = Completer<ApiResult<List<SearchOption>>>();
     await openPicker(tester, load: () => response.future);
     expect(find.byType(LinearProgressIndicator), findsOneWidget);
-    await tester.tap(find.text('جميع الرواة'));
+    await tester.tap(find.text('تطبيق'));
     await tester.pumpAndSettle();
     response.complete(ApiResult.success([const SearchOption('2', 'راوٍ آخر')]));
     await tester.pumpAndSettle();

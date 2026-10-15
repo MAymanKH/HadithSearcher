@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:hadithsearcher/models/settings.dart';
-import 'package:hadithsearcher/models/search_params.dart';
+import 'package:hadithsearcher/models/search_option.dart';
 import 'package:hadithsearcher/viewmodels/search_viewmodel.dart';
 import 'package:hadithsearcher/viewmodels/settings_viewmodel.dart';
 import 'package:http/http.dart' as http;
@@ -180,10 +180,15 @@ void main() {
         expect(requests.map((url) => url.path), ['/v1/data/rawi']);
         await tester.tap(find.text('عمر بن الخطاب'));
         await tester.pumpAndSettle();
+        await tester.tap(find.text('تطبيق (1)'));
+        await tester.pumpAndSettle();
         await tester.tap(find.byTooltip('البحث المتقدم'));
         await tester.pumpAndSettle();
         expect(requests.last.queryParameters['rawi[]'], '8918');
-        expect(find.widgetWithText(Chip, 'عمر بن الخطاب'), findsOneWidget);
+        expect(
+          find.widgetWithText(Chip, 'الراوي: عمر بن الخطاب'),
+          findsOneWidget,
+        );
         expect(tester.takeException(), isNull);
         await tester.pumpWidget(const SizedBox());
       },
@@ -214,7 +219,7 @@ void main() {
     await tester.tap(find.byTooltip('البحث المتقدم'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    expect(find.byType(AppDropdown<String>), findsNWidgets(3));
+    expect(find.byType(AppDropdown<String>), findsNWidgets(2));
     await tester.pumpWidget(const SizedBox());
   });
 
@@ -224,7 +229,7 @@ void main() {
     await mount(tester);
     expect(find.byType(Badge), findsNothing);
     final vm = tester.element(find.byType(SearchView)).read<SearchViewModel>();
-    vm.setSearchGrade(SearchGrade.sahih);
+    vm.setSelectedOptions(SearchFilter.grade, [SearchOption.grades[1]]);
     await tester.pumpAndSettle();
     final activeFilters = List<String>.of(vm.activeFilters);
     expect(find.byType(Chip), findsWidgets);
@@ -250,7 +255,7 @@ void main() {
     expect(vm.activeFilters, activeFilters);
     await tester.tap(find.byTooltip('البحث المتقدم'));
     await tester.pumpAndSettle();
-    expect(find.byType(AppDropdown<String>), findsNWidgets(3));
+    expect(find.byType(AppDropdown<String>), findsNWidgets(2));
     await tester.tap(find.byTooltip('البحث المتقدم'));
     await tester.pumpAndSettle();
     expect(find.byType(Chip), findsNothing);

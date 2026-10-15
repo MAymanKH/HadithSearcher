@@ -30,7 +30,7 @@ void main() {
     const query = 'حديث & test';
     final result = await http.runWithClient(
         () => ApiService().searchHadith(
-              const SearchParams(
+              SearchParams(
                   keyword: query, excludedWords: 'exclude & word'),
             ),
         () => MockClient((request) async {
@@ -50,7 +50,7 @@ void main() {
     await telemetry.save(diagnostics: true, analytics: false);
     final result = await http.runWithClient(
         () => ApiService().searchHadith(
-              const SearchParams(keyword: 'query'),
+              SearchParams(keyword: 'query'),
             ),
         () => MockClient((_) async => http.Response('upstream failure', 502)));
     expect(result.error, ApiError.unknown);
@@ -63,7 +63,7 @@ void main() {
     final response = Completer<http.Response>();
     final result = http.runWithClient(
         () => ApiService().searchHadith(
-              const SearchParams(keyword: 'pre-consent-query'),
+              SearchParams(keyword: 'pre-consent-query'),
             ),
         () => MockClient((_) => response.future));
     await telemetry.save(diagnostics: true, analytics: true);

@@ -237,27 +237,15 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
               (value) => vm.setSearchRange(SearchRange.fromArabic(value!)),
               isDefault: vm.searchRange == SearchRange.all,
             ),
-            _buildDropdownRow(
-              'درجة الحديث',
-              vm.searchGrade.arabicName,
-              SearchGrade.values.map((e) => e.arabicName).toList(),
-              (value) => vm.setSearchGrade(SearchGrade.fromArabic(value!)),
-              isDefault: vm.searchGrade == SearchGrade.all,
-            ),
-            _buildCatalogField(
-              SearchFilter.scholar,
-              vm.searchMohdith,
-              vm.setSearchMohdith,
-            ),
-            _buildCatalogField(
-              SearchFilter.book,
-              vm.searchBook,
-              vm.setSearchBook,
-            ),
-            _buildCatalogField(
-              SearchFilter.narrator,
-              vm.searchRawi,
-              vm.setSearchRawi,
+            for (final filter in SearchFilter.values)
+              _buildCatalogField(filter, vm),
+            SwitchListTile.adaptive(
+              title: const Text('البحث للمتخصصين'),
+              subtitle: const Text(
+                'يشمل اختلاف أحكام المحدثين وتفاصيل الأسانيد',
+              ),
+              value: vm.specialist,
+              onChanged: vm.setSpecialist,
             ),
             _buildExcludedWordsField(vm),
             _buildSaveCheckbox(vm),
@@ -299,11 +287,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
   TextStyle? _filterLabelStyle(bool active) =>
       active ? TextStyle(color: Theme.of(context).colorScheme.primary) : null;
 
-  Widget _buildCatalogField(
-    SearchFilter filter,
-    SearchOption selected,
-    void Function(SearchOption) onChanged,
-  ) => Padding(
+  Widget _buildCatalogField(SearchFilter filter, SearchViewModel vm) => Padding(
     padding: const EdgeInsets.all(10),
     child: InkWell(
       borderRadius: BorderRadius.circular(30),
@@ -311,22 +295,23 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
         final value = await showSearchOptionPicker(
           context,
           filter: filter,
-          loadOptions: () =>
-              context.read<SearchViewModel>().loadFilterOptions(filter),
-          selected: selected,
+          loadOptions: () => vm.loadFilterOptions(filter),
+          selected: vm.selectedOptions(filter),
         );
-        if (mounted && value != null) onChanged(value);
+        if (mounted && value != null) vm.setSelectedOptions(filter, value);
       },
       child: InputDecorator(
         decoration: InputDecoration(
           labelText: filter.arabicName,
-          labelStyle: _filterLabelStyle(selected.apiCode != '0'),
-          floatingLabelStyle: _filterLabelStyle(selected.apiCode != '0'),
+          labelStyle: _filterLabelStyle(vm.selectedOptions(filter).isNotEmpty),
+          floatingLabelStyle: _filterLabelStyle(
+            vm.selectedOptions(filter).isNotEmpty,
+          ),
           suffixIcon: const Icon(Icons.search),
         ),
         child: Text(
-          selected.arabicName,
-          maxLines: 1,
+          vm.selectionLabel(filter),
+          maxLines: 2,
           overflow: TextOverflow.ellipsis,
         ),
       ),

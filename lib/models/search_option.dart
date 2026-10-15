@@ -24,6 +24,14 @@ class SearchOption {
   static String encodeCatalog(List<SearchOption> options) =>
       jsonEncode(options.map((option) => option.toJson()).toList());
 
+  static const grades = [
+    SearchOption('0', 'جميع الدرجات'),
+    SearchOption('1', 'أحاديث صحيحة'),
+    SearchOption('2', 'أحاديث أسانيدها صحيحة'),
+    SearchOption('3', 'أحاديث ضعيفة'),
+    SearchOption('4', 'أحاديث أسانيدها ضعيفة'),
+  ];
+
   static const allScholars = SearchOption('0', 'جميع المحدثين');
   static const allBooks = SearchOption('0', 'جميع الكتب');
   static const allNarrators = SearchOption('0', 'جميع الرواة');
@@ -48,15 +56,22 @@ class SearchOption {
 }
 
 enum SearchFilter {
-  book('book', 'الكتاب', SearchOption.books),
-  scholar('mohdith', 'المحدث', SearchOption.scholars),
-  narrator('rawi', 'الراوي', SearchOption.narrators);
+  grade('degree', 'درجة الحديث', SearchOption.grades, 'd[]'),
+  scholar('mohdith', 'المحدث', SearchOption.scholars, 'm[]'),
+  book('book', 'الكتاب', SearchOption.books, 's[]'),
+  narrator('rawi', 'الراوي', SearchOption.narrators, 'rawi[]');
 
   final String endpoint;
+  final String queryKey;
   final String arabicName;
   final List<SearchOption> fallbackOptions;
 
-  const SearchFilter(this.endpoint, this.arabicName, this.fallbackOptions);
+  const SearchFilter(
+    this.endpoint,
+    this.arabicName,
+    this.fallbackOptions,
+    this.queryKey,
+  );
 
   SearchOption get all => fallbackOptions.first;
 }

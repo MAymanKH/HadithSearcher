@@ -1,96 +1,56 @@
 import 'search_option.dart';
 
-/// Search parameters for the Hadith API.
 class SearchParams {
   final String keyword;
   final int page;
   final SearchWay searchWay;
   final SearchRange searchRange;
-  final SearchGrade searchGrade;
-  final SearchOption searchMohdith;
-  final SearchOption searchBook;
-  final SearchOption searchRawi;
+  final Map<SearchFilter, List<SearchOption>> filters;
+  final bool specialist;
   final String excludedWords;
 
-  const SearchParams({
+  SearchParams({
     required this.keyword,
     this.page = 1,
     this.searchWay = SearchWay.anyWord,
     this.searchRange = SearchRange.all,
-    this.searchGrade = SearchGrade.all,
-    this.searchMohdith = SearchOption.allScholars,
-    this.searchBook = SearchOption.allBooks,
-    this.searchRawi = SearchOption.allNarrators,
+    Map<SearchFilter, List<SearchOption>> filters = const {},
+    this.specialist = false,
     this.excludedWords = '',
-  });
+  }) : filters = Map.unmodifiable(
+         filters.map(
+           (filter, options) =>
+               MapEntry(filter, List<SearchOption>.unmodifiable(options)),
+         ),
+       );
 
-  /// Creates a copy with updated page number.
-  SearchParams nextPage() {
-    return SearchParams(
-      keyword: keyword,
-      page: page + 1,
-      searchWay: searchWay,
-      searchRange: searchRange,
-      searchGrade: searchGrade,
-      searchMohdith: searchMohdith,
-      searchBook: searchBook,
-      searchRawi: searchRawi,
-      excludedWords: excludedWords,
-    );
-  }
+  SearchParams _withPage(int page) => SearchParams(
+    keyword: keyword,
+    page: page,
+    searchWay: searchWay,
+    searchRange: searchRange,
+    filters: filters,
+    specialist: specialist,
+    excludedWords: excludedWords,
+  );
 
-  /// Creates a copy with reset page.
-  SearchParams resetPage() {
-    return SearchParams(
-      keyword: keyword,
-      page: 1,
-      searchWay: searchWay,
-      searchRange: searchRange,
-      searchGrade: searchGrade,
-      searchMohdith: searchMohdith,
-      searchBook: searchBook,
-      searchRawi: searchRawi,
-      excludedWords: excludedWords,
-    );
-  }
+  SearchParams nextPage() => _withPage(page + 1);
+  SearchParams resetPage() => _withPage(1);
 
-  /// Builds query parameters for API URL.
-  Map<String, String> toQueryParams() {
-    final params = <String, String>{
-      'value': keyword,
-      'page': page.toString(),
-      'st': searchWay.apiCode,
-      't': searchRange.apiCode,
-      'd[]': searchGrade.apiCode,
-      'm[]': searchMohdith.apiCode,
-      's[]': searchBook.apiCode,
-      'rawi[]': searchRawi.apiCode,
-    };
+  Map<String, Object> toQueryParams() => {
+    'value': keyword,
+    'page': page.toString(),
+    'st': searchWay.apiCode,
+    't': searchRange.apiCode,
+    'specialist': specialist.toString(),
+    for (final filter in SearchFilter.values)
+      filter.queryKey: filters[filter]?.isNotEmpty == true
+          ? filters[filter]!.map((option) => option.apiCode).toList()
+          : ['0'],
+    if (excludedWords.isNotEmpty) 'xclude': excludedWords,
+  };
 
-    // Add excluded words if present
-    if (excludedWords.isNotEmpty) {
-      params['xclude'] = excludedWords;
-    }
-
-    return params;
-  }
-
-  /// Builds full query string.
-  String toQueryString() {
-    final buffer = StringBuffer();
-    buffer.write('value=$keyword');
-    buffer.write('&page=$page');
-    buffer.write('&st=${searchWay.apiCode}');
-    buffer.write('&t=${searchRange.apiCode}');
-    buffer.write('&d[]=${searchGrade.apiCode}');
-    buffer.write('&m[]=${searchMohdith.apiCode}');
-    buffer.write('&s[]=${searchBook.apiCode}');
-    buffer.write('&rawi[]=${searchRawi.apiCode}');
-    if (excludedWords.isNotEmpty) {
-      buffer.write(excludedWords);
-    }
-    return buffer.toString();
-  }
+  String toQueryString() => Uri(queryParameters: toQueryParams()).query;
 }
 
 /// Search method (any word, all words, exact match).
@@ -129,27 +89,6 @@ enum SearchRange {
     return SearchRange.values.firstWhere(
       (e) => e.arabicName == name,
       orElse: () => SearchRange.all,
-    );
-  }
-}
-
-/// Hadith authenticity grade filter.
-enum SearchGrade {
-  all('0', 'جميع الدرجات'),
-  sahih('1', 'أحاديث صحيحة'),
-  sahihIsnad('2', 'أحاديث أسانيدها صحيحة'),
-  daif('3', 'أحاديث ضعيفة'),
-  daifIsnad('4', 'أحاديث أسانيدها ضعيفة');
-
-  final String apiCode;
-  final String arabicName;
-
-  const SearchGrade(this.apiCode, this.arabicName);
-
-  static SearchGrade fromArabic(String name) {
-    return SearchGrade.values.firstWhere(
-      (e) => e.arabicName == name,
-      orElse: () => SearchGrade.all,
     );
   }
 }

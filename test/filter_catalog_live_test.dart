@@ -22,15 +22,18 @@ void main() {
           reason: '${filter.endpoint}: ${result.error}',
         );
         final options = result.data!;
-        expect(options.length, greaterThan(filter.fallbackOptions.length));
+        expect(
+          options.length,
+          greaterThanOrEqualTo(filter.fallbackOptions.length),
+        );
         final codes = options.map((option) => option.apiCode).toSet();
         for (final fallback in filter.fallbackOptions) {
           expect(codes, contains(fallback.apiCode));
         }
         if (filter == SearchFilter.narrator) {
-          vm.setSearchRawi(
+          vm.setSelectedOptions(SearchFilter.narrator, [
             options.firstWhere((option) => option.apiCode == '8918'),
-          );
+          ]);
         }
       }
       await vm.search('الأعمال');
