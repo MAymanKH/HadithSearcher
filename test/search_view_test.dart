@@ -76,6 +76,27 @@ void main() {
     },
   );
 
+  testWidgets('remember filters uses a switch and saves its value', (
+    tester,
+  ) async {
+    await mount(tester);
+    await tester.tap(find.byTooltip('البحث المتقدم'));
+    await tester.pumpAndSettle();
+    final toggle = find.widgetWithText(SwitchListTile, 'تذكّر فلاتر البحث');
+    await tester.ensureVisible(toggle);
+    await tester.pumpAndSettle();
+    expect(tester.widget<SwitchListTile>(toggle).value, isTrue);
+    expect(find.byType(CheckboxListTile), findsNothing);
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    expect(tester.widget<SwitchListTile>(toggle).value, isFalse);
+    expect(
+      (await SharedPreferences.getInstance()).getBool('advancedSaveCheckbox'),
+      isFalse,
+    );
+    await tester.pumpWidget(const SizedBox());
+  });
+
   for (final mode in ['light', 'dark']) {
     testWidgets(
       'search scrolling and app bar appearance persist in $mode mode',

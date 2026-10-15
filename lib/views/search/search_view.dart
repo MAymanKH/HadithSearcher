@@ -247,7 +247,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
             for (final filter in SearchFilter.values)
               _buildCatalogField(filter, vm),
             _buildExcludedWordsField(vm),
-            _buildSaveCheckbox(vm),
+            _buildSaveSwitch(vm),
             const SizedBox(height: 20),
           ],
         ),
@@ -372,11 +372,12 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     );
   }
 
-  Widget _buildSaveCheckbox(SearchViewModel vm) {
-    return CheckboxListTile(
+  Widget _buildSaveSwitch(SearchViewModel vm) {
+    return SwitchListTile.adaptive(
       value: vm.saveAdvancedSettings,
-      title: const Text('حفظ إعدادات البحث المتقدم'),
-      onChanged: (value) => vm.setSaveAdvancedSettings(value ?? true),
+      title: const Text('تذكّر فلاتر البحث'),
+      subtitle: const Text('استخدام الفلاتر نفسها عند فتح التطبيق مجددًا'),
+      onChanged: vm.setSaveAdvancedSettings,
     );
   }
 
