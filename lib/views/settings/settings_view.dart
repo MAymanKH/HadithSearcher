@@ -61,12 +61,11 @@ class SettingsView extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                     clipBehavior: Clip.antiAlias,
                     child: ListTile(
-                      leading: const Icon(Icons.privacy_tip_outlined),
                       title: const Text(
                         'الخصوصية والقياس الاختياري',
                         style: TextStyle(fontSize: 18),
                       ),
-                      trailing: const Icon(Icons.chevron_left),
+                      trailing: const Icon(Icons.chevron_right),
                       onTap: () => Navigator.push(
                         context,
                         MaterialPageRoute(
