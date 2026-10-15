@@ -121,7 +121,7 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
         border: Border.all(
           color: colors.secondaryContainer.withValues(alpha: 0.16),
         ),
-        borderRadius: HadithCardLayout.borderRadius,
+        borderRadius: HadithCardLayout.panelBorderRadius,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

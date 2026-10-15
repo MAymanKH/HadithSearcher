@@ -4,6 +4,7 @@ import '../viewmodels/settings_viewmodel.dart';
 
 class HadithCardLayout extends StatelessWidget {
   static const borderRadius = BorderRadius.all(Radius.circular(30));
+  static const panelBorderRadius = BorderRadius.all(Radius.circular(20));
   final String text;
   final String? grading;
   final String attribution;
@@ -65,7 +66,9 @@ class HadithCardLayout extends StatelessWidget {
           const SizedBox(height: 14),
           Material(
             color: colors.secondaryContainer,
-            shape: const RoundedRectangleBorder(borderRadius: borderRadius),
+            shape: const RoundedRectangleBorder(
+              borderRadius: panelBorderRadius,
+            ),
             clipBehavior: Clip.antiAlias,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
