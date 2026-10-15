@@ -230,10 +230,6 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
             ),
             _buildExcludedWordsField(vm),
             _buildSaveCheckbox(vm),
-            TextButton(
-              onPressed: () => _clearFilters(vm),
-              child: const Text('مسح الفلاتر'),
-            ),
             const SizedBox(height: 20),
           ],
         ),
