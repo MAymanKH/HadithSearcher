@@ -255,6 +255,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
               (value) => vm.setSearchWay(SearchWay.fromArabic(value!)),
               isDefault: vm.searchWay == SearchWay.anyWord,
             ),
+            _buildCatalogField(SearchFilter.grade, vm),
             _buildDropdownRow(
               'نطاق البحث',
               vm.searchRange.arabicName,
@@ -263,7 +264,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
               isDefault: vm.searchRange == SearchRange.all,
             ),
             for (final filter in SearchFilter.values)
-              _buildCatalogField(filter, vm),
+              if (filter != SearchFilter.grade) _buildCatalogField(filter, vm),
             _buildExcludedWordsField(vm),
             const SizedBox(height: 20),
           ],
