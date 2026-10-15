@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 
+const _directionScrollThreshold = 100.0;
+
 /// A floating action button that appears when user scrolls up.
 class BackToTopButton extends StatefulWidget {
   final ScrollController scrollController;
@@ -20,6 +22,7 @@ class _BackToTopButtonState extends State<BackToTopButton> {
   bool _showButton = false;
   double _previousOffset = 0;
   double _upwardScrollDistance = 0;
+  double _downwardScrollDistance = 0;
 
   @override
   void initState() {
@@ -40,19 +43,24 @@ class _BackToTopButtonState extends State<BackToTopButton> {
     setState(() {
       if (offset >= 800) {
         if (direction == ScrollDirection.reverse) {
-          _showButton = false;
           _upwardScrollDistance = 0;
+          _downwardScrollDistance += offset - _previousOffset;
+          if (_downwardScrollDistance >= _directionScrollThreshold) {
+            _showButton = false;
+          }
         } else if (direction == ScrollDirection.forward) {
+          _downwardScrollDistance = 0;
           final scrollDelta = _previousOffset - offset;
           _upwardScrollDistance += scrollDelta;
 
-          if (_upwardScrollDistance >= 100) {
+          if (_upwardScrollDistance >= _directionScrollThreshold) {
             _showButton = true;
           }
         }
       } else {
         _showButton = false;
         _upwardScrollDistance = 0;
+        _downwardScrollDistance = 0;
       }
 
       _previousOffset = offset;
@@ -87,6 +95,7 @@ mixin ScrollToTopMixin<T extends StatefulWidget> on State<T> {
   bool showBackToTopButton = false;
   double _previousOffset = 0;
   double _upwardScrollDistance = 0;
+  double _downwardScrollDistance = 0;
 
   void initScrollController() {
     scrollController = ScrollController()..addListener(_scrollListener);
@@ -104,19 +113,24 @@ mixin ScrollToTopMixin<T extends StatefulWidget> on State<T> {
     setState(() {
       if (offset >= 800) {
         if (direction == ScrollDirection.reverse) {
-          showBackToTopButton = false;
           _upwardScrollDistance = 0;
+          _downwardScrollDistance += offset - _previousOffset;
+          if (_downwardScrollDistance >= _directionScrollThreshold) {
+            showBackToTopButton = false;
+          }
         } else if (direction == ScrollDirection.forward) {
+          _downwardScrollDistance = 0;
           final scrollDelta = _previousOffset - offset;
           _upwardScrollDistance += scrollDelta;
 
-          if (_upwardScrollDistance >= 100) {
+          if (_upwardScrollDistance >= _directionScrollThreshold) {
             showBackToTopButton = true;
           }
         }
       } else {
         showBackToTopButton = false;
         _upwardScrollDistance = 0;
+        _downwardScrollDistance = 0;
       }
 
       _previousOffset = offset;
