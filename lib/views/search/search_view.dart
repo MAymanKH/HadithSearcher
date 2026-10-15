@@ -186,6 +186,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
         children: [
           Expanded(
             child: TextField(
+              autofocus: false,
               textInputAction: TextInputAction.search,
               controller: _textController,
               decoration: const InputDecoration(hintText: 'تحقق من حديث...'),
@@ -303,7 +304,10 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
             unawaited(vm.saveAdvancedPrefs());
           },
         );
-        if (mounted) await vm.saveAdvancedPrefs();
+        if (!mounted) return;
+        // Prevent focus restoration to the search bar when the sheet pops.
+        FocusScope.of(context).unfocus();
+        await vm.saveAdvancedPrefs();
       },
       child: InputDecorator(
         decoration: InputDecoration(

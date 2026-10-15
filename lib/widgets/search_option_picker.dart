@@ -308,6 +308,7 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
     search: widget.filter == SearchFilter.grade
         ? null
         : TextField(
+            autofocus: false,
             decoration: const InputDecoration(
               hintText: 'ابحث بالاسم...',
               prefixIcon: Icon(Icons.search),
