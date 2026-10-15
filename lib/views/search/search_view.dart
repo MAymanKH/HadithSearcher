@@ -156,7 +156,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
               key: const ValueKey('active-filters-transition'),
               duration: MediaQuery.disableAnimationsOf(context)
                   ? Duration.zero
-                  : const Duration(milliseconds: 200),
+                  : const Duration(milliseconds: 300),
               switchInCurve: Curves.easeOutCubic,
               switchOutCurve: Curves.easeInCubic,
               transitionBuilder: (child, animation) => SizeTransition(
