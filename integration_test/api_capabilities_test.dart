@@ -173,7 +173,7 @@ void main() {
         .read<SettingsViewModel>();
     await settings.setTheme(ThemePreference.light);
     await tester.enterText(find.byType(TextField), 'إنما الأعمال بالنيات');
-    await tester.tap(find.byTooltip('البحث المتقدم'));
+    await tester.tap(find.widgetWithText(TextButton, 'التصفية'));
     await tester.pumpAndSettle();
     final rememberFilters = find.widgetWithText(
       SwitchListTile,

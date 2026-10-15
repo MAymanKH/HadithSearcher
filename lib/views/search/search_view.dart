@@ -125,33 +125,30 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
                 ),
               ),
             ),
-          Tooltip(
-            message: 'البحث المتقدم',
-            child: TextButton.icon(
-              onPressed: () async {
-                final vm = context.read<SearchViewModel>();
-                if (vm.isAdvancedSearchOpen) {
-                  // Closing the panel - check if settings changed
-                  final hasChanged = vm.hasSettingsChanged();
-                  await vm.saveAdvancedPrefs();
-                  vm.toggleAdvancedSearch();
+          TextButton.icon(
+            onPressed: () async {
+              final vm = context.read<SearchViewModel>();
+              if (vm.isAdvancedSearchOpen) {
+                // Closing the panel - check if settings changed
+                final hasChanged = vm.hasSettingsChanged();
+                await vm.saveAdvancedPrefs();
+                vm.toggleAdvancedSearch();
 
-                  // If settings changed and there's a search query, re-search
-                  if (hasChanged && _textController.text.trim().isNotEmpty) {
-                    await _onSearch();
-                  }
-                } else {
-                  // Opening the panel
-                  vm.toggleAdvancedSearch();
+                // If settings changed and there's a search query, re-search
+                if (hasChanged && _textController.text.trim().isNotEmpty) {
+                  await _onSearch();
                 }
-              },
-              icon: const Icon(Icons.tune, size: 22),
-              label: const Text('التصفية', style: TextStyle(fontSize: 14)),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 12),
-                minimumSize: const Size(0, 48),
-                foregroundColor: Theme.of(context).colorScheme.onSurface,
-              ),
+              } else {
+                // Opening the panel
+                vm.toggleAdvancedSearch();
+              }
+            },
+            icon: const Icon(Icons.tune, size: 22),
+            label: const Text('التصفية', style: TextStyle(fontSize: 14)),
+            style: TextButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              minimumSize: const Size(0, 48),
+              foregroundColor: Theme.of(context).colorScheme.onSurface,
             ),
           ),
         ],

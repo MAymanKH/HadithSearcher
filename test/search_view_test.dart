@@ -81,7 +81,7 @@ void main() {
     tester,
   ) async {
     await mount(tester);
-    await tester.tap(find.byTooltip('البحث المتقدم'));
+    await tester.tap(find.widgetWithText(TextButton, 'التصفية'));
     await tester.pumpAndSettle();
     final toggle = find.widgetWithText(SwitchListTile, 'تذكّر عوامل التصفية');
     expect(
@@ -192,7 +192,7 @@ void main() {
         await mount(tester);
         expect(requests, isEmpty);
         await tester.enterText(find.byType(TextField), 'query');
-        await tester.tap(find.byTooltip('البحث المتقدم'));
+        await tester.tap(find.widgetWithText(TextButton, 'التصفية'));
         await tester.pumpAndSettle();
         expect(requests, isEmpty);
         await tester.ensureVisible(find.text('جميع الرواة'));
@@ -211,7 +211,7 @@ void main() {
         await tester.pumpAndSettle();
         tester.state<NavigatorState>(find.byType(Navigator)).pop();
         await tester.pumpAndSettle();
-        await tester.tap(find.byTooltip('البحث المتقدم'));
+        await tester.tap(find.widgetWithText(TextButton, 'التصفية'));
         await tester.pumpAndSettle();
         expect(requests.last.queryParameters['rawi[]'], '8918');
         expect(
@@ -246,7 +246,7 @@ void main() {
 
   testWidgets('advanced controls fit a narrow phone', (tester) async {
     await mount(tester);
-    await tester.tap(find.byTooltip('البحث المتقدم'));
+    await tester.tap(find.widgetWithText(TextButton, 'التصفية'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     expect(find.byType(AppDropdown<String>), findsNWidgets(2));
@@ -265,7 +265,8 @@ void main() {
     expect(find.byType(Chip), findsWidgets);
     final actions = tester.widget<AppBar>(find.byType(AppBar)).actions!;
     expect((actions.first as IconButton).tooltip, 'إخفاء عوامل التصفية النشطة');
-    expect((actions.last as Tooltip).message, 'البحث المتقدم');
+    expect(actions.last, isA<TextButton>());
+    expect(find.byTooltip('البحث المتقدم'), findsNothing);
     final filtersButton = tester.getRect(
       find.widgetWithText(TextButton, 'التصفية'),
     );
@@ -290,10 +291,10 @@ void main() {
     expect(find.byType(Chip), findsNothing);
     expect(find.text('مسح عوامل التصفية'), findsNothing);
     expect(vm.activeFilters, activeFilters);
-    await tester.tap(find.byTooltip('البحث المتقدم'));
+    await tester.tap(find.widgetWithText(TextButton, 'التصفية'));
     await tester.pumpAndSettle();
     expect(find.byType(AppDropdown<String>), findsNWidgets(2));
-    await tester.tap(find.byTooltip('البحث المتقدم'));
+    await tester.tap(find.widgetWithText(TextButton, 'التصفية'));
     await tester.pumpAndSettle();
     expect(find.byType(Chip), findsNothing);
     await tester.tap(find.byTooltip('إظهار عوامل التصفية النشطة'));

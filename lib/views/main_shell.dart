@@ -91,21 +91,25 @@ class _MainShellState extends State<MainShell> {
         },
         destinations: [
           NavigationDestination(
+            tooltip: '',
             icon: const Icon(Icons.search_outlined),
             selectedIcon: Icon(Icons.search, color: activeColor),
             label: 'البحث',
           ),
           NavigationDestination(
+            tooltip: '',
             icon: const Icon(Icons.star_outline),
             selectedIcon: Icon(Icons.star, color: activeColor),
             label: 'المفضلة',
           ),
           NavigationDestination(
+            tooltip: '',
             icon: const Icon(Icons.settings_outlined),
             selectedIcon: Icon(Icons.settings, color: activeColor),
             label: 'الإعدادات',
           ),
           NavigationDestination(
+            tooltip: '',
             icon: const Icon(Icons.info_outline),
             selectedIcon: Icon(Icons.info, color: activeColor),
             label: 'حول',

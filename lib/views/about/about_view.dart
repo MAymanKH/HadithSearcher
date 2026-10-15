@@ -225,8 +225,7 @@ class _ActionIconButton extends StatelessWidget {
           ),
           child: IconButton(
             onPressed: onTap,
-            icon: Icon(icon),
-            tooltip: label,
+            icon: Icon(icon, semanticLabel: label),
             iconSize: 33,
           ),
         ),
