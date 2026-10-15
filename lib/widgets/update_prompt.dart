@@ -111,18 +111,12 @@ class UpdateCheckButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final service = context.watch<UpdateService>();
-    return Column(
-      children: [
-        if (service.installedVersion != null)
-          Text('الإصدار ${service.installedVersion}'),
-        TextButton.icon(
-          icon: const Icon(Icons.system_update),
-          label: Text(
-            service.isChecking ? 'جارٍ التحقق…' : 'التحقق من التحديثات',
-          ),
-          onPressed: service.isChecking ? null : () => checkForUpdates(context),
-        ),
-      ],
+    return TextButton.icon(
+      icon: const Icon(Icons.system_update),
+      label: Text(
+        service.isChecking ? 'جارٍ التحقق…' : 'التحقق من التحديثات',
+      ),
+      onPressed: service.isChecking ? null : () => checkForUpdates(context),
     );
   }
 }

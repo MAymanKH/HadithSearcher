@@ -1,8 +1,10 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/app_config.dart';
+import '../../services/update_service.dart';
 import '../../widgets/app_logo.dart';
 import '../../widgets/update_prompt.dart';
 
@@ -31,7 +33,6 @@ class AboutView extends StatelessWidget {
               const SizedBox(height: 16),
               const AppLogo(size: 128),
               const SizedBox(height: 20),
-              const UpdateCheckButton(),
               _buildInfoCard(
                 context,
                 'تطبيق Hadith Searcher هو تطبيق مجاني ومفتوح المصدر للبحث في آلاف الأحاديث النبوية الشريفة. يوفر التطبيق إمكانيات بحث وتصفية متقدمة، مع عرض تفصيلي لمعلومات سند الحديث ودرجة صحته.',
@@ -111,6 +112,7 @@ class AboutView extends StatelessWidget {
   }
 
   Widget _buildActionButtons(BuildContext context) {
+    final updateService = context.watch<UpdateService>();
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
@@ -123,7 +125,7 @@ class AboutView extends StatelessWidget {
             );
           },
         ),
-        const SizedBox(width: 40),
+        const SizedBox(width: 24),
         _ActionIconButton(
           icon: Icons.code_rounded,
           label: 'الكود',
@@ -131,11 +133,19 @@ class AboutView extends StatelessWidget {
             Uri.parse('https://github.com/MAymanKH/HadithSearcher'),
           ),
         ),
-        const SizedBox(width: 40),
+        const SizedBox(width: 24),
         _ActionIconButton(
           icon: Icons.attach_money_rounded,
           label: 'دعم',
           onTap: () => _launchUrl(Uri.parse('https://ko-fi.com/MAymanKH')),
+        ),
+        const SizedBox(width: 24),
+        _ActionIconButton(
+          icon: Icons.system_update_rounded,
+          label: 'تحديث',
+          onTap: updateService.isChecking
+              ? null
+              : () => checkForUpdates(context),
         ),
       ],
     );
@@ -195,7 +205,7 @@ class AboutView extends StatelessWidget {
 class _ActionIconButton extends StatelessWidget {
   final IconData icon;
   final String label;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
 
   const _ActionIconButton({
     required this.icon,
