@@ -130,19 +130,19 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
             tooltip: 'البحث المتقدم',
           ),
           if (vm.activeFilters.isNotEmpty)
-            IconButton(
-              tooltip: _showActiveFilters
-                  ? 'إخفاء الفلاتر النشطة'
-                  : 'إظهار الفلاتر النشطة',
+            TextButton(
               onPressed: () =>
                   setState(() => _showActiveFilters = !_showActiveFilters),
-              icon: Badge(
-                label: Text('${vm.activeFilters.length}'),
-                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
-                textColor: Theme.of(context).colorScheme.onSurface,
-                child: Icon(
-                  _showActiveFilters ? Icons.expand_less : Icons.expand_more,
-                ),
+              style: TextButton.styleFrom(
+                foregroundColor: Theme.of(
+                  context,
+                ).colorScheme.onSurface.withValues(alpha: .7),
+                textStyle: const TextStyle(fontSize: 14),
+              ),
+              child: Text(
+                _showActiveFilters
+                    ? 'إخفاء الفلاتر'
+                    : 'الفلاتر (${vm.activeFilters.length})',
               ),
             ),
         ],
