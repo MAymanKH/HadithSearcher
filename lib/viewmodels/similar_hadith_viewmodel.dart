@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/hadith.dart';
 import '../services/api_service.dart';
 import '../services/database_service.dart';
-import '../services/explanation_service.dart';
+import '../services/favourite_details_service.dart';
 
 /// ViewModel for similar hadith view.
 class SimilarHadithViewModel extends ChangeNotifier {
@@ -103,6 +103,7 @@ class SimilarHadithViewModel extends ChangeNotifier {
       }
     } else {
       final success = await _db.addFavourite(
+        hadith: hadith,
         hadithId: hadith.id,
         hadithText: hadith.text,
         hadithInfo: hadith.formattedInfo,
@@ -110,14 +111,7 @@ class SimilarHadithViewModel extends ChangeNotifier {
         hasAlternate: hadith.hasAlternateHadithSahih,
       );
       if (success) {
-        if (hadith.sharhId != null) {
-          unawaited(
-            ExplanationService().getExplanation(
-              hadith.id,
-              sharhId: hadith.sharhId,
-            ),
-          );
-        }
+        unawaited(FavouriteDetailsService().saveOffline(hadith));
         _favouriteIds.add(hadith.id);
         notifyListeners();
         return null;

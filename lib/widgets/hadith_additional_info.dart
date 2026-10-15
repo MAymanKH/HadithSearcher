@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/hadith.dart';
 import '../models/hadith_details.dart';
 import '../services/api_service.dart';
+import '../services/favourite_details_service.dart';
 import '../viewmodels/settings_viewmodel.dart';
 import 'api_details_dialog.dart';
 
@@ -66,7 +67,7 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
       _loading = true;
       _error = null;
     });
-    final result = await ApiService().getHadithById(widget.hadith.id);
+    final result = await FavouriteDetailsService().getSavedDetails(widget.hadith.id);
     if (!mounted) return;
     setState(() {
       _loading = false;
@@ -166,7 +167,7 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
                         onPressed: () => showApiDetailsDialog<HadithOrigins>(
                           context,
                           title: 'أصول الحديث',
-                          load: () => ApiService().getHadithOrigins(_hadith.id),
+                          load: () => FavouriteDetailsService().getOrigins(_hadith.id),
                           format: (origins) => origins.sources
                               .map(
                                 (source) => [

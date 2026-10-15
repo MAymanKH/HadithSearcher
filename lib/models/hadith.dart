@@ -67,6 +67,28 @@ class Hadith {
     );
   }
 
+  Map<String, dynamic> toJson() => {
+    'hadithId': id,
+    'hadith': text,
+    'rawi': rawi,
+    'mohdith': mohdith,
+    'book': book,
+    'numberOrPage': numberOrPage,
+    'grade': grade,
+    'explainGrade': explainGrade,
+    'takhrij': takhrij,
+    'bookId': bookId,
+    'mohdithId': mohdithId,
+    'categories': [
+      for (final category in categories)
+        {'id': category.id, 'name': category.name},
+    ],
+    'hasUsulHadith': hasUsulHadith,
+    'hasSharhMetadata': hasSharhMetadata,
+    'sharhMetadata': {'id': sharhId},
+    'hasAlternateHadithSahih': hasAlternateHadithSahih,
+  };
+
   /// Creates a Hadith from local database row.
   factory Hadith.fromDatabase(Map<String, dynamic> row) {
     final citation = HadithCitation.tryParse(row['hadithinfo'] ?? '');

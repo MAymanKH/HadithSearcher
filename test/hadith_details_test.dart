@@ -1,4 +1,7 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:sqflite_common_ffi/sqflite_ffi.dart';
+import 'package:hadithsearcher/services/database_service.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -39,6 +42,18 @@ http.Response response(Object body, {int status = 200}) => http.Response(
 );
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+  setUpAll(() async {
+    sqfliteFfiInit();
+    databaseFactory = databaseFactoryFfiNoIsolate;
+    final directory = await Directory.systemTemp.createTemp('hadith-details-');
+    await databaseFactory.setDatabasesPath(directory.path);
+    final db = await DatabaseService().database;
+    addTearDown(() async {
+      await db.close();
+      await directory.delete(recursive: true);
+    });
+  });
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
   Future<void> mount(
@@ -136,7 +151,10 @@ void main() {
             );
             expect(find.byIcon(Icons.error_outline_rounded), findsNothing);
             await tester.ensureVisible(find.text('أصول الحديث وطرق إخراجه'));
-            await tester.tap(find.text('أصول الحديث وطرق إخراجه'));
+            await tester.runAsync(() async {
+              await tester.tap(find.text('أصول الحديث وطرق إخراجه'));
+              await Future<void>.delayed(const Duration(milliseconds: 50));
+            });
             await tester.pumpAndSettle();
             expect(
               find.textContaining('الإسناد: سلسلة الرواة'),
@@ -194,12 +212,18 @@ void main() {
           await mount(tester, saved);
           expect(calls, 0);
           await tester.ensureVisible(find.text('معلومات إضافية'));
-          await tester.tap(find.text('معلومات إضافية'));
+          await tester.runAsync(() async {
+            await tester.tap(find.text('معلومات إضافية'));
+            await Future<void>.delayed(const Duration(milliseconds: 50));
+          });
           await tester.pumpAndSettle();
           expect(find.text(saved.citation.attribution), findsOneWidget);
           expect(find.text('أعد المحاولة'), findsOneWidget);
           await tester.ensureVisible(find.text('أعد المحاولة'));
-          await tester.tap(find.text('أعد المحاولة'));
+          await tester.runAsync(() async {
+            await tester.tap(find.text('أعد المحاولة'));
+            await Future<void>.delayed(const Duration(milliseconds: 50));
+          });
           await tester.pumpAndSettle();
           expect(
             find.text('التصنيف الموضوعي: رقائق وزهد - النية'),
@@ -209,7 +233,10 @@ void main() {
           await tester.ensureVisible(find.text('إخفاء المعلومات الإضافية'));
           await tester.tap(find.text('إخفاء المعلومات الإضافية'));
           await tester.pumpAndSettle();
-          await tester.tap(find.text('معلومات إضافية'));
+          await tester.runAsync(() async {
+            await tester.tap(find.text('معلومات إضافية'));
+            await Future<void>.delayed(const Duration(milliseconds: 50));
+          });
           await tester.pumpAndSettle();
           expect(calls, 2);
         },

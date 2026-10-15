@@ -1,7 +1,10 @@
+import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 import '../models/hadith_citation.dart';
+import '../models/hadith.dart';
+import '../models/hadith_details.dart';
 import 'telemetry/telemetry_service.dart';
 
 /// Service for local SQLite database operations (favourites only).
@@ -30,7 +33,7 @@ class DatabaseService extends ChangeNotifier {
 
     return openDatabase(
       path,
-      version: 3,
+      version: 4,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -45,6 +48,8 @@ class DatabaseService extends ChangeNotifier {
         hadithid TEXT NOT NULL UNIQUE,
         sharhid TEXT,
         explanation TEXT,
+        details TEXT,
+        origins TEXT,
         hasalternate INTEGER NOT NULL DEFAULT 0
       )
     ''');
@@ -54,6 +59,10 @@ class DatabaseService extends ChangeNotifier {
     // Drop settings table if upgrading from version 1
     if (oldVersion < 2) {
       await db.execute('DROP TABLE IF EXISTS settings');
+    }
+    if (oldVersion < 4) {
+      await db.execute('ALTER TABLE favourites ADD COLUMN details TEXT');
+      await db.execute('ALTER TABLE favourites ADD COLUMN origins TEXT');
     }
     if (oldVersion < 3) {
       await db.execute('ALTER TABLE favourites ADD COLUMN sharhid TEXT');
@@ -103,12 +112,14 @@ class DatabaseService extends ChangeNotifier {
     required String hadithInfo,
     String? sharhId,
     bool hasAlternate = false,
+    Hadith? hadith,
   }) async {
     try {
       final db = await database;
       final inserted = await TelemetryService.trace(
         'database.addFavourite',
         () => db.insert('favourites', {
+          'details': hadith == null ? null : jsonEncode(hadith.toJson()),
           'hadithid': hadithId,
           'hadithtext': hadithText,
           'hadithinfo': hadithInfo,
@@ -196,6 +207,28 @@ class DatabaseService extends ChangeNotifier {
     }
   }
 
+  Future<void> saveDetails(Hadith hadith) async {
+    final db = await database;
+    final changed = await db.update(
+      'favourites',
+      {'details': jsonEncode(hadith.toJson())},
+      where: 'hadithid = ?',
+      whereArgs: [hadith.id],
+    );
+    if (changed > 0) notifyListeners();
+  }
+
+  Future<void> saveOrigins(String hadithId, HadithOrigins origins) async {
+    final db = await database;
+    final changed = await db.update(
+      'favourites',
+      {'origins': jsonEncode(origins.toJson())},
+      where: 'hadithid = ?',
+      whereArgs: [hadithId],
+    );
+    if (changed > 0) notifyListeners();
+  }
+
   /// Get all favourite hadith IDs (for bulk checking).
   Future<Set<String>> getFavouriteIds() async {
     try {
@@ -218,6 +251,8 @@ class FavouriteHadith {
   final String? sharhId;
   final String? explanation;
   final bool hasAlternate;
+  final Hadith? details;
+  final HadithOrigins? origins;
 
   const FavouriteHadith({
     required this.id,
@@ -227,6 +262,8 @@ class FavouriteHadith {
     this.sharhId,
     this.explanation,
     this.hasAlternate = false,
+    this.details,
+    this.origins,
   });
 
   factory FavouriteHadith.fromDatabase(Map<String, dynamic> row) {
@@ -238,10 +275,18 @@ class FavouriteHadith {
       sharhId: row['sharhid'] as String?,
       explanation: row['explanation'] as String?,
       hasAlternate: row['hasalternate'] == 1,
+      details: row['details'] == null
+          ? null
+          : Hadith.fromJson(jsonDecode(row['details'] as String)),
+      origins: row['origins'] == null
+          ? null
+          : HadithOrigins.fromJson(jsonDecode(row['origins'] as String)),
     );
   }
 
   Map<String, Object?> toDatabase() => {
+    'details': details == null ? null : jsonEncode(details!.toJson()),
+    'origins': origins == null ? null : jsonEncode(origins!.toJson()),
     'id': id,
     'hadithid': hadithId,
     'hadithtext': hadithText,

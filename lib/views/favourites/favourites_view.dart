@@ -180,8 +180,9 @@ class _FavouriteHadithCard extends StatelessWidget {
       attribution: citation?.attribution ?? favourite.hadithInfo,
       additionalInfo: HadithAdditionalInfo(
         key: ValueKey(favourite.hadithId),
-        hadith: Hadith.fromDatabase(favourite.toDatabase()),
-        fetchDetails: true,
+        hadith:
+            favourite.details ?? Hadith.fromDatabase(favourite.toDatabase()),
+        fetchDetails: favourite.details == null,
       ),
       isFavourite: true,
       onExplanation: onGetSharh,

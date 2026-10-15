@@ -21,6 +21,12 @@ class HadithSource {
     required this.text,
   });
 
+  Map<String, dynamic> toJson() => {
+    'source': source,
+    'chain': chain,
+    'hadithText': text,
+  };
+
   factory HadithSource.fromJson(Map<String, dynamic> json) => HadithSource(
     source: json['source'] ?? '',
     chain: json['chain'] ?? '',
@@ -32,6 +38,10 @@ class HadithOrigins {
   final List<HadithSource> sources;
 
   const HadithOrigins(this.sources);
+
+  Map<String, dynamic> toJson() => {
+    'sources': sources.map((source) => source.toJson()).toList(),
+  };
 
   factory HadithOrigins.fromJson(Map<String, dynamic> json) => HadithOrigins(
     (json['sources'] as List? ?? const [])

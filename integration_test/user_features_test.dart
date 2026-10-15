@@ -11,6 +11,7 @@ import 'package:hadithsearcher/app.dart';
 import 'package:hadithsearcher/models/hadith.dart';
 import 'package:hadithsearcher/services/database_service.dart';
 import 'package:hadithsearcher/services/explanation_service.dart';
+import 'package:hadithsearcher/services/favourite_details_service.dart';
 import 'package:hadithsearcher/services/telemetry/telemetry_service.dart';
 import 'package:hadithsearcher/viewmodels/search_viewmodel.dart';
 import '../test/telemetry/fake_backend.dart';
@@ -74,12 +75,16 @@ void main() {
                   .timeout(const Duration(seconds: 15)),
               isNull,
             );
+            await FavouriteDetailsService().saveOffline(hadith);
             final explanation = await ExplanationService()
                 .getExplanation(hadith.id, sharhId: '123')
                 .timeout(const Duration(seconds: 15));
             expect(explanation.data, 'Saved explanation');
           },
           () => MockClient((request) async {
+            if (request.url.path == '/v1/site/hadith/offline-test') {
+              return jsonResponse({'data': hadith.toJson()});
+            }
             expect(request.url.path, '/v1/site/sharh/123');
             return jsonResponse({
               'data': {
