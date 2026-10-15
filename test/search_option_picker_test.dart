@@ -7,6 +7,7 @@ import 'package:http/testing.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hadithsearcher/viewmodels/settings_viewmodel.dart';
+import 'package:hadithsearcher/viewmodels/search_viewmodel.dart';
 import 'package:hadithsearcher/widgets/selection_sheet.dart';
 import 'package:hadithsearcher/models/search_option.dart';
 import 'package:hadithsearcher/services/api_service.dart';
@@ -21,6 +22,7 @@ void main() {
     List<SearchOption> selected = const [],
     SearchFilter filter = SearchFilter.narrator,
     Size size = const Size(320, 850),
+    ValueChanged<List<SearchOption>>? onChanged,
   }) async {
     latestSelection = List.of(selected);
     SharedPreferences.setMockInitialValues({});
@@ -43,7 +45,10 @@ void main() {
                   filter: filter,
                   loadOptions: load,
                   selected: selected,
-                  onChanged: (values) => latestSelection = List.of(values),
+                  onChanged: (values) {
+                    latestSelection = List.of(values);
+                    onChanged?.call(values);
+                  },
                 ),
                 child: const Text('فتح'),
               ),
@@ -88,6 +93,8 @@ void main() {
     ];
     await openPicker(tester, load: () async => ApiResult.success(options));
     await settle(tester);
+    await tester.tap(find.text('جميع الرواة'));
+    await tester.pumpAndSettle();
     expect(optionCount(tester), 40);
     expect(find.text('السابق'), findsNothing);
     expect(find.text('التالي'), findsNothing);
@@ -158,7 +165,8 @@ void main() {
     expect(optionCount(tester), 85);
     await tester.tap(find.text('راوي 84'));
     await tester.pumpAndSettle();
-    expect(latestSelection.single.apiCode, '85');
+    expect(latestSelection, hasLength(84));
+    expect(latestSelection.any((option) => option.apiCode == '85'), isFalse);
     expect(tester.takeException(), isNull);
   });
 
@@ -195,7 +203,8 @@ void main() {
     );
     await tester.tap(find.text('أسماء 118'));
     await tester.pumpAndSettle();
-    expect(latestSelection.single.apiCode, '119');
+    expect(latestSelection, hasLength(119));
+    expect(latestSelection.any((option) => option.apiCode == '119'), isFalse);
     expect(tester.takeException(), isNull);
   });
 
@@ -305,8 +314,18 @@ void main() {
       expect(find.byType(TextField), findsNothing);
       expect(find.byType(Checkbox), findsNWidgets(5));
       expect(find.textContaining('تطبيق'), findsNothing);
-      expect(find.text('المحدد: 0'), findsOneWidget);
+      expect(find.text('المحدد: 4'), findsOneWidget);
+      expect(
+        tester
+            .widgetList<Checkbox>(find.byType(Checkbox))
+            .every((box) => box.value == true),
+        isTrue,
+      );
       expect(tester.getSize(find.byType(SelectionSheet)).height, lessThan(500));
+      await tester.tap(find.text('جميع الدرجات'));
+      await tester.pumpAndSettle();
+      expect(latestSelection, isEmpty);
+      expect(find.text('المحدد: 0'), findsOneWidget);
       await tester.tap(find.text('جميع الدرجات'));
       await tester.pumpAndSettle();
       expect(latestSelection.single.apiCode, '0');
@@ -359,6 +378,8 @@ void main() {
               ]),
             );
             await settle(tester);
+            await tester.tap(find.text(filter.all.arabicName));
+            await tester.pumpAndSettle();
             final row = find.widgetWithText(ListTile, option.arabicName);
             final info = find.byTooltip('معلومات عن ${option.arabicName}');
             final checkbox = find.descendant(
@@ -428,11 +449,7 @@ void main() {
     'all remains selected as a catalog finishes loading and clears in one tap',
     (tester) async {
       final response = Completer<ApiResult<List<SearchOption>>>();
-      await openPicker(
-        tester,
-        load: () => response.future,
-        selected: const [SearchOption.allNarrators],
-      );
+      await openPicker(tester, load: () => response.future);
       response.complete(
         ApiResult.success(
           List.generate(100, (i) => SearchOption('$i-id', 'راوٍ $i')),
@@ -458,4 +475,34 @@ void main() {
       );
     },
   );
+  testWidgets('manually selecting every grade clears the active filter count', (
+    tester,
+  ) async {
+    final vm = SearchViewModel();
+    addTearDown(vm.dispose);
+    await openPicker(
+      tester,
+      filter: SearchFilter.grade,
+      load: () async => fail('Grades use local options'),
+      onChanged: (values) => vm.setSelectedOptions(SearchFilter.grade, values),
+    );
+    await tester.pumpAndSettle();
+    expect(vm.activeFilters, isEmpty);
+    await tester.tap(find.text('جميع الدرجات'));
+    await tester.pumpAndSettle();
+    for (final option in SearchOption.grades.skip(1)) {
+      await tester.tap(find.text(option.arabicName));
+      await tester.pumpAndSettle();
+      if (option.apiCode != '4') expect(vm.activeFilters, hasLength(1));
+    }
+    expect(latestSelection.single.apiCode, '0');
+    expect(vm.activeFilters, isEmpty);
+    expect(find.text('المحدد: 4'), findsOneWidget);
+    expect(
+      tester
+          .widgetList<Checkbox>(find.byType(Checkbox))
+          .every((box) => box.value == true),
+      isTrue,
+    );
+  });
 }

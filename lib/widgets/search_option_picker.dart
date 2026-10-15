@@ -59,7 +59,9 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
   @override
   void initState() {
     super.initState();
-    _allSelected = widget.selected.any((option) => option.apiCode == '0');
+    _allSelected =
+        widget.selected.isEmpty ||
+        widget.selected.any((option) => option.apiCode == '0');
     _selected = {
       for (final option in widget.selected)
         if (option.apiCode != '0') option.apiCode: option,

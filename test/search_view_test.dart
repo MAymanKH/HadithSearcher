@@ -178,7 +178,7 @@ void main() {
         });
         await tester.pumpAndSettle();
         expect(requests.map((url) => url.path), ['/v1/data/rawi']);
-        await tester.tap(find.text('عمر بن الخطاب'));
+        await tester.tap(find.text('راوٍ آخر'));
         await tester.pumpAndSettle();
         tester.state<NavigatorState>(find.byType(Navigator)).pop();
         await tester.pumpAndSettle();

@@ -183,8 +183,6 @@ void main() {
       of: find.byType(SelectionSheet),
       matching: find.text('جميع الدرجات'),
     );
-    await tester.tap(allGrades);
-    await tester.pumpAndSettle();
     expect(find.text('المحدد: 4'), findsOneWidget);
     await tester.tap(allGrades);
     await tester.pumpAndSettle();
@@ -194,6 +192,13 @@ void main() {
     await tester.ensureVisible(find.text('جميع الكتب'));
     await tester.tap(find.text('جميع الكتب'));
     await waitFor(find.text('صحيح مسلم'));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(SelectionSheet),
+        matching: find.text('جميع الكتب'),
+      ),
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.text('صحيح البخاري'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('صحيح مسلم'));
@@ -218,7 +223,7 @@ void main() {
     );
     await tester.tap(find.text('إغلاق'));
     await tester.pumpAndSettle();
-    expect(find.text('المحدد: 0'), findsOneWidget);
+    expect(find.text('المحدد: 2'), findsOneWidget);
     tester.state<NavigatorState>(find.byType(Navigator)).pop();
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('البحث للمتخصصين'));

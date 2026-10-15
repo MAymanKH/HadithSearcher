@@ -307,9 +307,11 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
       child: InputDecorator(
         decoration: InputDecoration(
           labelText: filter.arabicName,
-          labelStyle: _filterLabelStyle(vm.selectedOptions(filter).isNotEmpty),
+          labelStyle: _filterLabelStyle(
+            vm.selectedOptions(filter).any((option) => option.apiCode != '0'),
+          ),
           floatingLabelStyle: _filterLabelStyle(
-            vm.selectedOptions(filter).isNotEmpty,
+            vm.selectedOptions(filter).any((option) => option.apiCode != '0'),
           ),
           suffixIcon: Icon(
             filter == SearchFilter.grade
