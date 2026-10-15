@@ -130,10 +130,13 @@ class HadithCard extends StatelessWidget {
       if (!context.mounted) return;
     }
     await onFavouriteToggle();
-    if (removed != null) {
-      if (context.mounted && !await DatabaseService().isFavourite(hadith.id)) {
-        if (context.mounted) showFavouriteUndo(context, removed);
-      }
+    if (!context.mounted) return;
+    final isNowFavourite = await DatabaseService().isFavourite(hadith.id);
+    if (!context.mounted) return;
+    if (!isFavourite && isNowFavourite) {
+      showFavouriteAdded(context);
+    } else if (removed != null && !isNowFavourite) {
+      showFavouriteUndo(context, removed);
     }
   }
 
