@@ -396,9 +396,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     return SwitchListTile.adaptive(
       value: vm.saveAdvancedSettings,
       title: const Text('تذكّر عوامل التصفية'),
-      subtitle: const Text(
-        'استخدام عوامل التصفية نفسها عند فتح التطبيق مجددًا',
-      ),
+      subtitle: const Text('حفظ عوامل التصفية عند إعادة فتح التطبيق'),
       onChanged: vm.setSaveAdvancedSettings,
     );
   }
