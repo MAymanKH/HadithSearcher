@@ -222,21 +222,23 @@ void main() {
     tester,
   ) async {
     await mount(tester);
-    expect(find.text('إخفاء الفلاتر'), findsNothing);
+    expect(find.byType(Badge), findsNothing);
     final vm = tester.element(find.byType(SearchView)).read<SearchViewModel>();
     vm.setSearchGrade(SearchGrade.sahih);
     await tester.pumpAndSettle();
     final activeFilters = List<String>.of(vm.activeFilters);
     expect(find.byType(Chip), findsWidgets);
-    expect(find.text('إخفاء الفلاتر'), findsOneWidget);
+    final actions = tester.widget<AppBar>(find.byType(AppBar)).actions!;
+    expect((actions.first as IconButton).tooltip, 'إخفاء الفلاتر النشطة');
+    expect((actions.last as IconButton).tooltip, 'البحث المتقدم');
     expect(
       find.descendant(
-        of: find.byType(AppBar),
-        matching: find.byType(IconButton),
+        of: find.byType(Badge),
+        matching: find.text('${activeFilters.length}'),
       ),
       findsOneWidget,
     );
-    await tester.tap(find.text('إخفاء الفلاتر'));
+    await tester.tap(find.byTooltip('إخفاء الفلاتر النشطة'));
     await tester.pumpAndSettle();
     expect(find.byType(Chip), findsNothing);
     expect(find.text('مسح الفلاتر'), findsNothing);
@@ -247,14 +249,14 @@ void main() {
     await tester.tap(find.byTooltip('البحث المتقدم'));
     await tester.pumpAndSettle();
     expect(find.byType(Chip), findsNothing);
-    await tester.tap(find.text('الفلاتر (${activeFilters.length})'));
+    await tester.tap(find.byTooltip('إظهار الفلاتر النشطة'));
     await tester.pumpAndSettle();
     expect(find.byType(Chip), findsWidgets);
     expect(vm.activeFilters, activeFilters);
     await tester.tap(find.text('مسح الفلاتر'));
     await tester.pumpAndSettle();
     expect(vm.activeFilters, isEmpty);
-    expect(find.text('إخفاء الفلاتر'), findsNothing);
+    expect(find.byType(Badge), findsNothing);
     expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
   });

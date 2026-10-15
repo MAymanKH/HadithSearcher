@@ -108,6 +108,22 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
           style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
         ),
         actions: [
+          if (vm.activeFilters.isNotEmpty)
+            IconButton(
+              tooltip: _showActiveFilters
+                  ? 'إخفاء الفلاتر النشطة'
+                  : 'إظهار الفلاتر النشطة',
+              onPressed: () =>
+                  setState(() => _showActiveFilters = !_showActiveFilters),
+              icon: Badge(
+                label: Text('${vm.activeFilters.length}'),
+                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                textColor: Theme.of(context).colorScheme.onSurface,
+                child: Icon(
+                  _showActiveFilters ? Icons.expand_less : Icons.expand_more,
+                ),
+              ),
+            ),
           IconButton(
             onPressed: () async {
               final vm = context.read<SearchViewModel>();
@@ -129,22 +145,6 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
             icon: const Icon(Icons.filter_alt, size: 30),
             tooltip: 'البحث المتقدم',
           ),
-          if (vm.activeFilters.isNotEmpty)
-            TextButton(
-              onPressed: () =>
-                  setState(() => _showActiveFilters = !_showActiveFilters),
-              style: TextButton.styleFrom(
-                foregroundColor: Theme.of(
-                  context,
-                ).colorScheme.onSurface.withValues(alpha: .7),
-                textStyle: const TextStyle(fontSize: 14),
-              ),
-              child: Text(
-                _showActiveFilters
-                    ? 'إخفاء الفلاتر'
-                    : 'الفلاتر (${vm.activeFilters.length})',
-              ),
-            ),
         ],
       ),
       body: Center(
