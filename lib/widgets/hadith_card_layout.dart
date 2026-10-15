@@ -65,7 +65,7 @@ class HadithCardLayout extends StatelessWidget {
           const SizedBox(height: 14),
           Material(
             color: colors.secondaryContainer,
-            borderRadius: borderRadius,
+            shape: const RoundedRectangleBorder(borderRadius: borderRadius),
             clipBehavior: Clip.antiAlias,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,

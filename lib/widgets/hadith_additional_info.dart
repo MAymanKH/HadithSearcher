@@ -7,6 +7,7 @@ import '../services/api_service.dart';
 import '../services/favourite_details_service.dart';
 import '../viewmodels/settings_viewmodel.dart';
 import 'api_details_dialog.dart';
+import 'hadith_card_layout.dart';
 
 class HadithAdditionalInfo extends StatefulWidget {
   final Hadith hadith;
@@ -120,7 +121,7 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
         border: Border.all(
           color: colors.secondaryContainer.withValues(alpha: 0.16),
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: HadithCardLayout.borderRadius,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
