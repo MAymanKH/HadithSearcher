@@ -2,6 +2,8 @@ import 'package:hadithsearcher/widgets/app_dropdown.dart';
 import 'package:hadithsearcher/widgets/hadith_card_layout.dart';
 import 'dart:async';
 import 'dart:convert';
+import 'dart:ui' as ui;
+import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -76,6 +78,73 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     },
   );
+
+  for (final mode in [ThemeMode.light, ThemeMode.dark]) {
+    testWidgets(
+      'switch backgrounds stay inside the scrolling panel in ${mode.name} mode',
+      (tester) async {
+        await mount(tester);
+        await tester
+            .element(find.byType(SearchView))
+            .read<SettingsViewModel>()
+            .setTheme(
+              mode == ThemeMode.dark
+                  ? ThemePreference.dark
+                  : ThemePreference.light,
+            );
+        await tester.pumpAndSettle();
+        expect(
+          Theme.of(tester.element(find.byType(SearchView))).brightness,
+          mode == ThemeMode.dark ? Brightness.dark : Brightness.light,
+        );
+        final field = find.byType(TextField).first;
+        final fieldRect = tester.getRect(field);
+        final capture = find
+            .ancestor(
+              of: find.byType(SearchView),
+              matching: find.byType(RepaintBoundary),
+            )
+            .first;
+        Future<List<int>> fieldPixel() async {
+          final boundary = tester.renderObject<RenderRepaintBoundary>(capture);
+          final origin = tester.getTopLeft(capture);
+          return (await tester.runAsync(() async {
+            final picture = await boundary.toImage();
+            final bytes = await picture.toByteData(
+              format: ui.ImageByteFormat.rawRgba,
+            );
+            final x = (fieldRect.left + 24 - origin.dx).round();
+            final y = (fieldRect.center.dy - origin.dy).round();
+            final offset = (y * picture.width + x) * 4;
+            final pixel = bytes!.buffer.asUint8List().sublist(
+              offset,
+              offset + 4,
+            );
+            picture.dispose();
+            return pixel;
+          }))!;
+        }
+
+        final original = await fieldPixel();
+        await tester.tap(find.widgetWithText(TextButton, 'التصفية'));
+        await tester.pumpAndSettle();
+        final row = find.widgetWithText(SwitchListTile, 'تذكّر عوامل التصفية');
+        final scroll = tester.state<ScrollableState>(
+          find
+              .descendant(
+                of: find.byType(SingleChildScrollView),
+                matching: find.byType(Scrollable),
+              )
+              .first,
+        );
+        scroll.position.jumpTo(tester.getCenter(row).dy - fieldRect.center.dy);
+        await tester.pumpAndSettle();
+        expect(tester.getRect(row).overlaps(fieldRect), isTrue);
+        expect(await fieldPixel(), original);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 
   testWidgets('remember filters uses a switch and saves its value', (
     tester,

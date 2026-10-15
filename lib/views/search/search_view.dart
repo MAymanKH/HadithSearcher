@@ -409,35 +409,38 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     final colors = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.all(10),
-      child: SwitchListTile.adaptive(
-        value: value,
-        onChanged: onChanged,
-        dense: true,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(30),
-          side: BorderSide(color: colors.onSurface.withValues(alpha: 0.28)),
-        ),
-        tileColor: colors.primaryContainer.withValues(alpha: 0.45),
-        title: Text(
-          title,
-          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-        ),
-        subtitle: Text(
-          subtitle,
-          style: TextStyle(
-            fontSize: 13,
-            height: 1.3,
-            color: colors.onSurface.withValues(alpha: 0.72),
+      child: Material(
+        type: MaterialType.transparency,
+        child: SwitchListTile.adaptive(
+          value: value,
+          onChanged: onChanged,
+          dense: true,
+          contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(30),
+            side: BorderSide(color: colors.onSurface.withValues(alpha: 0.28)),
           ),
-        ),
-        activeTrackColor: colors.onSurface,
-        activeThumbColor: colors.surface,
-        inactiveTrackColor: colors.surface,
-        inactiveThumbColor: colors.onSurface.withValues(alpha: 0.65),
-        trackOutlineColor: WidgetStateProperty.resolveWith(
-          (states) => colors.onSurface.withValues(
-            alpha: states.contains(WidgetState.selected) ? 1 : 0.45,
+          tileColor: colors.primaryContainer.withValues(alpha: 0.45),
+          title: Text(
+            title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          ),
+          subtitle: Text(
+            subtitle,
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.3,
+              color: colors.onSurface.withValues(alpha: 0.72),
+            ),
+          ),
+          activeTrackColor: colors.onSurface,
+          activeThumbColor: colors.surface,
+          inactiveTrackColor: colors.surface,
+          inactiveThumbColor: colors.onSurface.withValues(alpha: 0.65),
+          trackOutlineColor: WidgetStateProperty.resolveWith(
+            (states) => colors.onSurface.withValues(
+              alpha: states.contains(WidgetState.selected) ? 1 : 0.45,
+            ),
           ),
         ),
       ),
