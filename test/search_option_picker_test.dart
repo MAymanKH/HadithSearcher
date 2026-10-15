@@ -1,44 +1,50 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/testing.dart';
+import 'dart:convert';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:hadithsearcher/viewmodels/settings_viewmodel.dart';
+import 'package:hadithsearcher/widgets/selection_sheet.dart';
 import 'package:hadithsearcher/models/search_option.dart';
 import 'package:hadithsearcher/services/api_service.dart';
 import 'package:hadithsearcher/widgets/search_option_picker.dart';
 
 void main() {
+  List<SearchOption> latestSelection = [];
+
   Future<void> openPicker(
     WidgetTester tester, {
     required Future<ApiResult<List<SearchOption>>> Function() load,
     List<SearchOption> selected = const [],
+    SearchFilter filter = SearchFilter.narrator,
     Size size = const Size(320, 850),
   }) async {
+    latestSelection = List.of(selected);
+    SharedPreferences.setMockInitialValues({});
+    final settings = SettingsViewModel();
+    addTearDown(settings.dispose);
     tester.view.physicalSize = size;
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
     await tester.pumpWidget(
-      MaterialApp(
-        home: Directionality(
-          textDirection: TextDirection.rtl,
-          child: Scaffold(
+      ChangeNotifierProvider.value(
+        value: settings,
+        child: MaterialApp(
+          builder: (_, child) =>
+              Directionality(textDirection: TextDirection.rtl, child: child!),
+          home: Scaffold(
             body: Builder(
               builder: (context) => TextButton(
-                onPressed: () async {
-                  final option = await showSearchOptionPicker(
-                    context,
-                    filter: SearchFilter.narrator,
-                    loadOptions: load,
-                    selected: selected,
-                  );
-                  if (context.mounted && option != null) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(
-                          'اختيار: ${option.map((item) => item.apiCode).join(',')}',
-                        ),
-                      ),
-                    );
-                  }
-                },
+                onPressed: () => showSearchOptionPicker(
+                  context,
+                  filter: filter,
+                  loadOptions: load,
+                  selected: selected,
+                  onChanged: (values) => latestSelection = List.of(values),
+                ),
                 child: const Text('فتح'),
               ),
             ),
@@ -116,9 +122,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('أَسْمَاء بنت أبى بكر'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('تطبيق (1)'));
-    await tester.pumpAndSettle();
-    expect(find.text('اختيار: 20000'), findsOneWidget);
+    expect(latestSelection.single.apiCode, '20000');
     expect(tester.takeException(), isNull);
   });
 
@@ -154,9 +158,7 @@ void main() {
     expect(optionCount(tester), 85);
     await tester.tap(find.text('راوي 84'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('تطبيق (1)'));
-    await tester.pumpAndSettle();
-    expect(find.text('اختيار: 85'), findsOneWidget);
+    expect(latestSelection.single.apiCode, '85');
     expect(tester.takeException(), isNull);
   });
 
@@ -193,9 +195,7 @@ void main() {
     );
     await tester.tap(find.text('أسماء 118'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('تطبيق (1)'));
-    await tester.pumpAndSettle();
-    expect(find.text('اختيار: 119'), findsOneWidget);
+    expect(latestSelection.single.apiCode, '119');
     expect(tester.takeException(), isNull);
   });
 
@@ -212,7 +212,12 @@ void main() {
       );
       await settle(tester);
       expect(find.text('راوٍ محفوظ'), findsOneWidget);
-      expect(find.byIcon(Icons.check), findsOneWidget);
+      expect(
+        tester
+            .widgetList<Checkbox>(find.byType(Checkbox))
+            .where((box) => box.value == true),
+        hasLength(2),
+      );
       expect(find.text('أعد المحاولة'), findsOneWidget);
       await tester.tap(find.text('أعد المحاولة'));
       await settle(tester);
@@ -225,9 +230,10 @@ void main() {
       expect(find.text('لا توجد خيارات مطابقة'), findsOneWidget);
       await tester.tap(find.text('جميع الرواة'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('تطبيق'));
+      expect(latestSelection.single.apiCode, '0');
+      await tester.tap(find.text('جميع الرواة'));
       await tester.pumpAndSettle();
-      expect(find.text('اختيار: '), findsOneWidget);
+      expect(latestSelection, isEmpty);
     },
   );
 
@@ -237,7 +243,7 @@ void main() {
     final response = Completer<ApiResult<List<SearchOption>>>();
     await openPicker(tester, load: () => response.future);
     expect(find.byType(LinearProgressIndicator), findsOneWidget);
-    await tester.tap(find.text('تطبيق'));
+    tester.state<NavigatorState>(find.byType(Navigator)).pop();
     await tester.pumpAndSettle();
     response.complete(ApiResult.success([const SearchOption('2', 'راوٍ آخر')]));
     await tester.pumpAndSettle();
@@ -245,7 +251,7 @@ void main() {
   });
 
   testWidgets(
-    'search opens keyboard on the first tap without moving the field',
+    'search keeps keyboard focus as the sheet adjusts to keyboard height',
     (tester) async {
       await openPicker(
         tester,
@@ -254,13 +260,13 @@ void main() {
       await settle(tester);
       final field = find.byType(TextField);
       expect(tester.testTextInput.isVisible, isFalse);
-      final initialPosition = tester.getTopLeft(field);
       await tester.tap(field);
       await tester.pump();
       expect(tester.testTextInput.isVisible, isTrue);
       tester.view.viewInsets = const FakeViewPadding(bottom: 300);
       await tester.pumpAndSettle();
-      expect(tester.getTopLeft(field), initialPosition);
+      expect(tester.testTextInput.isVisible, isTrue);
+      expect(tester.getBottomRight(field).dy, lessThan(550));
       tester.testTextInput.hide();
       tester.view.viewInsets = FakeViewPadding.zero;
       await tester.pumpAndSettle();
@@ -287,4 +293,169 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
   });
+  testWidgets(
+    'four grades have no search, apply immediately, and all selects or clears every checkbox',
+    (tester) async {
+      await openPicker(
+        tester,
+        filter: SearchFilter.grade,
+        load: () async => fail('Grades must use their four local options'),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(TextField), findsNothing);
+      expect(find.byType(Checkbox), findsNWidgets(5));
+      expect(find.textContaining('تطبيق'), findsNothing);
+      expect(find.text('المحدد: 0'), findsOneWidget);
+      expect(tester.getSize(find.byType(SelectionSheet)).height, lessThan(500));
+      await tester.tap(find.text('جميع الدرجات'));
+      await tester.pumpAndSettle();
+      expect(latestSelection.single.apiCode, '0');
+      expect(
+        tester
+            .widgetList<Checkbox>(find.byType(Checkbox))
+            .every((box) => box.value == true),
+        isTrue,
+      );
+      expect(find.text('المحدد: 4'), findsOneWidget);
+      await tester.tap(find.text('أحاديث صحيحة'));
+      await tester.pumpAndSettle();
+      expect(latestSelection.map((option) => option.apiCode), ['2', '3', '4']);
+      expect(
+        tester.widget<Checkbox>(find.byType(Checkbox).first).value,
+        isNull,
+      );
+      expect(find.text('المحدد: 3'), findsOneWidget);
+      await tester.tap(find.text('جميع الدرجات'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('جميع الدرجات'));
+      await tester.pumpAndSettle();
+      expect(latestSelection, isEmpty);
+      expect(
+        tester
+            .widgetList<Checkbox>(find.byType(Checkbox))
+            .every((box) => box.value == false),
+        isTrue,
+      );
+      expect(find.text('المحدد: 0'), findsOneWidget);
+    },
+  );
+
+  for (final filter in [SearchFilter.book, SearchFilter.scholar]) {
+    testWidgets(
+      '${filter.name} info opens independently on the right with checkboxes on the left',
+      (tester) async {
+        final option = filter == SearchFilter.book
+            ? const SearchOption('6216', 'صحيح البخاري')
+            : const SearchOption('256', 'البخاري');
+        var calls = 0;
+        await http.runWithClient(
+          () async {
+            await openPicker(
+              tester,
+              filter: filter,
+              load: () async => ApiResult.success([
+                option,
+                const SearchOption('other', 'خيار آخر'),
+              ]),
+            );
+            await settle(tester);
+            final row = find.widgetWithText(ListTile, option.arabicName);
+            final info = find.byTooltip('معلومات عن ${option.arabicName}');
+            final checkbox = find.descendant(
+              of: row,
+              matching: find.byType(Checkbox),
+            );
+            expect(
+              tester.getCenter(info).dx,
+              greaterThan(tester.getCenter(checkbox).dx),
+            );
+            await tester.tap(info);
+            await tester.pumpAndSettle();
+            if (filter == SearchFilter.book) {
+              expect(find.text('أعد المحاولة'), findsOneWidget);
+              await tester.tap(find.text('أعد المحاولة'));
+              await tester.pumpAndSettle();
+            }
+            expect(
+              find.textContaining(
+                filter == SearchFilter.book
+                    ? 'المؤلف: الإمام البخاري'
+                    : 'ترجمة المحدث',
+              ),
+              findsOneWidget,
+            );
+            expect(latestSelection, isEmpty);
+            await tester.tap(find.text('إغلاق'));
+            await tester.pumpAndSettle();
+            expect(tester.widget<Checkbox>(checkbox).value, isFalse);
+            await tester.tap(checkbox);
+            await tester.pumpAndSettle();
+            expect(latestSelection.single.apiCode, option.apiCode);
+            expect(find.text('المحدد: 1'), findsOneWidget);
+            expect(tester.takeException(), isNull);
+          },
+          () => MockClient((request) async {
+            calls++;
+            expect(
+              request.url.path,
+              filter == SearchFilter.book
+                  ? '/v1/site/book/6216'
+                  : '/v1/site/mohdith/256',
+            );
+            if (filter == SearchFilter.book && calls == 1) {
+              return http.Response('', 503);
+            }
+            return http.Response(
+              jsonEncode({
+                'data': filter == SearchFilter.book
+                    ? {
+                        'name': option.arabicName,
+                        'author': 'الإمام البخاري',
+                        'publisher': 'دار النشر',
+                      }
+                    : {'name': option.arabicName, 'info': 'ترجمة المحدث'},
+              }),
+              200,
+              headers: {'content-type': 'application/json; charset=utf-8'},
+            );
+          }),
+        );
+      },
+    );
+  }
+
+  testWidgets(
+    'all remains selected as a catalog finishes loading and clears in one tap',
+    (tester) async {
+      final response = Completer<ApiResult<List<SearchOption>>>();
+      await openPicker(
+        tester,
+        load: () => response.future,
+        selected: const [SearchOption.allNarrators],
+      );
+      response.complete(
+        ApiResult.success(
+          List.generate(100, (i) => SearchOption('$i-id', 'راوٍ $i')),
+        ),
+      );
+      await settle(tester);
+      expect(find.text('المحدد: 100'), findsOneWidget);
+      expect(
+        tester
+            .widgetList<Checkbox>(find.byType(Checkbox))
+            .every((box) => box.value == true),
+        isTrue,
+      );
+      await tester.tap(find.text('جميع الرواة'));
+      await tester.pumpAndSettle();
+      expect(latestSelection, isEmpty);
+      expect(find.text('المحدد: 0'), findsOneWidget);
+      expect(
+        tester
+            .widgetList<Checkbox>(find.byType(Checkbox))
+            .every((box) => box.value == false),
+        isTrue,
+      );
+    },
+  );
 }

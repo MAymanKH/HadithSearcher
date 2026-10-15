@@ -180,7 +180,7 @@ void main() {
         expect(requests.map((url) => url.path), ['/v1/data/rawi']);
         await tester.tap(find.text('عمر بن الخطاب'));
         await tester.pumpAndSettle();
-        await tester.tap(find.text('تطبيق (1)'));
+        tester.state<NavigatorState>(find.byType(Navigator)).pop();
         await tester.pumpAndSettle();
         await tester.tap(find.byTooltip('البحث المتقدم'));
         await tester.pumpAndSettle();
@@ -200,6 +200,7 @@ void main() {
                 ? {
                     'data': [
                       {'key': '8918', 'value': 'عمر بن الخطاب'},
+                      {'key': '42', 'value': 'راوٍ آخر'},
                     ],
                   }
                 : {

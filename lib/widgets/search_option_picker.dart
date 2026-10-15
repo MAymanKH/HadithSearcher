@@ -2,15 +2,19 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/search_option.dart';
+import '../models/hadith_details.dart';
+import 'api_details_dialog.dart';
+import 'selection_sheet.dart';
 import 'app_selection_tile.dart';
 import '../services/api_service.dart';
 
-Future<List<SearchOption>?> showSearchOptionPicker(
+Future<void> showSearchOptionPicker(
   BuildContext context, {
   required SearchFilter filter,
   required Future<ApiResult<List<SearchOption>>> Function() loadOptions,
   required List<SearchOption> selected,
-}) => showModalBottomSheet<List<SearchOption>>(
+  required ValueChanged<List<SearchOption>> onChanged,
+}) => showModalBottomSheet<void>(
   context: context,
   isScrollControlled: true,
   useSafeArea: true,
@@ -18,6 +22,7 @@ Future<List<SearchOption>?> showSearchOptionPicker(
     filter: filter,
     loadOptions: loadOptions,
     selected: selected,
+    onChanged: onChanged,
   ),
 );
 
@@ -25,10 +30,12 @@ class _SearchOptionPicker extends StatefulWidget {
   final SearchFilter filter;
   final Future<ApiResult<List<SearchOption>>> Function() loadOptions;
   final List<SearchOption> selected;
+  final ValueChanged<List<SearchOption>> onChanged;
   const _SearchOptionPicker({
     required this.filter,
     required this.loadOptions,
     required this.selected,
+    required this.onChanged,
   });
 
   @override
@@ -47,10 +54,12 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
   ApiError? _error;
   late List<_IndexedOption> _options;
   late final Map<String, SearchOption> _selected;
+  late bool _allSelected;
 
   @override
   void initState() {
     super.initState();
+    _allSelected = widget.selected.any((option) => option.apiCode == '0');
     _selected = {
       for (final option in widget.selected)
         if (option.apiCode != '0') option.apiCode: option,
@@ -59,7 +68,11 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
     _includeSelection();
     _resetVisibleOptions();
     _scrollController.addListener(_loadMoreOptions);
-    _load();
+    if (widget.filter == SearchFilter.grade) {
+      _loading = false;
+    } else {
+      _load();
+    }
   }
 
   void _includeSelection() {
@@ -150,119 +163,167 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
     super.dispose();
   }
 
-  Widget _tile(SearchOption option) => AppSelectionTile(
-    title: Text(option.arabicName),
-    selected: option.apiCode == '0'
-        ? _selected.isEmpty
-        : _selected.containsKey(option.apiCode),
-    onTap: () => setState(() {
+  int get _selectionCount => _allSelected ? _options.length : _selected.length;
+
+  bool get _everythingSelected =>
+      _allSelected ||
+      (_options.isNotEmpty && _selected.length == _options.length);
+
+  void _toggle(SearchOption option) {
+    setState(() {
       if (option.apiCode == '0') {
+        _allSelected = !_everythingSelected;
         _selected.clear();
-      } else if (_selected.containsKey(option.apiCode)) {
-        _selected.remove(option.apiCode);
       } else {
-        _selected[option.apiCode] = option;
+        if (_allSelected) {
+          _allSelected = false;
+          _selected.addEntries(
+            _options.map(
+              (entry) => MapEntry(entry.option.apiCode, entry.option),
+            ),
+          );
+        }
+        if (_selected.containsKey(option.apiCode)) {
+          _selected.remove(option.apiCode);
+        } else {
+          _selected[option.apiCode] = option;
+        }
+        if (_everythingSelected) {
+          _allSelected = true;
+          _selected.clear();
+        }
       }
-    }),
-  );
+    });
+    widget.onChanged(
+      _allSelected ? [widget.filter.all] : _selected.values.toList(),
+    );
+  }
+
+  Future<void> _showInfo(SearchOption option) async {
+    switch (widget.filter) {
+      case SearchFilter.book:
+        await showApiDetailsDialog<BookDetails>(
+          context,
+          title: option.arabicName,
+          load: () => ApiService().getBookDetails(option.apiCode),
+          format: (book) => _fields([
+            if (book.name.trim() != option.arabicName.trim())
+              ('الكتاب', book.name),
+            ('المؤلف', book.author),
+            ('المراجع', book.reviewer),
+            ('دار النشر', book.publisher),
+            ('الطبعة', book.edition),
+            ('سنة الطبعة', book.editionYear),
+          ]),
+        );
+      case SearchFilter.scholar:
+        await showApiDetailsDialog<ScholarDetails>(
+          context,
+          title: option.arabicName,
+          load: () => ApiService().getScholarDetails(option.apiCode),
+          format: (scholar) => [
+            if (scholar.name.trim() != option.arabicName.trim()) scholar.name,
+            scholar.info,
+          ].where((text) => text.trim().isNotEmpty).join('\n\n'),
+        );
+      case SearchFilter.grade:
+      case SearchFilter.narrator:
+        break;
+    }
+  }
+
+  Widget _tile(SearchOption option) {
+    final all = option.apiCode == '0';
+    final supportsInfo =
+        !all &&
+        (widget.filter == SearchFilter.book ||
+            widget.filter == SearchFilter.scholar);
+    return AppSelectionTile(
+      title: Text(option.arabicName),
+      multiple: true,
+      selected: all
+          ? _everythingSelected
+                ? true
+                : _selected.isEmpty
+                ? false
+                : null
+          : _allSelected || _selected.containsKey(option.apiCode),
+      leading: supportsInfo
+          ? IconButton(
+              tooltip: 'معلومات عن ${option.arabicName}',
+              icon: const Icon(Icons.error_outline_rounded),
+              onPressed: () => _showInfo(option),
+            )
+          : null,
+      onTap: () => _toggle(option),
+    );
+  }
 
   @override
-  Widget build(BuildContext context) {
-    final keyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
-    return SizedBox(
-      height: MediaQuery.sizeOf(context).height * .8,
-      child: Padding(
-        padding: EdgeInsets.only(bottom: keyboardHeight),
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsetsDirectional.only(
-                start: 16,
-                end: 8,
-                top: 8,
-              ),
+  Widget build(BuildContext context) => SelectionSheet(
+    title: widget.filter.arabicName,
+    trailing: Text('المحدد: $_selectionCount'),
+    search: widget.filter == SearchFilter.grade
+        ? null
+        : TextField(
+            decoration: const InputDecoration(
+              hintText: 'ابحث بالاسم...',
+              prefixIcon: Icon(Icons.search),
+            ),
+            onChanged: _search,
+          ),
+    child: CustomScrollView(
+      shrinkWrap: true,
+      controller: _scrollController,
+      slivers: [
+        SliverToBoxAdapter(child: _tile(widget.filter.all)),
+        if (_loading)
+          const SliverToBoxAdapter(child: LinearProgressIndicator()),
+        if (_error != null)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Row(
                 children: [
                   Expanded(
                     child: Text(
-                      widget.filter.arabicName,
-                      style: Theme.of(context).textTheme.titleLarge,
+                      'تعذر تحميل جميع الخيارات. ${_error!.arabicTitle}',
                     ),
                   ),
                   TextButton(
-                    onPressed: () =>
-                        Navigator.pop(context, _selected.values.toList()),
-                    child: Text(
-                      _selected.isEmpty
-                          ? 'تطبيق'
-                          : 'تطبيق (${_selected.length})',
-                    ),
+                    onPressed: _load,
+                    child: const Text('أعد المحاولة'),
                   ),
                 ],
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: TextField(
-                decoration: const InputDecoration(
-                  hintText: 'ابحث بالاسم...',
-                  prefixIcon: Icon(Icons.search),
+          ),
+        if (_visibleOptions.isEmpty)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Center(
+                child: Text(
+                  _loading ? 'جارٍ تحميل الخيارات...' : 'لا توجد خيارات مطابقة',
                 ),
-                onChanged: _search,
               ),
             ),
-            Expanded(
-              child: CustomScrollView(
-                controller: _scrollController,
-                slivers: [
-                  SliverToBoxAdapter(child: _tile(widget.filter.all)),
-                  if (_loading)
-                    const SliverToBoxAdapter(child: LinearProgressIndicator()),
-                  if (_error != null)
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                'تعذر تحميل جميع الخيارات. ${_error!.arabicTitle}',
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: _load,
-                              child: const Text('أعد المحاولة'),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  if (_visibleOptions.isEmpty)
-                    SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Center(
-                        child: Text(
-                          _loading
-                              ? 'جارٍ تحميل الخيارات...'
-                              : 'لا توجد خيارات مطابقة',
-                        ),
-                      ),
-                    )
-                  else
-                    SliverList.builder(
-                      itemCount: _visibleOptions.length,
-                      itemBuilder: (context, index) =>
-                          _tile(_visibleOptions[index].option),
-                    ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+          )
+        else
+          SliverList.builder(
+            itemCount: _visibleOptions.length,
+            itemBuilder: (context, index) =>
+                _tile(_visibleOptions[index].option),
+          ),
+      ],
+    ),
+  );
 }
+
+String _fields(List<(String, String)> fields) => fields
+    .where((field) => field.$2.trim().isNotEmpty)
+    .map((field) => '${field.$1}: ${field.$2}')
+    .join('\n\n');
 
 String _normalize(String text) => text
     .replaceAll(RegExp(r'[\u064B-\u065F\u0670\u0640]'), '')

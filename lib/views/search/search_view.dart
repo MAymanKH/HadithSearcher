@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
@@ -21,7 +22,6 @@ class SearchView extends StatefulWidget {
 class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
   final _textController = TextEditingController();
   final _excludedWordsController = TextEditingController();
-  bool _showActiveFilters = true;
 
   @override
   void initState() {
@@ -110,17 +110,16 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
         actions: [
           if (vm.activeFilters.isNotEmpty)
             IconButton(
-              tooltip: _showActiveFilters
+              tooltip: vm.showActiveFilters
                   ? 'إخفاء الفلاتر النشطة'
                   : 'إظهار الفلاتر النشطة',
-              onPressed: () =>
-                  setState(() => _showActiveFilters = !_showActiveFilters),
+              onPressed: () => vm.setShowActiveFilters(!vm.showActiveFilters),
               icon: Badge(
                 label: Text('${vm.activeFilters.length}'),
                 backgroundColor: Theme.of(context).colorScheme.primaryContainer,
                 textColor: Theme.of(context).colorScheme.onSurface,
                 child: Icon(
-                  _showActiveFilters ? Icons.expand_less : Icons.expand_more,
+                  vm.showActiveFilters ? Icons.expand_less : Icons.expand_more,
                 ),
               ),
             ),
@@ -163,7 +162,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
                 sizeFactor: animation,
                 child: FadeTransition(opacity: animation, child: child),
               ),
-              child: vm.activeFilters.isNotEmpty && _showActiveFilters
+              child: vm.activeFilters.isNotEmpty && vm.showActiveFilters
                   ? _buildActiveFilters(vm)
                   : const SizedBox.shrink(),
             ),
@@ -223,6 +222,14 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
               style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 15),
+            SwitchListTile.adaptive(
+              title: const Text('البحث للمتخصصين'),
+              subtitle: const Text(
+                'يشمل اختلاف أحكام المحدثين وتفاصيل الأسانيد',
+              ),
+              value: vm.specialist,
+              onChanged: vm.setSpecialist,
+            ),
             _buildDropdownRow(
               'طريقة البحث',
               vm.searchWay.arabicName,
@@ -239,14 +246,6 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
             ),
             for (final filter in SearchFilter.values)
               _buildCatalogField(filter, vm),
-            SwitchListTile.adaptive(
-              title: const Text('البحث للمتخصصين'),
-              subtitle: const Text(
-                'يشمل اختلاف أحكام المحدثين وتفاصيل الأسانيد',
-              ),
-              value: vm.specialist,
-              onChanged: vm.setSpecialist,
-            ),
             _buildExcludedWordsField(vm),
             _buildSaveCheckbox(vm),
             const SizedBox(height: 20),
@@ -292,13 +291,18 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     child: InkWell(
       borderRadius: BorderRadius.circular(30),
       onTap: () async {
-        final value = await showSearchOptionPicker(
+        FocusScope.of(context).unfocus();
+        await showSearchOptionPicker(
           context,
           filter: filter,
           loadOptions: () => vm.loadFilterOptions(filter),
           selected: vm.selectedOptions(filter),
+          onChanged: (value) {
+            vm.setSelectedOptions(filter, value);
+            unawaited(vm.saveAdvancedPrefs());
+          },
         );
-        if (mounted && value != null) vm.setSelectedOptions(filter, value);
+        if (mounted) await vm.saveAdvancedPrefs();
       },
       child: InputDecorator(
         decoration: InputDecoration(
@@ -307,7 +311,11 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
           floatingLabelStyle: _filterLabelStyle(
             vm.selectedOptions(filter).isNotEmpty,
           ),
-          suffixIcon: const Icon(Icons.search),
+          suffixIcon: Icon(
+            filter == SearchFilter.grade
+                ? Icons.expand_more_rounded
+                : Icons.search,
+          ),
         ),
         child: Text(
           vm.selectionLabel(filter),

@@ -37,13 +37,24 @@ class SearchViewModel extends ChangeNotifier {
     if (_searchRange != SearchRange.all) _searchRange.arabicName,
     if (_specialist) 'للمتخصصين',
     for (final filter in SearchFilter.values)
-      if (selectedOptions(filter).isNotEmpty)
+      if (selectedOptions(filter).isNotEmpty &&
+          !selectedOptions(filter).any((option) => option.apiCode == '0'))
         '${filter.arabicName}: ${selectionLabel(filter)}',
     if (_excludedWords.trim().isNotEmpty) 'استبعاد: $_excludedWords',
   ];
 
   final _filters = <SearchFilter, List<SearchOption>>{};
   bool _specialist = false;
+  bool _showActiveFilters = true;
+  bool get showActiveFilters => _showActiveFilters;
+
+  Future<void> setShowActiveFilters(bool value) async {
+    _showActiveFilters = value;
+    notifyListeners();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('showActiveFilters', value);
+  }
+
   bool get specialist => _specialist;
 
   List<SearchOption> selectedOptions(SearchFilter filter) =>
@@ -51,7 +62,9 @@ class SearchViewModel extends ChangeNotifier {
 
   String selectionLabel(SearchFilter filter) {
     final selected = selectedOptions(filter);
-    if (selected.isEmpty) return filter.all.arabicName;
+    if (selected.isEmpty || selected.any((option) => option.apiCode == '0')) {
+      return filter.all.arabicName;
+    }
     final names = selected
         .take(2)
         .map((option) => option.arabicName)
@@ -60,13 +73,17 @@ class SearchViewModel extends ChangeNotifier {
   }
 
   void setSelectedOptions(SearchFilter filter, List<SearchOption> options) {
+    final all = options.any((option) => option.apiCode == '0');
     final unique = {
       for (final option in options)
         if (option.apiCode != '0') option.apiCode: option,
     };
-    _filters[filter] = List.unmodifiable(
-      unique.values.toList()..sort((a, b) => a.apiCode.compareTo(b.apiCode)),
-    );
+    _filters[filter] = all
+        ? List.unmodifiable([filter.all])
+        : List.unmodifiable(
+            unique.values.toList()
+              ..sort((a, b) => a.apiCode.compareTo(b.apiCode)),
+          );
     notifyListeners();
   }
 
@@ -126,6 +143,7 @@ class SearchViewModel extends ChangeNotifier {
   Future<void> _loadAdvancedPrefs() async {
     final prefs = await SharedPreferences.getInstance();
 
+    _showActiveFilters = prefs.getBool('showActiveFilters') ?? true;
     _saveAdvancedSettings = prefs.getBool('advancedSaveCheckbox') ?? true;
     await prefs.remove('searchQuery');
     await prefs.remove('recentSearches');
@@ -177,7 +195,7 @@ class SearchViewModel extends ChangeNotifier {
           entry.value,
           entry.key.fallbackOptions,
         );
-        setSelectedOptions(entry.key, [option]);
+        setSelectedOptions(entry.key, option.apiCode == '0' ? [] : [option]);
       }
     }
 

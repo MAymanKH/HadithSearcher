@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_selection_tile.dart';
+import 'selection_sheet.dart';
 
 /// Opens choices in the same bottom sheet layout as the search filters.
 class AppDropdown<T> extends StatelessWidget {
@@ -38,30 +39,21 @@ class AppDropdown<T> extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      builder: (context) => SizedBox(
-        height: MediaQuery.sizeOf(context).height * .8,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(20),
-              child: Text(title, style: Theme.of(context).textTheme.titleLarge),
-            ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: items.length,
-                itemBuilder: (context, index) {
-                  final item = items[index];
-                  return AppSelectionTile(
-                    title: item.child,
-                    selected: item.value == value,
-                    onTap: item.enabled
-                        ? () => Navigator.pop(context, item.value)
-                        : null,
-                  );
-                },
-              ),
-            ),
-          ],
+      builder: (context) => SelectionSheet(
+        title: title,
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: items.length,
+          itemBuilder: (context, index) {
+            final item = items[index];
+            return AppSelectionTile(
+              title: item.child,
+              selected: item.value == value,
+              onTap: item.enabled
+                  ? () => Navigator.pop(context, item.value)
+                  : null,
+            );
+          },
         ),
       ),
     );

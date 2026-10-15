@@ -114,4 +114,52 @@ void main() {
       expect(params.nextPage().toQueryParams()['s[]'], ['6216', '3088']);
     },
   );
+  test(
+    'filter row visibility persists independently of saving search filters',
+    () async {
+      final vm = SearchViewModel();
+      addTearDown(vm.dispose);
+      await vm.init();
+      await vm.setShowActiveFilters(false);
+      await vm.setSaveAdvancedSettings(false);
+      final restarted = SearchViewModel();
+      addTearDown(restarted.dispose);
+      await restarted.init();
+      expect(restarted.showActiveFilters, isFalse);
+      expect(restarted.saveAdvancedSettings, isFalse);
+      await restarted.setShowActiveFilters(true);
+      final restored = SearchViewModel();
+      addTearDown(restored.dispose);
+      await restored.init();
+      expect(restored.showActiveFilters, isTrue);
+    },
+  );
+
+  test(
+    'bulk selection is saved as all without sending every catalog ID',
+    () async {
+      final vm = SearchViewModel();
+      addTearDown(vm.dispose);
+      await vm.init();
+      vm.setSelectedOptions(SearchFilter.narrator, [SearchOption.allNarrators]);
+      await vm.saveAdvancedPrefs();
+      final restored = SearchViewModel();
+      addTearDown(restored.dispose);
+      await restored.init();
+      expect(
+        restored.selectedOptions(SearchFilter.narrator).single.apiCode,
+        '0',
+      );
+      expect(restored.activeFilters, isEmpty);
+      final params = SearchParams(
+        keyword: 'نية',
+        filters: {
+          SearchFilter.narrator: restored.selectedOptions(
+            SearchFilter.narrator,
+          ),
+        },
+      );
+      expect(params.toQueryParams()['rawi[]'], ['0']);
+    },
+  );
 }
