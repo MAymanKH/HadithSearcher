@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import '../../widgets/app_dropdown.dart';
 import '../../models/settings.dart';
 import '../../viewmodels/settings_viewmodel.dart';
 import '../../services/telemetry/telemetry_service.dart';
@@ -14,10 +15,11 @@ class SettingsView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-          title: const Text(
-        'الإعدادات',
-        style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-      )),
+        title: const Text(
+          'الإعدادات',
+          style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+        ),
+      ),
       body: ListView(
         children: [
           SingleChildScrollView(
@@ -27,24 +29,13 @@ class SettingsView extends StatelessWidget {
                 _buildThemeSection(context, vm),
                 const SizedBox(height: 20),
                 const Text(
-                  'إعدادات خط الأحاديث',
+                  'إعدادات نص الأحاديث والشرح',
                   style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                 ),
                 _buildFontFamilySection(context, vm),
                 _buildFontWeightSection(context, vm),
                 _buildFontSizeSection(context, vm),
                 _buildPaddingSection(context, vm),
-                if (context.watch<TelemetryService>().canChangeConsent) ListTile(
-                  leading: const Icon(Icons.privacy_tip_outlined),
-                  title: const Text('الخصوصية والقياس الاختياري'),
-                  trailing: const Icon(Icons.chevron_left),
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const TelemetryConsentView(),
-                    ),
-                  ),
-                ),
               ],
             ),
           ),
@@ -53,6 +44,29 @@ class SettingsView extends StatelessWidget {
               const SizedBox(height: 30),
               _buildResetButton(context, vm),
               const SizedBox(height: 30),
+              if (context.watch<TelemetryService>().canChangeConsent)
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 30),
+                  child: Material(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(20),
+                    clipBehavior: Clip.antiAlias,
+                    child: ListTile(
+                      leading: const Icon(Icons.privacy_tip_outlined),
+                      title: const Text(
+                        'الخصوصية والقياس الاختياري',
+                        style: TextStyle(fontSize: 18),
+                      ),
+                      trailing: const Icon(Icons.chevron_left),
+                      onTap: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const TelemetryConsentView(),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
             ],
           ),
         ],
@@ -63,7 +77,7 @@ class SettingsView extends StatelessWidget {
   Widget _buildThemeSection(BuildContext context, SettingsViewModel vm) {
     return _SettingsRow(
       label: 'المظهر العام',
-      child: DropdownButton<ThemePreference>(
+      child: AppDropdown<ThemePreference>(
         value: vm.settings.theme,
         onChanged: (value) {
           if (value != null) {
@@ -71,15 +85,13 @@ class SettingsView extends StatelessWidget {
           }
         },
         items: ThemePreference.values
-            .map((t) => DropdownMenuItem(
-                  value: t,
-                  child:
-                      Text(t.arabicName, style: const TextStyle(fontSize: 18)),
-                ))
+            .map(
+              (t) => DropdownMenuItem(
+                value: t,
+                child: Text(t.arabicName, style: const TextStyle(fontSize: 18)),
+              ),
+            )
             .toList(),
-        icon: const Icon(Icons.arrow_drop_down),
-        iconSize: 42,
-        underline: const SizedBox(),
       ),
     );
   }
@@ -87,20 +99,23 @@ class SettingsView extends StatelessWidget {
   Widget _buildFontFamilySection(BuildContext context, SettingsViewModel vm) {
     return _SettingsRow(
       label: 'نوع الخط',
-      child: DropdownButton<String>(
+      child: AppDropdown<String>(
         value: vm.fontFamily,
         onChanged: (value) {
           if (value != null) vm.setFontFamily(value);
         },
         items: SettingsViewModel.fontFamilies
-            .map((f) => DropdownMenuItem(
-                  value: f,
-                  child: Text(f, style: const TextStyle(fontSize: 18)),
-                ))
+            .map(
+              (f) => DropdownMenuItem(
+                value: f,
+                child: Text(
+                  f,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 18, fontFamily: f),
+                ),
+              ),
+            )
             .toList(),
-        icon: const Icon(Icons.arrow_drop_down),
-        iconSize: 42,
-        underline: const SizedBox(),
       ),
     );
   }
@@ -108,21 +123,19 @@ class SettingsView extends StatelessWidget {
   Widget _buildFontWeightSection(BuildContext context, SettingsViewModel vm) {
     return _SettingsRow(
       label: 'ثقل الخط',
-      child: DropdownButton<FontWeightPreference>(
+      child: AppDropdown<FontWeightPreference>(
         value: vm.settings.fontWeight,
         onChanged: (value) {
           if (value != null) vm.setFontWeight(value);
         },
         items: FontWeightPreference.values
-            .map((w) => DropdownMenuItem(
-                  value: w,
-                  child:
-                      Text(w.arabicName, style: const TextStyle(fontSize: 18)),
-                ))
+            .map(
+              (w) => DropdownMenuItem(
+                value: w,
+                child: Text(w.arabicName, style: const TextStyle(fontSize: 18)),
+              ),
+            )
             .toList(),
-        icon: const Icon(Icons.arrow_drop_down),
-        iconSize: 42,
-        underline: const SizedBox(),
       ),
     );
   }
@@ -130,20 +143,19 @@ class SettingsView extends StatelessWidget {
   Widget _buildFontSizeSection(BuildContext context, SettingsViewModel vm) {
     return _SettingsRow(
       label: 'حجم الخط',
-      child: DropdownButton<int>(
+      child: AppDropdown<int>(
         value: vm.settings.fontSize,
         onChanged: (value) {
           if (value != null) vm.setFontSize(value);
         },
         items: SettingsViewModel.fontSizes
-            .map((s) => DropdownMenuItem(
-                  value: s,
-                  child: Text('$s', style: const TextStyle(fontSize: 18)),
-                ))
+            .map(
+              (s) => DropdownMenuItem(
+                value: s,
+                child: Text('$s', style: const TextStyle(fontSize: 18)),
+              ),
+            )
             .toList(),
-        icon: const Icon(Icons.arrow_drop_down),
-        iconSize: 42,
-        underline: const SizedBox(),
       ),
     );
   }
@@ -151,20 +163,19 @@ class SettingsView extends StatelessWidget {
   Widget _buildPaddingSection(BuildContext context, SettingsViewModel vm) {
     return _SettingsRow(
       label: 'الحشو',
-      child: DropdownButton<int>(
+      child: AppDropdown<int>(
         value: vm.settings.padding,
         onChanged: (value) {
           if (value != null) vm.setPadding(value);
         },
         items: SettingsViewModel.paddingValues
-            .map((p) => DropdownMenuItem(
-                  value: p,
-                  child: Text('$p', style: const TextStyle(fontSize: 18)),
-                ))
+            .map(
+              (p) => DropdownMenuItem(
+                value: p,
+                child: Text('$p', style: const TextStyle(fontSize: 18)),
+              ),
+            )
             .toList(),
-        icon: const Icon(Icons.arrow_drop_down),
-        iconSize: 42,
-        underline: const SizedBox(),
       ),
     );
   }
@@ -201,26 +212,32 @@ class _SettingsRow extends StatelessWidget {
       padding: const EdgeInsets.all(10),
       child: Row(
         children: [
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.primaryContainer,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Row(
-              children: [
-                Text(label, style: const TextStyle(fontSize: 18)),
-                const SizedBox(width: 10),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).scaffoldBackgroundColor,
-                    borderRadius: BorderRadius.circular(10),
+          Expanded(
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Row(
+                children: [
+                  Text(label, style: const TextStyle(fontSize: 18)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 5,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).scaffoldBackgroundColor,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: child,
+                    ),
                   ),
-                  child: child,
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

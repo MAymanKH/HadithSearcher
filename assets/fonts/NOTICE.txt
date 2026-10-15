@@ -40,3 +40,17 @@ Copyright (c) 1994-2023, SIL International (http://www.sil.org/).
 This Font Software is licensed under the SIL Open Font License, Version 1.1, with Reserved Font Names "Lateef" and "SIL". This license is copied below, and is also available with an FAQ at: http://scripts.sil.org/OFL
 
 ----------------------------------------------------
+
+tajawal
+Copyright 2018 Boutros International. (http://www.boutrosfonts.com)
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+This license is copied below, and is also available with a FAQ at:
+http://scripts.sil.org/OFL
+
+notonaskharabic
+Copyright 2022 The Noto Project Authors (https://github.com/notofonts/arabic)
+
+This Font Software is licensed under the SIL Open Font License, Version 1.1.
+This license is copied below, and is also available with a FAQ at:
+https://openfontlicense.org

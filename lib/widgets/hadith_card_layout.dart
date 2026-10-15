@@ -30,11 +30,8 @@ class HadithCardLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     final settings = context.watch<SettingsViewModel>();
     final colors = Theme.of(context).colorScheme;
-    final textStyle = TextStyle(
+    final textStyle = settings.readingTextStyle.copyWith(
       color: colors.secondaryContainer,
-      fontSize: settings.fontSize,
-      fontWeight: settings.fontWeight,
-      fontFamily: settings.fontFamily,
     );
     return Container(
       margin: const EdgeInsets.all(10),

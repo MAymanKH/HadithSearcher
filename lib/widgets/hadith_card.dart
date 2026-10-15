@@ -76,7 +76,12 @@ class HadithCard extends StatelessWidget {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
     if (result.isSuccess) {
-      showMessageDialog(context, title: 'الشرح', content: result.data!);
+      showMessageDialog(
+        context,
+        title: 'الشرح',
+        content: result.data!,
+        useReadingSettings: true,
+      );
     } else {
       // Show error as snackbar
       String errorMessage;

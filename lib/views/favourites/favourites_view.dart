@@ -122,7 +122,12 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
 
     if (result.isSuccess) {
-      showMessageDialog(context, title: 'الشرح', content: result.data!);
+      showMessageDialog(
+        context,
+        title: 'الشرح',
+        content: result.data!,
+        useReadingSettings: true,
+      );
     } else {
       // Show error as snackbar for all errors
       String errorMessage;

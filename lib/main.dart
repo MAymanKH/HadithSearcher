@@ -25,7 +25,9 @@ void main() async {
         'Gulzar',
         'Lateef',
         'Reem Kufi',
-        'Rubik'
+        'Rubik',
+        'Tajawal',
+        'Noto Naskh Arabic'
       ],
       await rootBundle.loadString('assets/fonts/LICENSE-OFL.txt'),
     );

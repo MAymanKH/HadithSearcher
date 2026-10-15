@@ -24,9 +24,18 @@ class SettingsViewModel extends ChangeNotifier {
   EdgeInsets get padding => _settings.paddingInsets;
   ThemeMode get themeMode => _settings.themeMode;
 
+  TextStyle get readingTextStyle => TextStyle(
+    fontFamily: fontFamily,
+    fontWeight: fontWeight,
+    fontSize: fontSize,
+  );
+
   /// Available font families.
   static const List<String> fontFamilies = [
     'Roboto',
+    'Cairo',
+    'Tajawal',
+    'Noto Naskh Arabic',
     'Amiri',
     'Lateef',
     'Gulzar',

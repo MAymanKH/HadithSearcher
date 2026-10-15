@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
+import '../../widgets/app_dropdown.dart';
 import '../../models/search_params.dart';
 import '../../models/search_option.dart';
 import '../../widgets/search_option_picker.dart';
@@ -313,10 +314,9 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
   }) {
     return Padding(
       padding: const EdgeInsets.all(10),
-      child: DropdownButtonFormField<String>(
+      child: AppDropdown<String>(
         key: ValueKey('$label:$value'),
-        initialValue: value,
-        isExpanded: true,
+        value: value,
         decoration: InputDecoration(
           labelText: label,
           labelStyle: _filterLabelStyle(!isDefault),
