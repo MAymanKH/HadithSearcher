@@ -232,6 +232,38 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets(
+    'search opens keyboard on the first tap without moving the field',
+    (tester) async {
+      await openPicker(
+        tester,
+        load: () async => ApiResult.error(ApiError.noConnection),
+      );
+      await settle(tester);
+      final field = find.byType(TextField);
+      expect(tester.testTextInput.isVisible, isFalse);
+      final initialPosition = tester.getTopLeft(field);
+      await tester.tap(field);
+      await tester.pump();
+      expect(tester.testTextInput.isVisible, isTrue);
+      tester.view.viewInsets = const FakeViewPadding(bottom: 300);
+      await tester.pumpAndSettle();
+      expect(tester.getTopLeft(field), initialPosition);
+      tester.testTextInput.hide();
+      tester.view.viewInsets = FakeViewPadding.zero;
+      await tester.pumpAndSettle();
+      expect(tester.testTextInput.isVisible, isFalse);
+      await tester.tap(field);
+      await tester.pump();
+      expect(tester.testTextInput.isVisible, isTrue);
+      await tester.enterText(field, 'راوٍ');
+      await tester.pump(const Duration(milliseconds: 250));
+      await tester.tap(find.text('جميع الرواة'));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+    },
+  );
+
   testWidgets('picker fits a narrow phone above the keyboard', (tester) async {
     await openPicker(
       tester,

@@ -158,17 +158,14 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
         ? TextStyle(color: Theme.of(context).colorScheme.primary)
         : null;
     return SizedBox(
-      height: MediaQuery.sizeOf(context).height * (keyboardHeight > 0 ? 1 : .8),
+      height: MediaQuery.sizeOf(context).height * .8,
       child: Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.viewInsetsOf(context).bottom,
-        ),
+        padding: EdgeInsets.only(bottom: keyboardHeight),
         child: Column(
           children: [
             Padding(
               padding: const EdgeInsets.all(16),
               child: TextField(
-                autofocus: true,
                 decoration: InputDecoration(
                   labelText: widget.filter.arabicName,
                   labelStyle: labelStyle,
