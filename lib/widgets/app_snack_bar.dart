@@ -28,8 +28,8 @@ ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showAppSnackBar(
     snackBarAnimationStyle: MediaQuery.disableAnimationsOf(context)
         ? AnimationStyle.noAnimation
         : const AnimationStyle(
-            duration: Duration(milliseconds: 800),
-            reverseDuration: Duration(milliseconds: 800),
+            duration: Duration(milliseconds: 500),
+            reverseDuration: Duration(milliseconds: 500),
           ),
   );
 }

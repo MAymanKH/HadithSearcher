@@ -45,11 +45,11 @@ void main() {
             double offset() =>
                 tester.widget<SlideTransition>(slide).position.value.dy;
             await tester.pump();
-            await tester.pump(const Duration(milliseconds: 200));
+            await tester.pump(const Duration(milliseconds: 125));
             final earlyOffset = offset();
-            await tester.pump(const Duration(milliseconds: 200));
+            await tester.pump(const Duration(milliseconds: 125));
             final middleOffset = offset();
-            await tester.pump(const Duration(milliseconds: 200));
+            await tester.pump(const Duration(milliseconds: 125));
             final lateOffset = offset();
             expect(earlyOffset, inInclusiveRange(0.7, 0.95));
             expect(middleOffset, closeTo(0.5, 0.01));
@@ -58,12 +58,12 @@ void main() {
             expect(visible, 1);
             final restingY = tester.getTopLeft(message).dy;
             await tester.pump(const Duration(seconds: 1));
-            await tester.pump(const Duration(milliseconds: 200));
+            await tester.pump(const Duration(milliseconds: 125));
             expect(offset(), closeTo(lateOffset, 0.01));
             expect(tester.getTopLeft(message).dy, greaterThan(restingY));
-            await tester.pump(const Duration(milliseconds: 200));
+            await tester.pump(const Duration(milliseconds: 125));
             expect(offset(), closeTo(middleOffset, 0.01));
-            await tester.pump(const Duration(milliseconds: 200));
+            await tester.pump(const Duration(milliseconds: 125));
             expect(offset(), closeTo(earlyOffset, 0.01));
             expect(find.byType(SnackBar), findsOneWidget);
             await tester.pumpAndSettle();
