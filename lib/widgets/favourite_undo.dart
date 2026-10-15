@@ -9,8 +9,8 @@ void _showFavouriteFeedback(BuildContext context, SnackBar snackBar) {
     snackBarAnimationStyle: MediaQuery.disableAnimationsOf(context)
         ? AnimationStyle.noAnimation
         : const AnimationStyle(
-            duration: Duration(milliseconds: 300),
-            reverseDuration: Duration(milliseconds: 300),
+            duration: Duration(milliseconds: 500),
+            reverseDuration: Duration(milliseconds: 500),
           ),
   );
 }

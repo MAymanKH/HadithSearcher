@@ -52,7 +52,7 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Add'));
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 150));
+    await tester.pump(const Duration(milliseconds: 250));
     expect(
       opacity(tester, 'تمت إزالة الحديث من المفضلة'),
       inExclusiveRange(0, 1),
@@ -90,7 +90,7 @@ void main() {
       );
       await tester.tap(find.text('Remove'));
       await tester.pump();
-      await tester.pump(const Duration(milliseconds: 150));
+      await tester.pump(const Duration(milliseconds: 250));
       expect(
         opacity(tester, 'تمت إزالة الحديث من المفضلة'),
         inExclusiveRange(0, 1),
@@ -109,7 +109,7 @@ void main() {
       await tester.pump(const Duration(seconds: 3));
       expect(find.text('تراجع'), findsOneWidget);
       await tester.pump(const Duration(seconds: 1));
-      await tester.pump(const Duration(milliseconds: 150));
+      await tester.pump(const Duration(milliseconds: 250));
       expect(
         opacity(tester, 'تمت إزالة الحديث من المفضلة'),
         inExclusiveRange(0, 1),
@@ -136,14 +136,14 @@ void main() {
         );
         await tester.tap(find.text('Add'));
         await tester.pump();
-        await tester.pump(const Duration(milliseconds: 150));
+        await tester.pump(const Duration(milliseconds: 250));
         const message = 'تمت إضافة الحديث إلى المفضلة';
         expect(opacity(tester, message), inExclusiveRange(0, 1));
         await tester.pumpAndSettle();
         expect(find.text(message), findsOneWidget);
         expect(find.text('تراجع'), findsNothing);
         await tester.pump(const Duration(milliseconds: 1500));
-        await tester.pump(const Duration(milliseconds: 150));
+        await tester.pump(const Duration(milliseconds: 250));
         expect(opacity(tester, message), inExclusiveRange(0, 1));
         await tester.pumpAndSettle();
         expect(find.byType(SnackBar), findsNothing);
