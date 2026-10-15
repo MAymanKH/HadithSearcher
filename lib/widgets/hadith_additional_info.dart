@@ -118,6 +118,11 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
     return Container(
       margin: const EdgeInsets.only(top: 12),
       decoration: BoxDecoration(
+        color: Color.lerp(
+          colors.primaryContainer,
+          Colors.white,
+          Theme.of(context).brightness == Brightness.dark ? 0.07 : 0.45,
+        ),
         border: Border.all(
           color: colors.secondaryContainer.withValues(alpha: 0.16),
         ),
