@@ -48,7 +48,14 @@ class SelectionSheet extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                   child: search,
                 ),
-              Flexible(child: child),
+              Flexible(
+                child: ClipRect(
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: child,
+                  ),
+                ),
+              ),
             ],
           ),
         ),

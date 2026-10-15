@@ -1,9 +1,73 @@
+import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hadithsearcher/core/theme/app_theme.dart';
 import 'package:hadithsearcher/widgets/app_dropdown.dart';
+import 'package:hadithsearcher/widgets/app_selection_tile.dart';
 import 'package:hadithsearcher/widgets/selection_sheet.dart';
 
 void main() {
+  testWidgets('scrolled selected backgrounds stay below the search field', (
+    tester,
+  ) async {
+    tester.view.physicalSize = const Size(360, 600);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    final boundary = GlobalKey();
+    final search = GlobalKey();
+    final theme = AppTheme.darkTheme;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: theme.copyWith(
+          colorScheme: theme.colorScheme.copyWith(primaryContainer: Colors.red),
+        ),
+        home: Scaffold(
+          body: RepaintBoundary(
+            key: boundary,
+            child: Material(
+              color: Colors.black,
+              child: SelectionSheet(
+                title: 'المحدث',
+                search: SizedBox(key: search, height: 60),
+                child: ListView.builder(
+                  itemCount: 50,
+                  itemBuilder: (_, index) => AppSelectionTile(
+                    title: Text('محدث $index'),
+                    selected: true,
+                    multiple: true,
+                    onTap: () {},
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    await tester.drag(find.byType(ListView), const Offset(0, -123));
+    await tester.pumpAndSettle();
+    final position = tester.getCenter(find.byKey(search));
+    await tester.runAsync(() async {
+      final image =
+          await (boundary.currentContext!.findRenderObject()
+                  as RenderRepaintBoundary)
+              .toImage();
+      final pixels = (await image.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
+      ))!;
+      final offset =
+          (position.dy.floor() * image.width + position.dx.floor()) * 4;
+      expect(pixels.buffer.asUint8List(offset, 3), [
+        0,
+        0,
+        0,
+      ], reason: 'Selected row ink must not paint over the search area');
+      image.dispose();
+    });
+  });
+
   for (final count in [3, 5]) {
     testWidgets(
       '$count single choices use a compact sheet with no empty footer',

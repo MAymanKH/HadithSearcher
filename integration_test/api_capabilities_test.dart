@@ -72,6 +72,13 @@ void main() {
           'data': [
             {'key': '256', 'value': 'البخاري'},
             {'key': '261', 'value': 'مسلم'},
+            ...List.generate(
+              48,
+              (index) => {
+                'key': '${1000 + index}',
+                'value': 'محدث ${index + 1}',
+              },
+            ),
           ],
         };
       } else if (path == '/v1/site/hadith/search') {
@@ -161,6 +168,18 @@ void main() {
     await tester.enterText(find.byType(TextField), 'إنما الأعمال بالنيات');
     await tester.tap(find.byTooltip('البحث المتقدم'));
     await tester.pumpAndSettle();
+    final rememberFilters = find.widgetWithText(
+      SwitchListTile,
+      'تذكّر فلاتر البحث',
+    );
+    await tester.ensureVisible(rememberFilters);
+    await tester.pumpAndSettle();
+    await tester.tap(rememberFilters);
+    await tester.pumpAndSettle();
+    expect(preferences.getBool('advancedSaveCheckbox'), isFalse);
+    await tester.tap(rememberFilters);
+    await tester.pumpAndSettle();
+    await capture('save-filters');
     await tester.ensureVisible(find.text('جميع الدرجات'));
     await tester.tap(find.text('جميع الدرجات'));
     await tester.pumpAndSettle();
@@ -215,7 +234,13 @@ void main() {
     await tester.tap(find.text('صحيح مسلم'));
     await tester.pumpAndSettle();
     expect(find.text('المحدد: 2'), findsOneWidget);
-    expect(find.textContaining('تطبيق'), findsNothing);
+    expect(
+      find.descendant(
+        of: find.byType(SelectionSheet),
+        matching: find.textContaining('تطبيق'),
+      ),
+      findsNothing,
+    );
     await capture('picker');
     await tester.tap(find.byTooltip('معلومات عن صحيح البخاري'));
     await waitFor(find.textContaining('المؤلف: محمد بن إسماعيل البخاري'));
@@ -234,7 +259,16 @@ void main() {
     );
     await tester.tap(find.text('إغلاق'));
     await tester.pumpAndSettle();
-    expect(find.text('المحدد: 2'), findsOneWidget);
+    expect(find.text('المحدد: 50'), findsOneWidget);
+    await tester.drag(
+      find.descendant(
+        of: find.byType(SelectionSheet),
+        matching: find.byType(CustomScrollView),
+      ),
+      const Offset(0, -170),
+    );
+    await tester.pumpAndSettle();
+    await capture('picker-scrolled');
     tester.state<NavigatorState>(find.byType(Navigator)).pop();
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('البحث للمتخصصين'));
