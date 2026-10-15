@@ -239,12 +239,15 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
               style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 15),
-            _buildSaveSwitch(vm),
-            SwitchListTile.adaptive(
-              title: const Text('البحث للمتخصصين'),
-              subtitle: const Text(
-                'يشمل اختلاف أحكام المحدثين وتفاصيل الأسانيد',
-              ),
+            _buildFilterSwitch(
+              title: 'تذكّر عوامل التصفية',
+              subtitle: 'حفظها عند إعادة فتح التطبيق',
+              value: vm.saveAdvancedSettings,
+              onChanged: vm.setSaveAdvancedSettings,
+            ),
+            _buildFilterSwitch(
+              title: 'البحث للمتخصصين',
+              subtitle: 'يشمل اختلاف أحكام المحدثين وتفاصيل الأسانيد',
               value: vm.specialist,
               onChanged: vm.setSpecialist,
             ),
@@ -400,12 +403,46 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     );
   }
 
-  Widget _buildSaveSwitch(SearchViewModel vm) {
-    return SwitchListTile.adaptive(
-      value: vm.saveAdvancedSettings,
-      title: const Text('تذكّر عوامل التصفية'),
-      subtitle: const Text('حفظ عوامل التصفية عند إعادة فتح التطبيق'),
-      onChanged: vm.setSaveAdvancedSettings,
+  Widget _buildFilterSwitch({
+    required String title,
+    required String subtitle,
+    required bool value,
+    required ValueChanged<bool> onChanged,
+  }) {
+    final colors = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      child: SwitchListTile.adaptive(
+        value: value,
+        onChanged: onChanged,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(30),
+          side: BorderSide(color: colors.onSurface.withValues(alpha: 0.28)),
+        ),
+        tileColor: colors.primaryContainer.withValues(alpha: 0.45),
+        title: Text(
+          title,
+          style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
+        subtitle: Text(
+          subtitle,
+          style: TextStyle(
+            fontSize: 13,
+            height: 1.5,
+            color: colors.onSurface.withValues(alpha: 0.72),
+          ),
+        ),
+        activeTrackColor: colors.onSurface,
+        activeThumbColor: colors.surface,
+        inactiveTrackColor: colors.surface,
+        inactiveThumbColor: colors.onSurface.withValues(alpha: 0.65),
+        trackOutlineColor: WidgetStateProperty.resolveWith(
+          (states) => colors.onSurface.withValues(
+            alpha: states.contains(WidgetState.selected) ? 1 : 0.45,
+          ),
+        ),
+      ),
     );
   }
 
