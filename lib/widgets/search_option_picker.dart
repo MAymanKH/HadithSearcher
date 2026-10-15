@@ -78,11 +78,14 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
   }
 
   void _includeSelection() {
+    final codes = _options.map((entry) => entry.option.apiCode).toSet();
+    final missing = <_IndexedOption>[];
     for (final selected in _selected.values) {
-      if (!_options.any((entry) => entry.option.apiCode == selected.apiCode)) {
-        _options.insert(0, _IndexedOption(selected));
+      if (codes.add(selected.apiCode)) {
+        missing.add(_IndexedOption(selected));
       }
     }
+    _options.insertAll(0, missing.reversed);
   }
 
   Future<void> _load() async {

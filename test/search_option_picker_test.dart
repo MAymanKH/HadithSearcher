@@ -489,6 +489,25 @@ void main() {
       );
     },
   );
+  testWidgets(
+    'reopening a nearly full large selection avoids quadratic matching',
+    (tester) async {
+      final options = List.generate(
+        2000,
+        (index) => _ReadCountingOption('${index + 1}', 'راوٍ $index'),
+      );
+      _ReadCountingOption.codeReads = 0;
+      await openPicker(
+        tester,
+        selected: options.skip(2).toList(),
+        load: () async => ApiResult.success(options),
+      );
+      await settle(tester);
+      expect(find.text('المحدد: 1998'), findsOneWidget);
+      expect(_ReadCountingOption.codeReads, lessThan(options.length * 30));
+    },
+  );
+
   testWidgets('manually selecting every grade clears the active filter count', (
     tester,
   ) async {
@@ -519,4 +538,15 @@ void main() {
       isTrue,
     );
   });
+}
+
+class _ReadCountingOption extends SearchOption {
+  static int codeReads = 0;
+  const _ReadCountingOption(super.apiCode, super.arabicName);
+
+  @override
+  String get apiCode {
+    codeReads++;
+    return super.apiCode;
+  }
 }
