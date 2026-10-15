@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'l10n/localization.dart';
-import 'views/welcome/welcome_view.dart';
+import 'views/startup_flow.dart';
 import 'core/constants/routes.dart';
 import 'core/theme/app_theme.dart';
 import 'viewmodels/favourites_viewmodel.dart';
@@ -12,9 +12,7 @@ import 'viewmodels/similar_hadith_viewmodel.dart';
 import 'views/main_shell.dart';
 import 'views/similar_hadith/similar_hadith_view.dart';
 import 'services/telemetry/telemetry_service.dart';
-import 'views/privacy/telemetry_consent_view.dart';
 import 'services/update_service.dart';
-import 'widgets/update_prompt.dart';
 import 'widgets/app_snack_bar.dart';
 
 /// Main app widget with Provider setup.
@@ -71,17 +69,7 @@ class HadithSearcherApp extends StatelessWidget {
                 ),
               );
             },
-            home: settingsVm.isLoading
-                ? const Scaffold(
-                    body: Center(child: CircularProgressIndicator()),
-                  )
-                : !settingsVm.welcomeCompleted
-                ? const WelcomeView()
-                : Consumer<TelemetryService>(
-                    builder: (context, service, child) => service.needsConsent
-                        ? const TelemetryConsentView(firstLaunch: true)
-                        : const UpdatePrompt(child: MainShell()),
-                  ),
+            home: const StartupFlow(),
             routes: {
               searchRoute: (context) => const MainShell(initialIndex: 0),
               similarHadithRoute: (context) => const SimilarHadithView(),
