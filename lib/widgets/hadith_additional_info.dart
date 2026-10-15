@@ -105,6 +105,7 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
             icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
             label: Text(
               _expanded ? 'إخفاء المعلومات الإضافية' : 'معلومات إضافية',
+              style: readingStyle,
             ),
           ),
         ),
@@ -143,29 +144,20 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
                   if (_loaded && !_hasContent)
                     const Text('لا تتوفر معلومات إضافية من المصدر'),
                   if (_hasGradingNote)
-                    _section(
-                      context,
+                    _infoLine(
                       'توضيح الحكم',
-                      SelectableText(_hadith.explainGrade, style: readingStyle),
+                      _hadith.explainGrade,
+                      readingStyle,
                     ),
                   if (_hadith.takhrij.trim().isNotEmpty)
-                    _section(
-                      context,
-                      'التخريج',
-                      SelectableText(_hadith.takhrij, style: readingStyle),
-                    ),
+                    _infoLine('التخريج', _hadith.takhrij, readingStyle),
                   if (_hadith.categories.isNotEmpty)
-                    _section(
-                      context,
+                    _infoLine(
                       'التصنيف الموضوعي',
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 4,
-                        children: [
-                          for (final category in _hadith.categories)
-                            Chip(label: Text(category.name)),
-                        ],
-                      ),
+                      _hadith.categories
+                          .map((category) => category.name)
+                          .join('، '),
+                      readingStyle,
                     ),
                   if (_hadith.hasUsulHadith && _hadith.id.isNotEmpty)
                     Align(
@@ -189,7 +181,10 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
                               .join('\n\n'),
                         ),
                         icon: const Icon(Icons.account_tree_outlined),
-                        label: const Text('أصول الحديث وطرق إخراجه'),
+                        label: Text(
+                          'أصول الحديث وطرق إخراجه',
+                          style: readingStyle,
+                        ),
                       ),
                     ),
                 ],
@@ -201,21 +196,8 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
     );
   }
 
-  Widget _section(BuildContext context, String title, Widget content) =>
-      Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Text(
-              title,
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 6),
-            content,
-          ],
-        ),
-      );
+  Widget _infoLine(String title, String value, TextStyle style) => Padding(
+    padding: const EdgeInsets.symmetric(vertical: 4),
+    child: SelectableText('$title: $value', style: style),
+  );
 }

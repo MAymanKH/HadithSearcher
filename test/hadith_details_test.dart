@@ -104,7 +104,10 @@ void main() {
           () async {
             await mount(tester, hadith, dark: dark);
             expect(find.byTooltip('تفاصيل الحديث'), findsNothing);
-            expect(find.text(hadith.explainGrade), findsNothing);
+            expect(
+              find.text('توضيح الحكم: ${hadith.explainGrade}'),
+              findsNothing,
+            );
             final collapsed = tester
                 .getSize(find.byType(HadithCardLayout))
                 .height;
@@ -122,9 +125,15 @@ void main() {
             expect(find.text(hadith.text), findsOneWidget);
             expect(find.text(hadith.citation.grading), findsOneWidget);
             expect(find.text(hadith.citation.attribution), findsOneWidget);
-            expect(find.text(hadith.explainGrade), findsOneWidget);
-            expect(find.text(hadith.takhrij), findsOneWidget);
-            expect(find.text('رقائق وزهد - النية'), findsOneWidget);
+            expect(
+              find.text('توضيح الحكم: ${hadith.explainGrade}'),
+              findsOneWidget,
+            );
+            expect(find.text('التخريج: ${hadith.takhrij}'), findsOneWidget);
+            expect(
+              find.text('التصنيف الموضوعي: رقائق وزهد - النية'),
+              findsOneWidget,
+            );
             expect(find.byIcon(Icons.error_outline_rounded), findsNothing);
             await tester.ensureVisible(find.text('أصول الحديث وطرق إخراجه'));
             await tester.tap(find.text('أصول الحديث وطرق إخراجه'));
@@ -139,8 +148,14 @@ void main() {
             await tester.ensureVisible(find.text('إخفاء المعلومات الإضافية'));
             await tester.tap(find.text('إخفاء المعلومات الإضافية'));
             await tester.pumpAndSettle();
-            expect(find.text(hadith.explainGrade), findsNothing);
-            expect(find.text('رقائق وزهد - النية'), findsNothing);
+            expect(
+              find.text('توضيح الحكم: ${hadith.explainGrade}'),
+              findsNothing,
+            );
+            expect(
+              find.text('التصنيف الموضوعي: رقائق وزهد - النية'),
+              findsNothing,
+            );
             expect(
               tester.getSize(find.byType(HadithCardLayout)).height,
               collapsed,
@@ -186,7 +201,10 @@ void main() {
           await tester.ensureVisible(find.text('أعد المحاولة'));
           await tester.tap(find.text('أعد المحاولة'));
           await tester.pumpAndSettle();
-          expect(find.text('رقائق وزهد - النية'), findsOneWidget);
+          expect(
+            find.text('التصنيف الموضوعي: رقائق وزهد - النية'),
+            findsOneWidget,
+          );
           expect(find.text('أعد المحاولة'), findsNothing);
           await tester.ensureVisible(find.text('إخفاء المعلومات الإضافية'));
           await tester.tap(find.text('إخفاء المعلومات الإضافية'));
@@ -203,6 +221,45 @@ void main() {
       );
     },
   );
+
+  testWidgets('additional labels and toggle follow the basic reading style', (
+    tester,
+  ) async {
+    final hadith = Hadith.fromJson(richJson);
+    await mount(tester, hadith, fontSize: 40);
+    final basicStyle = tester
+        .widgetList<SelectableText>(find.byType(SelectableText))
+        .firstWhere((text) => text.data == hadith.text)
+        .style!;
+    final toggle = find.text('معلومات إضافية');
+    final toggleStyle = tester.widget<Text>(toggle).style!;
+    expect(toggleStyle.fontSize, basicStyle.fontSize);
+    expect(toggleStyle.fontFamily, basicStyle.fontFamily);
+    expect(toggleStyle.fontWeight, basicStyle.fontWeight);
+    await tester.ensureVisible(toggle);
+    await tester.tap(toggle);
+    await tester.pumpAndSettle();
+    for (final line in [
+      'توضيح الحكم: ${hadith.explainGrade}',
+      'التخريج: ${hadith.takhrij}',
+      'التصنيف الموضوعي: رقائق وزهد - النية',
+    ]) {
+      final text = tester
+          .widgetList<SelectableText>(find.byType(SelectableText))
+          .firstWhere((text) => text.data == line);
+      expect(text.style!.fontSize, basicStyle.fontSize);
+      expect(text.style!.fontFamily, basicStyle.fontFamily);
+      expect(text.style!.fontWeight, basicStyle.fontWeight);
+    }
+    expect(find.byType(Chip), findsNothing);
+    expect(find.text('التخريج'), findsNothing);
+    expect(find.text('التصنيف الموضوعي'), findsNothing);
+    final expandedStyle = tester
+        .widget<Text>(find.text('إخفاء المعلومات الإضافية'))
+        .style!;
+    expect(expandedStyle.fontSize, basicStyle.fontSize);
+    expect(tester.takeException(), isNull);
+  });
 
   testWidgets(
     'identical grading is not repeated and long tags fit large reading text',
@@ -221,7 +278,7 @@ void main() {
       await tester.ensureVisible(find.text('معلومات إضافية'));
       await tester.tap(find.text('معلومات إضافية'));
       await tester.pumpAndSettle();
-      expect(find.text('توضيح الحكم'), findsNothing);
+      expect(find.textContaining('توضيح الحكم:'), findsNothing);
       expect(find.text('المحدث'), findsNothing);
       expect(find.text('المصدر'), findsNothing);
       await tester.ensureVisible(find.text('أصول الحديث وطرق إخراجه'));

@@ -184,9 +184,20 @@ void main() {
       matching: find.text('جميع الدرجات'),
     );
     expect(find.text('المحدد: 4'), findsOneWidget);
+    expect(
+      tester
+          .widgetList<Checkbox>(
+            find.descendant(
+              of: find.byType(SelectionSheet),
+              matching: find.byType(Checkbox),
+            ),
+          )
+          .every((checkbox) => checkbox.value == true),
+      isTrue,
+    );
+    await capture('grades');
     await tester.tap(allGrades);
     await tester.pumpAndSettle();
-    await capture('grades');
     tester.state<NavigatorState>(find.byType(Navigator)).pop();
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('جميع الكتب'));
@@ -262,7 +273,7 @@ void main() {
     expect(find.text('إخفاء المعلومات الإضافية').hitTestable(), findsOneWidget);
     await tester.tap(find.text('إخفاء المعلومات الإضافية'));
     await tester.pumpAndSettle();
-    expect(find.text('التصنيف الموضوعي'), findsNothing);
+    expect(find.textContaining('التصنيف الموضوعي:'), findsNothing);
     await tester.tap(find.byTooltip('إخفاء الفلاتر النشطة'));
     await tester.pumpAndSettle();
     expect(preferences.getBool('showActiveFilters'), isFalse);
