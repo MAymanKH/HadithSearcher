@@ -82,8 +82,15 @@ void main() {
     await mount(tester);
     await tester.tap(find.byTooltip('البحث المتقدم'));
     await tester.pumpAndSettle();
-    final toggle = find.widgetWithText(SwitchListTile, 'تذكّر فلاتر البحث');
-    await tester.ensureVisible(toggle);
+    final toggle = find.widgetWithText(SwitchListTile, 'تذكّر عوامل التصفية');
+    expect(
+      tester.getTopLeft(toggle).dy,
+      lessThan(
+        tester
+            .getTopLeft(find.widgetWithText(SwitchListTile, 'البحث للمتخصصين'))
+            .dy,
+      ),
+    );
     await tester.pumpAndSettle();
     expect(tester.widget<SwitchListTile>(toggle).value, isTrue);
     expect(find.byType(CheckboxListTile), findsNothing);
@@ -256,12 +263,12 @@ void main() {
     final activeFilters = List<String>.of(vm.activeFilters);
     expect(find.byType(Chip), findsWidgets);
     final actions = tester.widget<AppBar>(find.byType(AppBar)).actions!;
-    expect((actions.first as IconButton).tooltip, 'إخفاء الفلاتر النشطة');
+    expect((actions.first as IconButton).tooltip, 'إخفاء عوامل التصفية النشطة');
     expect((actions.last as Tooltip).message, 'البحث المتقدم');
     final filtersButton = tester.getRect(
-      find.widgetWithText(TextButton, 'الفلاتر'),
+      find.widgetWithText(TextButton, 'التصفية'),
     );
-    final filtersLabel = tester.getRect(find.text('الفلاتر'));
+    final filtersLabel = tester.getRect(find.text('التصفية'));
     expect(filtersButton.left, greaterThanOrEqualTo(10));
     expect(filtersLabel.left, greaterThanOrEqualTo(filtersButton.left + 10));
     expect(filtersLabel.right, lessThanOrEqualTo(filtersButton.right - 10));
@@ -273,14 +280,14 @@ void main() {
       findsOneWidget,
     );
     final transition = find.byKey(const ValueKey('active-filters-transition'));
-    await tester.tap(find.byTooltip('إخفاء الفلاتر النشطة'));
+    await tester.tap(find.byTooltip('إخفاء عوامل التصفية النشطة'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
     expect(tester.getSize(transition).height, inExclusiveRange(0, 48));
     await tester.pumpAndSettle();
     expect(tester.getSize(transition).height, 0);
     expect(find.byType(Chip), findsNothing);
-    expect(find.text('مسح الفلاتر'), findsNothing);
+    expect(find.text('مسح عوامل التصفية'), findsNothing);
     expect(vm.activeFilters, activeFilters);
     await tester.tap(find.byTooltip('البحث المتقدم'));
     await tester.pumpAndSettle();
@@ -288,7 +295,7 @@ void main() {
     await tester.tap(find.byTooltip('البحث المتقدم'));
     await tester.pumpAndSettle();
     expect(find.byType(Chip), findsNothing);
-    await tester.tap(find.byTooltip('إظهار الفلاتر النشطة'));
+    await tester.tap(find.byTooltip('إظهار عوامل التصفية النشطة'));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
     expect(tester.getSize(transition).height, inExclusiveRange(0, 48));
@@ -296,7 +303,7 @@ void main() {
     expect(tester.getSize(transition).height, 48);
     expect(find.byType(Chip), findsWidgets);
     expect(vm.activeFilters, activeFilters);
-    await tester.tap(find.text('مسح الفلاتر'));
+    await tester.tap(find.text('مسح عوامل التصفية'));
     await tester.pumpAndSettle();
     expect(vm.activeFilters, isEmpty);
     expect(find.byType(Badge), findsNothing);

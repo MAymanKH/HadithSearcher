@@ -112,8 +112,8 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
           if (vm.activeFilters.isNotEmpty)
             IconButton(
               tooltip: vm.showActiveFilters
-                  ? 'إخفاء الفلاتر النشطة'
-                  : 'إظهار الفلاتر النشطة',
+                  ? 'إخفاء عوامل التصفية النشطة'
+                  : 'إظهار عوامل التصفية النشطة',
               onPressed: () => vm.setShowActiveFilters(!vm.showActiveFilters),
               icon: Badge(
                 label: Text('${vm.activeFilters.length}'),
@@ -145,14 +145,11 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
                 }
               },
               icon: const Icon(Icons.tune, size: 22),
-              label: const Text('الفلاتر', style: TextStyle(fontSize: 14)),
+              label: const Text('التصفية', style: TextStyle(fontSize: 14)),
               style: TextButton.styleFrom(
                 padding: const EdgeInsets.symmetric(horizontal: 12),
                 minimumSize: const Size(0, 48),
                 foregroundColor: Theme.of(context).colorScheme.onSurface,
-                backgroundColor: vm.isAdvancedSearchOpen
-                    ? Theme.of(context).colorScheme.primaryContainer
-                    : null,
               ),
             ),
           ),
@@ -235,6 +232,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
               style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 15),
+            _buildSaveSwitch(vm),
             SwitchListTile.adaptive(
               title: const Text('البحث للمتخصصين'),
               subtitle: const Text(
@@ -260,7 +258,6 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
             for (final filter in SearchFilter.values)
               _buildCatalogField(filter, vm),
             _buildExcludedWordsField(vm),
-            _buildSaveSwitch(vm),
             const SizedBox(height: 20),
           ],
         ),
@@ -284,7 +281,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
       children: [
         TextButton(
           onPressed: () => _clearFilters(vm),
-          child: const Text('مسح الفلاتر'),
+          child: const Text('مسح عوامل التصفية'),
         ),
         ...vm.activeFilters.map(
           (label) => Padding(
@@ -398,8 +395,10 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
   Widget _buildSaveSwitch(SearchViewModel vm) {
     return SwitchListTile.adaptive(
       value: vm.saveAdvancedSettings,
-      title: const Text('تذكّر فلاتر البحث'),
-      subtitle: const Text('استخدام الفلاتر نفسها عند فتح التطبيق مجددًا'),
+      title: const Text('تذكّر عوامل التصفية'),
+      subtitle: const Text(
+        'استخدام عوامل التصفية نفسها عند فتح التطبيق مجددًا',
+      ),
       onChanged: vm.setSaveAdvancedSettings,
     );
   }

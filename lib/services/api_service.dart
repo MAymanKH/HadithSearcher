@@ -247,7 +247,7 @@ enum ApiError {
       case ApiError.notFound:
         return 'لا توجد نتائج';
       case ApiError.unsupportedFilters:
-        return 'يحتاج خادم البحث إلى تحديث لدعم استبعاد الفلاتر';
+        return 'يحتاج خادم البحث إلى تحديث لدعم استبعاد عوامل التصفية';
       case ApiError.unknown:
         return 'خطأ غير متوقع';
     }

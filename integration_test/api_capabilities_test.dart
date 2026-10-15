@@ -177,7 +177,7 @@ void main() {
     await tester.pumpAndSettle();
     final rememberFilters = find.widgetWithText(
       SwitchListTile,
-      'تذكّر فلاتر البحث',
+      'تذكّر عوامل التصفية',
     );
     await tester.ensureVisible(rememberFilters);
     await tester.pumpAndSettle();
@@ -330,7 +330,7 @@ void main() {
     await tester.tap(find.text('إخفاء المعلومات الإضافية'));
     await tester.pumpAndSettle();
     expect(find.textContaining('التصنيف الموضوعي:'), findsNothing);
-    await tester.tap(find.byTooltip('إخفاء الفلاتر النشطة'));
+    await tester.tap(find.byTooltip('إخفاء عوامل التصفية النشطة'));
     await tester.pumpAndSettle();
     expect(preferences.getBool('showActiveFilters'), isFalse);
     await tester.pumpWidget(const SizedBox());
@@ -338,7 +338,7 @@ void main() {
       HadithSearcherApp(initialThemeMode: ThemeMode.dark, telemetry: telemetry),
     );
     await tester.pumpAndSettle();
-    expect(find.byTooltip('إظهار الفلاتر النشطة'), findsOneWidget);
+    expect(find.byTooltip('إظهار عوامل التصفية النشطة'), findsOneWidget);
     expect(find.byKey(const ValueKey('active-filters-row')), findsNothing);
     await tester.tap(find.text('الإعدادات').last);
     await tester.pumpAndSettle();
