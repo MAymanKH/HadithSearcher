@@ -408,11 +408,12 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
   }) {
     final colors = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       child: SwitchListTile.adaptive(
         value: value,
         onChanged: onChanged,
-        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
+        dense: true,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14),
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(30),
           side: BorderSide(color: colors.onSurface.withValues(alpha: 0.28)),
@@ -426,7 +427,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
           subtitle,
           style: TextStyle(
             fontSize: 13,
-            height: 1.5,
+            height: 1.3,
             color: colors.onSurface.withValues(alpha: 0.72),
           ),
         ),
