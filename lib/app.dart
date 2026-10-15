@@ -15,6 +15,7 @@ import 'services/telemetry/telemetry_service.dart';
 import 'views/privacy/telemetry_consent_view.dart';
 import 'services/update_service.dart';
 import 'widgets/update_prompt.dart';
+import 'widgets/app_snack_bar.dart';
 
 /// Main app widget with Provider setup.
 class HadithSearcherApp extends StatelessWidget {
@@ -62,7 +63,11 @@ class HadithSearcherApp extends StatelessWidget {
                 value: AppTheme.systemUiOverlayStyle(theme.brightness),
                 child: ColoredBox(
                   color: theme.scaffoldBackgroundColor,
-                  child: SafeArea(top: false, bottom: false, child: child!),
+                  child: SafeArea(
+                    top: false,
+                    bottom: false,
+                    child: AppScaffoldMessenger(child: child!),
+                  ),
                 ),
               );
             },

@@ -1,5 +1,24 @@
 import 'package:flutter/material.dart';
 
+class AppScaffoldMessenger extends StatelessWidget {
+  const AppScaffoldMessenger({super.key, required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
+    // ScaffoldMessenger otherwise removes snackbars immediately when an
+    // accessibility service is active, even when reduced motion is off.
+    return MediaQuery(
+      data: media.copyWith(accessibleNavigation: false),
+      child: ScaffoldMessenger(
+        child: MediaQuery(data: media, child: child),
+      ),
+    );
+  }
+}
+
 ScaffoldFeatureController<SnackBar, SnackBarClosedReason> showAppSnackBar(
   BuildContext context,
   SnackBar snackBar,
@@ -51,8 +70,7 @@ class _SlidingSnackBarState extends State<_SlidingSnackBar> {
     final content = widget.snackBar.withAnimation(
       _FullyVisibleAnimation(widget.animation!),
     );
-    if (MediaQuery.disableAnimationsOf(context) ||
-        MediaQuery.accessibleNavigationOf(context)) {
+    if (MediaQuery.disableAnimationsOf(context)) {
       return content;
     }
     return ClipRect(
