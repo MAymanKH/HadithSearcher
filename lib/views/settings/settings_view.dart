@@ -78,6 +78,7 @@ class SettingsView extends StatelessWidget {
     return _SettingsRow(
       label: 'المظهر العام',
       child: AppDropdown<ThemePreference>(
+        title: 'المظهر العام',
         value: vm.settings.theme,
         onChanged: (value) {
           if (value != null) {
@@ -100,6 +101,7 @@ class SettingsView extends StatelessWidget {
     return _SettingsRow(
       label: 'نوع الخط',
       child: AppDropdown<String>(
+        title: 'نوع الخط',
         value: vm.fontFamily,
         onChanged: (value) {
           if (value != null) vm.setFontFamily(value);
@@ -124,6 +126,7 @@ class SettingsView extends StatelessWidget {
     return _SettingsRow(
       label: 'ثقل الخط',
       child: AppDropdown<FontWeightPreference>(
+        title: 'ثقل الخط',
         value: vm.settings.fontWeight,
         onChanged: (value) {
           if (value != null) vm.setFontWeight(value);
@@ -144,6 +147,7 @@ class SettingsView extends StatelessWidget {
     return _SettingsRow(
       label: 'حجم الخط',
       child: AppDropdown<int>(
+        title: 'حجم الخط',
         value: vm.settings.fontSize,
         onChanged: (value) {
           if (value != null) vm.setFontSize(value);
@@ -164,6 +168,7 @@ class SettingsView extends StatelessWidget {
     return _SettingsRow(
       label: 'الحشو',
       child: AppDropdown<int>(
+        title: 'الحشو',
         value: vm.settings.padding,
         onChanged: (value) {
           if (value != null) vm.setPadding(value);
@@ -221,9 +226,13 @@ class _SettingsRow extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  Text(label, style: const TextStyle(fontSize: 18)),
+                  Flexible(
+                    flex: 2,
+                    child: Text(label, style: const TextStyle(fontSize: 18)),
+                  ),
                   const SizedBox(width: 10),
                   Expanded(
+                    flex: 3,
                     child: Container(
                       padding: const EdgeInsets.symmetric(
                         horizontal: 10,

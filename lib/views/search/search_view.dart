@@ -315,6 +315,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     return Padding(
       padding: const EdgeInsets.all(10),
       child: AppDropdown<String>(
+        title: label,
         key: ValueKey('$label:$value'),
         value: value,
         decoration: InputDecoration(

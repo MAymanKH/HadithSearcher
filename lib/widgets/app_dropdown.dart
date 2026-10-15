@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'app_selection_tile.dart';
 
-/// Rounded menus with the same neutral colors as the app's cards.
+/// Opens choices in the same bottom sheet layout as the search filters.
 class AppDropdown<T> extends StatelessWidget {
+  final String title;
   final T value;
   final List<DropdownMenuItem<T>> items;
   final ValueChanged<T?> onChanged;
@@ -9,6 +11,7 @@ class AppDropdown<T> extends StatelessWidget {
 
   const AppDropdown({
     super.key,
+    required this.title,
     required this.value,
     required this.items,
     required this.onChanged,
@@ -20,45 +23,70 @@ class AppDropdown<T> extends StatelessWidget {
     ),
   });
 
+  Future<void> _select(BuildContext context) async {
+    final selection = await showModalBottomSheet<T>(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      builder: (context) => SizedBox(
+        height: MediaQuery.sizeOf(context).height * .8,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(20),
+              child: Text(title, style: Theme.of(context).textTheme.titleLarge),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: items.length,
+                itemBuilder: (context, index) {
+                  final item = items[index];
+                  return AppSelectionTile(
+                    title: item.child,
+                    selected: item.value == value,
+                    onTap: item.enabled
+                        ? () => Navigator.pop(context, item.value)
+                        : null,
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (context.mounted && selection != null) onChanged(selection);
+  }
+
   @override
   Widget build(BuildContext context) {
-    final colors = Theme.of(context).colorScheme;
-    return DropdownButtonFormField<T>(
-      key: ValueKey(value),
-      initialValue: value,
-      isExpanded: true,
-      decoration: decoration,
-      dropdownColor: colors.surface,
-      borderRadius: BorderRadius.circular(20),
-      elevation: 4,
-      menuMaxHeight: 360,
-      icon: Icon(Icons.expand_more_rounded, color: colors.onSurface),
-      style: TextStyle(color: colors.onSurface, fontSize: 18),
-      selectedItemBuilder: (_) => items.map((item) => item.child).toList(),
-      items: items.map((item) {
-        final selected = item.value == value;
-        return DropdownMenuItem<T>(
-          value: item.value,
-          enabled: item.enabled,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            decoration: BoxDecoration(
-              color: selected ? colors.primaryContainer : Colors.transparent,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              children: [
-                Expanded(child: item.child),
-                if (selected) ...[
-                  const SizedBox(width: 8),
-                  Icon(Icons.check_rounded, color: colors.onSurface, size: 20),
-                ],
-              ],
-            ),
+    final selected = items.firstWhere((item) => item.value == value);
+    return Semantics(
+      button: true,
+      label: title,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(30),
+        onTap: () => _select(context),
+        child: InputDecorator(
+          decoration: decoration,
+          child: Row(
+            children: [
+              Expanded(
+                child: DefaultTextStyle.merge(
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  child: selected.child,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.expand_more_rounded,
+                color: Theme.of(context).colorScheme.onSurface,
+              ),
+            ],
           ),
-        );
-      }).toList(),
-      onChanged: onChanged,
+        ),
+      ),
     );
   }
 }

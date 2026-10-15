@@ -1,3 +1,4 @@
+import 'package:hadithsearcher/widgets/app_dropdown.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter/material.dart';
@@ -211,7 +212,7 @@ void main() {
     await tester.tap(find.byTooltip('البحث المتقدم'));
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
-    expect(find.byType(DropdownButtonFormField<String>), findsNWidgets(3));
+    expect(find.byType(AppDropdown<String>), findsNWidgets(3));
     await tester.pumpWidget(const SizedBox());
   });
 

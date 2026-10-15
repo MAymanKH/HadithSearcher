@@ -62,7 +62,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(DropdownButton<String>));
+    await tester.tap(find.byType(AppDropdown<String>));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Noto Naskh Arabic').last);
     await tester.pumpAndSettle();
@@ -147,6 +147,7 @@ void main() {
           home: Scaffold(
             body: StatefulBuilder(
               builder: (context, setState) => AppDropdown<String>(
+                title: 'الاختيارات',
                 value: selected,
                 items: const [
                   DropdownMenuItem(value: 'أ', child: Text('أ')),
@@ -158,12 +159,21 @@ void main() {
           ),
         ),
       );
-      await tester.tap(find.byType(DropdownButton<String>));
+      await tester.tap(find.byType(AppDropdown<String>));
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.check_rounded), findsOneWidget);
+      expect(find.byIcon(Icons.check), findsOneWidget);
+      expect(find.byType(BottomSheet), findsOneWidget);
+      expect(find.text('الاختيارات'), findsOneWidget);
       await tester.tap(find.text('ب').last);
       await tester.pumpAndSettle();
       expect(selected, 'ب');
+      expect(find.byType(BottomSheet), findsNothing);
+      await tester.tap(find.byType(AppDropdown<String>));
+      await tester.pumpAndSettle();
+      await tester.tapAt(const Offset(5, 5));
+      await tester.pumpAndSettle();
+      expect(selected, 'ب');
+      expect(find.byType(BottomSheet), findsNothing);
       expect(tester.takeException(), isNull);
     });
   }

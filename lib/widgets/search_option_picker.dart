@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../models/search_option.dart';
+import 'app_selection_tile.dart';
 import '../services/api_service.dart';
 
 Future<SearchOption?> showSearchOptionPicker(
@@ -144,22 +145,11 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
     super.dispose();
   }
 
-  Widget _tile(SearchOption option) {
-    final colors = Theme.of(context).colorScheme;
-    final selected = option.apiCode == widget.selected.apiCode;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-      child: ListTile(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        selected: selected,
-        selectedTileColor: colors.primaryContainer,
-        selectedColor: colors.onSurface,
-        title: Text(option.arabicName),
-        trailing: selected ? const Icon(Icons.check) : null,
-        onTap: () => Navigator.pop(context, option),
-      ),
-    );
-  }
+  Widget _tile(SearchOption option) => AppSelectionTile(
+    title: Text(option.arabicName),
+    selected: option.apiCode == widget.selected.apiCode,
+    onTap: () => Navigator.pop(context, option),
+  );
 
   @override
   Widget build(BuildContext context) {
