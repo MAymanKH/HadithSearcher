@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import '../core/constants/app_config.dart';
 import 'package:http/http.dart' as http;
 import '../models/hadith.dart';
+import '../models/hadith_details.dart';
 import '../models/search_params.dart';
 import '../models/search_option.dart';
 import 'telemetry/telemetry_service.dart';
@@ -73,6 +74,36 @@ class ApiService {
     parse: (json) => json['data'] == null
         ? ApiResult.error(ApiError.notFound)
         : ApiResult.success(Hadith.fromJson(json['data'])),
+  );
+
+  Future<ApiResult<HadithOrigins>> getHadithOrigins(String hadithId) => _get(
+    '/v1/site/hadith/usul/$hadithId',
+    operation: 'hadith_origins',
+    event: 'hadith_origins_completed',
+    properties: {'hadith_id': hadithId},
+    parse: (json) => json['data']?['usulHadith'] == null
+        ? ApiResult.error(ApiError.notFound)
+        : ApiResult.success(HadithOrigins.fromJson(json['data']['usulHadith'])),
+  );
+
+  Future<ApiResult<BookDetails>> getBookDetails(String bookId) => _get(
+    '/v1/site/book/$bookId',
+    operation: 'book_details',
+    event: 'book_details_completed',
+    properties: {'book_id': bookId},
+    parse: (json) => json['data'] == null
+        ? ApiResult.error(ApiError.notFound)
+        : ApiResult.success(BookDetails.fromJson(json['data'])),
+  );
+
+  Future<ApiResult<ScholarDetails>> getScholarDetails(String scholarId) => _get(
+    '/v1/site/mohdith/$scholarId',
+    operation: 'scholar_details',
+    event: 'scholar_details_completed',
+    properties: {'scholar_id': scholarId},
+    parse: (json) => json['data'] == null
+        ? ApiResult.error(ApiError.notFound)
+        : ApiResult.success(ScholarDetails.fromJson(json['data'])),
   );
 
   Future<ApiResult<String>> getSharh(String sharhId) {
