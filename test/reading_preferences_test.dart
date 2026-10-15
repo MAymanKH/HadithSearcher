@@ -62,7 +62,13 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    await tester.tap(find.byType(AppDropdown<String>));
+    final arrows = find.byIcon(Icons.expand_more_rounded);
+    expect(arrows, findsNWidgets(5));
+    final arrowPositions = tester.getTopLeft(arrows.first).dx;
+    for (final arrow in arrows.evaluate()) {
+      expect(tester.getTopLeft(find.byWidget(arrow.widget)).dx, arrowPositions);
+    }
+    await tester.tap(find.text('نوع الخط'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Noto Naskh Arabic').last);
     await tester.pumpAndSettle();

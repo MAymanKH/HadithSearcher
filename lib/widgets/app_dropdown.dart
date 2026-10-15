@@ -8,6 +8,7 @@ class AppDropdown<T> extends StatelessWidget {
   final List<DropdownMenuItem<T>> items;
   final ValueChanged<T?> onChanged;
   final InputDecoration decoration;
+  final bool _settingsRow;
 
   const AppDropdown({
     super.key,
@@ -21,7 +22,16 @@ class AppDropdown<T> extends StatelessWidget {
       focusedBorder: InputBorder.none,
       contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
     ),
-  });
+  }) : _settingsRow = false;
+
+  const AppDropdown.settings({
+    super.key,
+    required this.title,
+    required this.value,
+    required this.items,
+    required this.onChanged,
+  }) : decoration = const InputDecoration(),
+       _settingsRow = true;
 
   Future<void> _select(BuildContext context) async {
     final selection = await showModalBottomSheet<T>(
@@ -61,6 +71,50 @@ class AppDropdown<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final selected = items.firstWhere((item) => item.value == value);
+    if (_settingsRow) {
+      final colors = Theme.of(context).colorScheme;
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+        child: Material(
+          color: colors.primaryContainer,
+          borderRadius: BorderRadius.circular(16),
+          clipBehavior: Clip.antiAlias,
+          child: InkWell(
+            onTap: () => _select(context),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(title, style: const TextStyle(fontSize: 18)),
+                  ),
+                  const SizedBox(width: 16),
+                  Flexible(
+                    child: Align(
+                      alignment: AlignmentDirectional.centerEnd,
+                      child: DefaultTextStyle.merge(
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: colors.onSurface.withValues(alpha: .7),
+                        ),
+                        child: selected.child,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Icon(
+                    Icons.expand_more_rounded,
+                    size: 22,
+                    color: colors.onSurface.withValues(alpha: .7),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      );
+    }
     return Semantics(
       button: true,
       label: title,

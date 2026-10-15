@@ -28,9 +28,18 @@ class SettingsView extends StatelessWidget {
                 const SizedBox(height: 15),
                 _buildThemeSection(context, vm),
                 const SizedBox(height: 20),
-                const Text(
-                  'إعدادات نص الأحاديث والشرح',
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                const Padding(
+                  padding: EdgeInsets.fromLTRB(20, 4, 20, 12),
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Text(
+                      'إعدادات نص الأحاديث والشرح',
+                      style: TextStyle(
+                        fontSize: 23,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
                 ),
                 _buildFontFamilySection(context, vm),
                 _buildFontWeightSection(context, vm),
@@ -46,7 +55,7 @@ class SettingsView extends StatelessWidget {
               const SizedBox(height: 30),
               if (context.watch<TelemetryService>().canChangeConsent)
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 0, 10, 30),
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 30),
                   child: Material(
                     color: Theme.of(context).colorScheme.primaryContainer,
                     borderRadius: BorderRadius.circular(20),
@@ -75,113 +84,98 @@ class SettingsView extends StatelessWidget {
   }
 
   Widget _buildThemeSection(BuildContext context, SettingsViewModel vm) {
-    return _SettingsRow(
-      label: 'المظهر العام',
-      child: AppDropdown<ThemePreference>(
-        title: 'المظهر العام',
-        value: vm.settings.theme,
-        onChanged: (value) {
-          if (value != null) {
-            vm.setTheme(value);
-          }
-        },
-        items: ThemePreference.values
-            .map(
-              (t) => DropdownMenuItem(
-                value: t,
-                child: Text(t.arabicName, style: const TextStyle(fontSize: 18)),
-              ),
-            )
-            .toList(),
-      ),
+    return AppDropdown<ThemePreference>.settings(
+      title: 'المظهر العام',
+      value: vm.settings.theme,
+      onChanged: (value) {
+        if (value != null) {
+          vm.setTheme(value);
+        }
+      },
+      items: ThemePreference.values
+          .map(
+            (t) => DropdownMenuItem(
+              value: t,
+              child: Text(t.arabicName, style: const TextStyle(fontSize: 18)),
+            ),
+          )
+          .toList(),
     );
   }
 
   Widget _buildFontFamilySection(BuildContext context, SettingsViewModel vm) {
-    return _SettingsRow(
-      label: 'نوع الخط',
-      child: AppDropdown<String>(
-        title: 'نوع الخط',
-        value: vm.fontFamily,
-        onChanged: (value) {
-          if (value != null) vm.setFontFamily(value);
-        },
-        items: SettingsViewModel.fontFamilies
-            .map(
-              (f) => DropdownMenuItem(
-                value: f,
-                child: Text(
-                  f,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 18, fontFamily: f),
-                ),
+    return AppDropdown<String>.settings(
+      title: 'نوع الخط',
+      value: vm.fontFamily,
+      onChanged: (value) {
+        if (value != null) vm.setFontFamily(value);
+      },
+      items: SettingsViewModel.fontFamilies
+          .map(
+            (f) => DropdownMenuItem(
+              value: f,
+              child: Text(
+                f,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(fontSize: 18, fontFamily: f),
               ),
-            )
-            .toList(),
-      ),
+            ),
+          )
+          .toList(),
     );
   }
 
   Widget _buildFontWeightSection(BuildContext context, SettingsViewModel vm) {
-    return _SettingsRow(
-      label: 'ثقل الخط',
-      child: AppDropdown<FontWeightPreference>(
-        title: 'ثقل الخط',
-        value: vm.settings.fontWeight,
-        onChanged: (value) {
-          if (value != null) vm.setFontWeight(value);
-        },
-        items: FontWeightPreference.values
-            .map(
-              (w) => DropdownMenuItem(
-                value: w,
-                child: Text(w.arabicName, style: const TextStyle(fontSize: 18)),
-              ),
-            )
-            .toList(),
-      ),
+    return AppDropdown<FontWeightPreference>.settings(
+      title: 'ثقل الخط',
+      value: vm.settings.fontWeight,
+      onChanged: (value) {
+        if (value != null) vm.setFontWeight(value);
+      },
+      items: FontWeightPreference.values
+          .map(
+            (w) => DropdownMenuItem(
+              value: w,
+              child: Text(w.arabicName, style: const TextStyle(fontSize: 18)),
+            ),
+          )
+          .toList(),
     );
   }
 
   Widget _buildFontSizeSection(BuildContext context, SettingsViewModel vm) {
-    return _SettingsRow(
-      label: 'حجم الخط',
-      child: AppDropdown<int>(
-        title: 'حجم الخط',
-        value: vm.settings.fontSize,
-        onChanged: (value) {
-          if (value != null) vm.setFontSize(value);
-        },
-        items: SettingsViewModel.fontSizes
-            .map(
-              (s) => DropdownMenuItem(
-                value: s,
-                child: Text('$s', style: const TextStyle(fontSize: 18)),
-              ),
-            )
-            .toList(),
-      ),
+    return AppDropdown<int>.settings(
+      title: 'حجم الخط',
+      value: vm.settings.fontSize,
+      onChanged: (value) {
+        if (value != null) vm.setFontSize(value);
+      },
+      items: SettingsViewModel.fontSizes
+          .map(
+            (s) => DropdownMenuItem(
+              value: s,
+              child: Text('$s', style: const TextStyle(fontSize: 18)),
+            ),
+          )
+          .toList(),
     );
   }
 
   Widget _buildPaddingSection(BuildContext context, SettingsViewModel vm) {
-    return _SettingsRow(
-      label: 'الحشو',
-      child: AppDropdown<int>(
-        title: 'الحشو',
-        value: vm.settings.padding,
-        onChanged: (value) {
-          if (value != null) vm.setPadding(value);
-        },
-        items: SettingsViewModel.paddingValues
-            .map(
-              (p) => DropdownMenuItem(
-                value: p,
-                child: Text('$p', style: const TextStyle(fontSize: 18)),
-              ),
-            )
-            .toList(),
-      ),
+    return AppDropdown<int>.settings(
+      title: 'الحشو',
+      value: vm.settings.padding,
+      onChanged: (value) {
+        if (value != null) vm.setPadding(value);
+      },
+      items: SettingsViewModel.paddingValues
+          .map(
+            (p) => DropdownMenuItem(
+              value: p,
+              child: Text('$p', style: const TextStyle(fontSize: 18)),
+            ),
+          )
+          .toList(),
     );
   }
 
@@ -200,56 +194,6 @@ class SettingsView extends StatelessWidget {
             borderRadius: BorderRadius.circular(30),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _SettingsRow extends StatelessWidget {
-  final String label;
-  final Widget child;
-
-  const _SettingsRow({required this.label, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(10),
-      child: Row(
-        children: [
-          Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                children: [
-                  Flexible(
-                    flex: 2,
-                    child: Text(label, style: const TextStyle(fontSize: 18)),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    flex: 3,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 10,
-                        vertical: 5,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).scaffoldBackgroundColor,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: child,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
