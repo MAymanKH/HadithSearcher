@@ -76,6 +76,7 @@ android {
 }
 
 dependencies {
+    "playImplementation"("com.google.android.play:app-update:2.1.0")
     implementation("androidx.core:core:1.17.0")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
     constraints {

@@ -42,8 +42,9 @@ def keep_artifact(source, store, version):
     print(f"Release artifact: {target}", flush=True)
 
 
-def build_unsigned_apk():
-    run("flutter", "build", "apk", "--release", "--flavor", "fdroid")
+def build_unsigned_apk(*, channel="fdroid"):
+    run("flutter", "build", "apk", "--release", "--flavor", "fdroid",
+        f"--dart-define=UPDATE_CHANNEL={channel}")
     apk = ROOT / "build/app/outputs/flutter-apk/app-fdroid-release.apk"
     verify_artifact(apk, shorebird=False)
     return apk
@@ -81,7 +82,7 @@ def build_github(version):
                   and (path / "zipalign").is_file()), None)
     if tools is None:
         raise RuntimeError("Install Android SDK Build Tools with apksigner and zipalign")
-    apk = build_unsigned_apk()
+    apk = build_unsigned_apk(channel="github")
     env = os.environ.copy()
     env["HADITH_STORE_PASSWORD"] = properties["storePassword"]
     env["HADITH_KEY_PASSWORD"] = properties["keyPassword"]

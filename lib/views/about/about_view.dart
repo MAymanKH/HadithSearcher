@@ -4,6 +4,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/app_config.dart';
 import '../../widgets/app_logo.dart';
+import '../../widgets/update_prompt.dart';
 
 class AboutView extends StatelessWidget {
   const AboutView({super.key});
@@ -30,6 +31,7 @@ class AboutView extends StatelessWidget {
               const SizedBox(height: 16),
               const AppLogo(size: 128),
               const SizedBox(height: 20),
+              const UpdateCheckButton(),
               _buildInfoCard(
                 context,
                 'تطبيق Hadith Searcher هو تطبيق مجاني ومفتوح المصدر للبحث في آلاف الأحاديث النبوية الشريفة. يوفر التطبيق إمكانيات بحث وتصفية متقدمة، مع عرض تفصيلي لمعلومات سند الحديث ودرجة صحته.',

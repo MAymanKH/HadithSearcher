@@ -12,6 +12,8 @@ import 'views/main_shell.dart';
 import 'views/similar_hadith/similar_hadith_view.dart';
 import 'services/telemetry/telemetry_service.dart';
 import 'views/privacy/telemetry_consent_view.dart';
+import 'services/update_service.dart';
+import 'widgets/update_prompt.dart';
 
 /// Main app widget with Provider setup.
 class HadithSearcherApp extends StatelessWidget {
@@ -28,6 +30,7 @@ class HadithSearcherApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => UpdateService()),
         ChangeNotifierProvider.value(value: telemetry),
         ChangeNotifierProvider(
           create: (_) => SettingsViewModel()..loadSettings(),
@@ -75,7 +78,7 @@ class HadithSearcherApp extends StatelessWidget {
             },
             home: Consumer<TelemetryService>(
               builder: (context, service, child) => !service.needsConsent
-                  ? const MainShell()
+                  ? const UpdatePrompt(child: MainShell())
                   : const TelemetryConsentView(firstLaunch: true),
             ),
             routes: {

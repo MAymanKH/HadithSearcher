@@ -40,6 +40,14 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "hadithsearcher/updates")
+            .setMethodCallHandler { call, result ->
+                if (call.method == "availableVersionCode") {
+                    DistributionUpdates.availableVersionCode(this, result)
+                } else {
+                    result.notImplemented()
+                }
+            }
         sharedTextChannel = MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "hadithsearcher/shared_text")
         sharedTextChannel?.setMethodCallHandler { call, result ->
             if (call.method == "consumeSharedText") {
