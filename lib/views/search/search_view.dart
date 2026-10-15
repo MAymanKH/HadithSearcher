@@ -21,6 +21,7 @@ class SearchView extends StatefulWidget {
 class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
   final _textController = TextEditingController();
   final _excludedWordsController = TextEditingController();
+  bool _showActiveFilters = true;
 
   @override
   void initState() {
@@ -128,6 +129,22 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
             icon: const Icon(Icons.filter_alt, size: 30),
             tooltip: 'البحث المتقدم',
           ),
+          if (vm.activeFilters.isNotEmpty)
+            IconButton(
+              tooltip: _showActiveFilters
+                  ? 'إخفاء الفلاتر النشطة'
+                  : 'إظهار الفلاتر النشطة',
+              onPressed: () =>
+                  setState(() => _showActiveFilters = !_showActiveFilters),
+              icon: Badge(
+                label: Text('${vm.activeFilters.length}'),
+                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                textColor: Theme.of(context).colorScheme.onSurface,
+                child: Icon(
+                  _showActiveFilters ? Icons.expand_less : Icons.expand_more,
+                ),
+              ),
+            ),
         ],
       ),
       body: Center(
@@ -135,7 +152,8 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
           children: [
             _buildSearchBar(screenWidth),
             const SizedBox(height: 10),
-            if (vm.activeFilters.isNotEmpty) _buildActiveFilters(vm),
+            if (vm.activeFilters.isNotEmpty && _showActiveFilters)
+              _buildActiveFilters(vm),
             if (vm.isAdvancedSearchOpen)
               _buildAdvancedSearch(vm)
             else if (vm.isLoading)

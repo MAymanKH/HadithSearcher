@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:hadithsearcher/models/settings.dart';
+import 'package:hadithsearcher/models/search_params.dart';
+import 'package:hadithsearcher/viewmodels/search_viewmodel.dart';
 import 'package:hadithsearcher/viewmodels/settings_viewmodel.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -213,6 +215,46 @@ void main() {
     await tester.pumpAndSettle();
     expect(tester.takeException(), isNull);
     expect(find.byType(AppDropdown<String>), findsNWidgets(3));
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('active filter row can be hidden without clearing filters', (
+    tester,
+  ) async {
+    await mount(tester);
+    expect(find.byType(Badge), findsNothing);
+    final vm = tester.element(find.byType(SearchView)).read<SearchViewModel>();
+    vm.setSearchGrade(SearchGrade.sahih);
+    await tester.pumpAndSettle();
+    final activeFilters = List<String>.of(vm.activeFilters);
+    expect(find.byType(Chip), findsWidgets);
+    expect(
+      find.descendant(
+        of: find.byType(Badge),
+        matching: find.text('${activeFilters.length}'),
+      ),
+      findsOneWidget,
+    );
+    await tester.tap(find.byTooltip('إخفاء الفلاتر النشطة'));
+    await tester.pumpAndSettle();
+    expect(find.byType(Chip), findsNothing);
+    expect(find.text('مسح الفلاتر'), findsNothing);
+    expect(vm.activeFilters, activeFilters);
+    await tester.tap(find.byTooltip('البحث المتقدم'));
+    await tester.pumpAndSettle();
+    expect(find.byType(AppDropdown<String>), findsNWidgets(3));
+    await tester.tap(find.byTooltip('البحث المتقدم'));
+    await tester.pumpAndSettle();
+    expect(find.byType(Chip), findsNothing);
+    await tester.tap(find.byTooltip('إظهار الفلاتر النشطة'));
+    await tester.pumpAndSettle();
+    expect(find.byType(Chip), findsWidgets);
+    expect(vm.activeFilters, activeFilters);
+    await tester.tap(find.text('مسح الفلاتر'));
+    await tester.pumpAndSettle();
+    expect(vm.activeFilters, isEmpty);
+    expect(find.byType(Badge), findsNothing);
+    expect(tester.takeException(), isNull);
     await tester.pumpWidget(const SizedBox());
   });
 
