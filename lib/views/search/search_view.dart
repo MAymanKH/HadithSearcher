@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
+import '../../widgets/app_snack_bar.dart';
 import '../../widgets/app_dropdown.dart';
 import '../../models/search_params.dart';
 import '../../models/search_option.dart';
@@ -85,7 +86,8 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     await vm.search(_textController.text);
 
     if (vm.errorMessage == 'emptySearch' && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      showAppSnackBar(
+        context,
         const SnackBar(
           content: Text('لا يمكنك ترك خانة البحث فارغة'),
           duration: Duration(seconds: 2),
@@ -576,7 +578,8 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
                   onFavouriteToggle: () async {
                     final error = await vm.toggleFavourite(hadith);
                     if (error != null && context.mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
+                      showAppSnackBar(
+                        context,
                         SnackBar(
                           content: Text(error),
                           duration: const Duration(seconds: 2),

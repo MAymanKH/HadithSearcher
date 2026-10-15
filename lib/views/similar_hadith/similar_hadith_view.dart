@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
+import '../../widgets/app_snack_bar.dart';
 import '../../viewmodels/similar_hadith_viewmodel.dart';
 import '../../widgets/back_to_top_button.dart';
 import '../../widgets/hadith_card.dart';
@@ -157,7 +158,8 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
           onFavouriteToggle: () async {
             final error = await vm.toggleFavourite(hadith);
             if (error != null && context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
+              showAppSnackBar(
+                context,
                 SnackBar(
                   content: Text(error),
                   duration: const Duration(seconds: 2),

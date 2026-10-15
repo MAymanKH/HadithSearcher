@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../widgets/app_snack_bar.dart';
 import '../../services/telemetry/telemetry_service.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
@@ -92,7 +93,8 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
             if (error == null && context.mounted) {
               showFavouriteUndo(context, favourite);
             } else if (error != null && context.mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
+              showAppSnackBar(
+                context,
                 SnackBar(
                   content: Text(error),
                   duration: const Duration(seconds: 2),
@@ -109,7 +111,8 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
 
   Future<void> _getSharh(FavouritesViewModel vm, String hadithId) async {
     // Show searching snackbar
-    ScaffoldMessenger.of(context).showSnackBar(
+    showAppSnackBar(
+      context,
       const SnackBar(
         content: Text('جارٍ البحث عن الشرح...'),
         duration: Duration(seconds: 30),
@@ -143,7 +146,8 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
         errorMessage = 'حدث خطأ غير متوقع، حاول مرة أخرى';
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      showAppSnackBar(
+        context,
         SnackBar(
           content: Text(errorMessage),
           duration: const Duration(seconds: 3),

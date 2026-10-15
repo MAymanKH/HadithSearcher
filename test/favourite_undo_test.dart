@@ -4,17 +4,16 @@ import 'package:hadithsearcher/core/theme/app_theme.dart';
 import 'package:hadithsearcher/services/database_service.dart';
 import 'package:hadithsearcher/widgets/favourite_undo.dart';
 
-double opacity(WidgetTester tester, String message) => tester
-    .widget<FadeTransition>(
-      find
-          .ancestor(
-            of: find.text(message),
-            matching: find.byType(FadeTransition),
-          )
-          .first,
+double slideOffset(WidgetTester tester, String message) => tester
+    .widget<SlideTransition>(
+      find.ancestor(
+        of: find.text(message),
+        matching: find.byKey(const ValueKey('app-snack-bar-slide')),
+      ),
     )
-    .opacity
-    .value;
+    .position
+    .value
+    .dy;
 
 void main() {
   testWidgets('adding replaces a stale undo notice with animated dismissal', (
@@ -54,7 +53,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 250));
     expect(
-      opacity(tester, 'تمت إزالة الحديث من المفضلة'),
+      slideOffset(tester, 'تمت إزالة الحديث من المفضلة'),
       inExclusiveRange(0, 1),
     );
     await tester.pumpAndSettle();
@@ -92,7 +91,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 250));
       expect(
-        opacity(tester, 'تمت إزالة الحديث من المفضلة'),
+        slideOffset(tester, 'تمت إزالة الحديث من المفضلة'),
         inExclusiveRange(0, 1),
       );
       await tester.pumpAndSettle();
@@ -111,7 +110,7 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
       await tester.pump(const Duration(milliseconds: 250));
       expect(
-        opacity(tester, 'تمت إزالة الحديث من المفضلة'),
+        slideOffset(tester, 'تمت إزالة الحديث من المفضلة'),
         inExclusiveRange(0, 1),
       );
       await tester.pumpAndSettle();
@@ -138,13 +137,13 @@ void main() {
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 250));
         const message = 'تمت إضافة الحديث إلى المفضلة';
-        expect(opacity(tester, message), inExclusiveRange(0, 1));
+        expect(slideOffset(tester, message), inExclusiveRange(0, 1));
         await tester.pumpAndSettle();
         expect(find.text(message), findsOneWidget);
         expect(find.text('تراجع'), findsNothing);
         await tester.pump(const Duration(milliseconds: 1500));
         await tester.pump(const Duration(milliseconds: 250));
-        expect(opacity(tester, message), inExclusiveRange(0, 1));
+        expect(slideOffset(tester, message), inExclusiveRange(0, 1));
         await tester.pumpAndSettle();
         expect(find.byType(SnackBar), findsNothing);
         expect(tester.takeException(), isNull);

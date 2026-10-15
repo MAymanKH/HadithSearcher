@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../widgets/app_snack_bar.dart';
 import '../../core/constants/app_config.dart';
 import '../../widgets/app_logo.dart';
 import '../../services/telemetry/telemetry_service.dart';
@@ -41,9 +42,10 @@ class _TelemetryConsentViewState extends State<TelemetryConsentView> {
       mode: LaunchMode.externalApplication,
     );
     if (!opened && mounted) {
-      ScaffoldMessenger.of(
+      showAppSnackBar(
         context,
-      ).showSnackBar(const SnackBar(content: Text('تعذر فتح سياسة الخصوصية.')));
+        const SnackBar(content: Text('تعذر فتح سياسة الخصوصية.')),
+      );
     }
   }
 

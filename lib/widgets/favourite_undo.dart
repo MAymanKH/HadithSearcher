@@ -1,18 +1,11 @@
 import 'package:flutter/material.dart';
+import 'app_snack_bar.dart';
 import '../services/database_service.dart';
 
 void _showFavouriteFeedback(BuildContext context, SnackBar snackBar) {
   final messenger = ScaffoldMessenger.of(context);
   messenger.clearSnackBars();
-  messenger.showSnackBar(
-    snackBar,
-    snackBarAnimationStyle: MediaQuery.disableAnimationsOf(context)
-        ? AnimationStyle.noAnimation
-        : const AnimationStyle(
-            duration: Duration(milliseconds: 500),
-            reverseDuration: Duration(milliseconds: 500),
-          ),
-  );
+  showAppSnackBar(context, snackBar);
 }
 
 void showFavouriteAdded(BuildContext context) {
@@ -40,7 +33,8 @@ void showFavouriteUndo(BuildContext context, FavouriteHadith favourite) {
         onPressed: () async {
           final restored = await DatabaseService().restoreFavourite(favourite);
           if (!restored && context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
+            showAppSnackBar(
+              context,
               const SnackBar(content: Text('تعذر استعادة الحديث')),
             );
           }

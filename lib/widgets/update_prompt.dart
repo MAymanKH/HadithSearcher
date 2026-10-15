@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'app_snack_bar.dart';
 import '../services/update_service.dart';
 
 Future<void> checkForUpdates(
@@ -12,7 +13,8 @@ Future<void> checkForUpdates(
   if (!context.mounted) return;
   if (update == null) {
     if (!automatic) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      showAppSnackBar(
+        context,
         SnackBar(
           content: Text(
             service.failed
@@ -52,7 +54,8 @@ Future<void> checkForUpdates(
     // The device may have no application capable of opening the update page.
   }
   if (context.mounted) {
-    ScaffoldMessenger.of(context).showSnackBar(
+    showAppSnackBar(
+      context,
       const SnackBar(
         content: Text('تعذر فتح صفحة التحديث. حاول مرة أخرى لاحقاً.'),
       ),

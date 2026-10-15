@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'app_snack_bar.dart';
 import '../services/telemetry/telemetry_service.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -56,7 +57,8 @@ class HadithCard extends StatelessWidget {
 
   Future<void> _showSharh(BuildContext context) async {
     if (!hadith.hasSharhMetadata || hadith.sharhId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
+      showAppSnackBar(
+        context,
         const SnackBar(
           content: Text('لا يوجد شرح لهذا الحديث'),
           duration: Duration(seconds: 2),
@@ -67,7 +69,8 @@ class HadithCard extends StatelessWidget {
     }
 
     // Show searching snackbar
-    ScaffoldMessenger.of(context).showSnackBar(
+    showAppSnackBar(
+      context,
       const SnackBar(
         content: Text('جارٍ البحث عن الشرح...'),
         duration: Duration(seconds: 30),
@@ -104,7 +107,8 @@ class HadithCard extends StatelessWidget {
         errorMessage = 'حدث خطأ غير متوقع، حاول مرة أخرى';
       }
 
-      ScaffoldMessenger.of(context).showSnackBar(
+      showAppSnackBar(
+        context,
         SnackBar(
           content: Text(errorMessage),
           duration: const Duration(seconds: 3),
