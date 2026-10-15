@@ -316,7 +316,7 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
             onChanged: _search,
           ),
     child: CustomScrollView(
-      shrinkWrap: true,
+      shrinkWrap: widget.filter == SearchFilter.grade,
       controller: _scrollController,
       slivers: [
         SliverToBoxAdapter(child: _tile(widget.filter.all)),

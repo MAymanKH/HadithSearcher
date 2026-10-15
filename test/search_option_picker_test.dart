@@ -139,6 +139,34 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets(
+    'large catalogs stay bounded during repeated fast scrolling and selections',
+    (tester) async {
+      final options = List.generate(
+        11435,
+        (i) => SearchOption('${i + 1}', 'راوٍ $i'),
+      );
+      await openPicker(tester, load: () async => ApiResult.success(options));
+      await settle(tester);
+      final view = tester.widget<CustomScrollView>(
+        find.byType(CustomScrollView),
+      );
+      expect(view.shrinkWrap, isFalse);
+      for (var i = 0; i < 50; i++) {
+        final scroll = controller(tester);
+        scroll.jumpTo(scroll.position.maxScrollExtent);
+        await tester.pumpAndSettle();
+        expect(find.byType(ListTile).evaluate().length, lessThan(25));
+        final visible = find.byType(ListTile).hitTestable().last;
+        await tester.tap(visible);
+        await tester.pump();
+        expect(latestExcluded.length, lessThanOrEqualTo(50));
+        expect(latestSelection.single.apiCode, '0');
+        expect(tester.takeException(), isNull);
+      }
+    },
+  );
+
   testWidgets('scrolling reaches the final partial batch without duplicates', (
     tester,
   ) async {
