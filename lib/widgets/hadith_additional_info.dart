@@ -8,6 +8,7 @@ import '../services/favourite_details_service.dart';
 import '../viewmodels/settings_viewmodel.dart';
 import 'api_details_dialog.dart';
 import 'hadith_card_layout.dart';
+import 'hadith_detail_button.dart';
 
 class HadithAdditionalInfo extends StatefulWidget {
   final Hadith hadith;
@@ -202,38 +203,28 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
                               readingStyle,
                             ),
                           if (_hadith.hasUsulHadith && _hadith.id.isNotEmpty)
-                            Align(
-                              alignment: AlignmentDirectional.centerStart,
-                              child: TextButton.icon(
-                                onPressed: () =>
-                                    showApiDetailsDialog<HadithOrigins>(
-                                      context,
-                                      title: 'أصول الحديث',
-                                      load: () => FavouriteDetailsService()
-                                          .getOrigins(_hadith.id),
-                                      format: (origins) => origins.sources
-                                          .map(
-                                            (source) => [
-                                              if (source.source
-                                                  .trim()
-                                                  .isNotEmpty)
-                                                'المصدر: ${source.source}',
-                                              if (source.chain
-                                                  .trim()
-                                                  .isNotEmpty)
-                                                'الإسناد: ${source.chain}',
-                                              if (source.text.trim().isNotEmpty)
-                                                'المتن: ${source.text}',
-                                            ].join('\n\n'),
-                                          )
-                                          .join('\n\n'),
-                                    ),
-                                icon: const Icon(Icons.account_tree_outlined),
-                                label: Text(
-                                  'أصول الحديث وطرق إخراجه',
-                                  style: readingStyle,
-                                ),
-                              ),
+                            HadithDetailButton(
+                              onPressed: () =>
+                                  showApiDetailsDialog<HadithOrigins>(
+                                    context,
+                                    title: 'أصول الحديث',
+                                    load: () => FavouriteDetailsService()
+                                        .getOrigins(_hadith.id),
+                                    format: (origins) => origins.sources
+                                        .map(
+                                          (source) => [
+                                            if (source.source.trim().isNotEmpty)
+                                              'المصدر: ${source.source}',
+                                            if (source.chain.trim().isNotEmpty)
+                                              'الإسناد: ${source.chain}',
+                                            if (source.text.trim().isNotEmpty)
+                                              'المتن: ${source.text}',
+                                          ].join('\n\n'),
+                                        )
+                                        .join('\n\n'),
+                                  ),
+                              icon: Icons.account_tree_outlined,
+                              label: 'أصول الحديث وطرق إخراجه',
                             ),
                         ],
                       ),
