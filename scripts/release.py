@@ -49,7 +49,7 @@ def build_fdroid(version):
     keep_artifact(apk, "fdroid", version)
 
 
-def sign_fdroid(version):
+def build_github(version):
     apk = ROOT / "build/releases/fdroid" / f"HadithSearcher-{version}-fdroid.apk"
     if not apk.is_file():
         raise RuntimeError("Build the unsigned APK first: ./scripts/release.py fdroid")
@@ -98,7 +98,7 @@ def sign_fdroid(version):
         run(str(tools / "apksigner"), "verify", "--verbose", str(signed))
         run(str(tools / "zipalign"), "-P", "16", "-c", "4", str(signed))
         verify_artifact(signed, shorebird=False)
-        keep_artifact(signed, "fdroid", f"{version}-signed")
+        keep_artifact(signed, "github", version)
 
 
 def build_play(version, dry_run, *, patch=False):
@@ -161,7 +161,7 @@ def build_play(version, dry_run, *, patch=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("store", choices=["play", "fdroid", "all", "patch-play", "sign-fdroid"], nargs="?", default="all")
+    parser.add_argument("store", choices=["play", "fdroid", "all", "patch-play", "github"], nargs="?", default="all")
     parser.add_argument("--dry-run", action="store_true", help="Build Play without registering a Shorebird release")
     args = parser.parse_args()
     version = re.search(r"^version:\s*(\S+)", (ROOT / "pubspec.yaml").read_text(), re.MULTILINE)
@@ -173,8 +173,8 @@ def main():
         build_play(version.group(1), args.dry_run)
     if args.store == "patch-play":
         build_play(version.group(1), args.dry_run, patch=True)
-    if args.store == "sign-fdroid":
-        sign_fdroid(version.group(1))
+    if args.store == "github":
+        build_github(version.group(1))
 
 
 if __name__ == "__main__":
