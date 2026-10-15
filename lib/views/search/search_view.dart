@@ -337,12 +337,8 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
       padding: const EdgeInsets.all(10),
       child: TextField(
         controller: _excludedWordsController,
-        decoration: InputDecoration(
-          labelText: 'كلمات مستثناة',
-          labelStyle: _filterLabelStyle(vm.excludedWords.trim().isNotEmpty),
-          floatingLabelStyle: _filterLabelStyle(
-            vm.excludedWords.trim().isNotEmpty,
-          ),
+        decoration: const InputDecoration(
+          hintText: 'كلمات أو جملة تريد استبعادها',
         ),
         onChanged: vm.setExcludedWords,
       ),

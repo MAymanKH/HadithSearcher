@@ -154,9 +154,6 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
   @override
   Widget build(BuildContext context) {
     final keyboardHeight = MediaQuery.viewInsetsOf(context).bottom;
-    final labelStyle = _query.isNotEmpty
-        ? TextStyle(color: Theme.of(context).colorScheme.primary)
-        : null;
     return SizedBox(
       height: MediaQuery.sizeOf(context).height * .8,
       child: Padding(
@@ -166,10 +163,8 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
             Padding(
               padding: const EdgeInsets.all(16),
               child: TextField(
-                decoration: InputDecoration(
-                  labelText: widget.filter.arabicName,
-                  labelStyle: labelStyle,
-                  floatingLabelStyle: labelStyle,
+                decoration: const InputDecoration(
+                  hintText: 'ابحث بالاسم...',
                   prefixIcon: const Icon(Icons.search),
                 ),
                 onChanged: _search,
