@@ -1,6 +1,11 @@
 {
   "@@locale": "en",
   "search": "Search",
+  "resultCount": "Results: {count}",
+  "@resultCount": {
+    "description": "Total results for the search mode that produced the displayed results",
+    "placeholders": {"count": {"type": "int", "format": "decimalPattern"}}
+  },
   "favourites": "Favourites",
   "settings": "Settings",
   "about": "About",

@@ -48,7 +48,19 @@ class ApiService {
             json['metadata']?['exclusionsApplied'] != true) {
           return ApiResult.error(ApiError.unsupportedFilters);
         }
-        return _parseHadiths(json);
+        final result = _parseHadiths(json);
+        final metadata = json['metadata'] as Map<String, dynamic>;
+        final countKey = params.specialist
+            ? 'numberOfSpecialist'
+            : 'numberOfNonSpecialist';
+        return ApiResult.success(
+          result.data!,
+          hasNextPage: result.hasNextPage,
+          totalCount:
+              params.exclusions.values.any((options) => options.isNotEmpty)
+              ? null
+              : ((metadata[countKey] ?? metadata['total']) as num?)?.toInt(),
+        );
       },
     );
   }
@@ -224,11 +236,12 @@ class ApiResult<T> {
   final T? data;
   final ApiError? error;
   final bool? hasNextPage;
+  final int? totalCount;
 
-  ApiResult._({this.data, this.error, this.hasNextPage});
+  ApiResult._({this.data, this.error, this.hasNextPage, this.totalCount});
 
-  factory ApiResult.success(T data, {bool? hasNextPage}) =>
-      ApiResult._(data: data, hasNextPage: hasNextPage);
+  factory ApiResult.success(T data, {bool? hasNextPage, int? totalCount}) =>
+      ApiResult._(data: data, hasNextPage: hasNextPage, totalCount: totalCount);
   factory ApiResult.error(ApiError error) => ApiResult._(error: error);
 
   bool get isSuccess => error == null;

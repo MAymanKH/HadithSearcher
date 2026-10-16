@@ -12,6 +12,15 @@ class AppLocalizationsAr extends AppLocalizations {
   String get search => 'البحث';
 
   @override
+  String resultCount(int count) {
+    final intl.NumberFormat countNumberFormat =
+        intl.NumberFormat.decimalPattern(localeName);
+    final String countString = countNumberFormat.format(count);
+
+    return 'النتائج: $countString';
+  }
+
+  @override
   String get favourites => 'المفضلة';
 
   @override

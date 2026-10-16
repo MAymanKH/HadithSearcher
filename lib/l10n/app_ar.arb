@@ -1,6 +1,7 @@
 {
   "@@locale": "ar",
   "search": "البحث",
+  "resultCount": "النتائج: {count}",
   "favourites": "المفضلة",
   "settings": "الإعدادات",
   "about": "حول",

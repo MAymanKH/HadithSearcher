@@ -23,6 +23,7 @@ class SearchViewModel extends ChangeNotifier {
 
   // Search state
   List<Hadith> _results = [];
+  int? _resultTotal;
   Set<String> _favouriteIds = {};
   bool _isLoading = false;
   bool _isLoadingMore = false;
@@ -152,6 +153,8 @@ class SearchViewModel extends ChangeNotifier {
 
   // Getters
   List<Hadith> get results => _results;
+  int? get resultTotal =>
+      _currentParams?.specialist == _specialist ? _resultTotal : null;
   bool get isLoading => _isLoading;
   bool get isLoadingMore => _isLoadingMore;
   bool get hasMoreResults => _hasMoreResults;
@@ -299,6 +302,7 @@ class SearchViewModel extends ChangeNotifier {
     _searchGeneration++;
     _searchQuery = text;
     _results = [];
+    _resultTotal = null;
     _currentParams = null;
     _errorMessage = null;
     _isLoading = false;
@@ -337,6 +341,7 @@ class SearchViewModel extends ChangeNotifier {
     _isLoadingMore = false;
     _errorMessage = null;
     _results = [];
+    _resultTotal = null;
     _hasMoreResults = true;
     notifyListeners();
     for (final filter in SearchFilter.values) {
@@ -370,6 +375,7 @@ class SearchViewModel extends ChangeNotifier {
 
     if (result.isSuccess) {
       _results = result.data!;
+      _resultTotal = result.totalCount;
       _hasMoreResults = result.hasNextPage ?? false;
       await _loadFavouriteIds();
       if (generation != _searchGeneration) return;
