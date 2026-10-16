@@ -123,7 +123,8 @@ class DatabaseService extends ChangeNotifier {
           'hadithid': hadithId,
           'hadithtext': hadithText,
           'hadithinfo': hadithInfo,
-          'sharhid': sharhId,
+          'sharhid': sharhId ?? hadith?.sharhId,
+          'explanation': hadith?.explanation,
           'hasalternate': hasAlternate ? 1 : 0,
         }, conflictAlgorithm: ConflictAlgorithm.ignore),
       );
@@ -190,7 +191,7 @@ class DatabaseService extends ChangeNotifier {
 
   Future<void> saveExplanation(
     String hadithId,
-    String sharhId,
+    String? sharhId,
     String explanation,
   ) async {
     try {
@@ -265,6 +266,13 @@ class FavouriteHadith {
     this.details,
     this.origins,
   });
+
+  bool get hasSimilarHadith => details?.hasSimilarHadith ?? false;
+
+  bool get hasExplanation =>
+      details?.hasExplanation == true ||
+      (sharhId != null && sharhId!.isNotEmpty && sharhId != '0') ||
+      explanation?.trim().isNotEmpty == true;
 
   factory FavouriteHadith.fromDatabase(Map<String, dynamic> row) {
     return FavouriteHadith(

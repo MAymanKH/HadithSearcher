@@ -49,8 +49,9 @@ class HadithCard extends StatelessWidget {
         fetchDetails: hadith.bookId == null && hadith.mohdithId == null,
       ),
       isFavourite: isFavourite,
-      onExplanation: () => _showSharh(context),
-      onSimilar: showSimilarButton ? () => _showSimilar(context) : null,
+      onExplanation: hadith.hasExplanation ? () => _showSharh(context) : null,
+      showSimilarButton: showSimilarButton,
+      onSimilar: hadith.hasSimilarHadith ? () => _showSimilar(context) : null,
       onShare: () => _share(context),
       onFavourite: () => _toggleFavourite(context),
       onAlternate: hadith.hasAlternateHadithSahih
@@ -60,18 +61,6 @@ class HadithCard extends StatelessWidget {
   }
 
   Future<void> _showSharh(BuildContext context) async {
-    if (!hadith.hasSharhMetadata || hadith.sharhId == null) {
-      showAppSnackBar(
-        context,
-        SnackBar(
-          content: Text(context.l10n.noExplanation),
-          duration: Duration(seconds: 2),
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
-      return;
-    }
-
     // Show searching snackbar
     showAppSnackBar(
       context,
@@ -84,6 +73,7 @@ class HadithCard extends StatelessWidget {
     final result = await ExplanationService().getExplanation(
       hadith.id,
       sharhId: hadith.sharhId,
+      explanation: hadith.explanation,
     );
 
     if (!context.mounted) return;

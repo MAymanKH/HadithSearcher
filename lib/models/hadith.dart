@@ -18,6 +18,8 @@ class Hadith {
   final bool hasUsulHadith;
   final bool hasSharhMetadata;
   final String? sharhId;
+  final String? explanation;
+  final bool hasSimilarHadith;
   final bool hasAlternateHadithSahih;
 
   const Hadith({
@@ -36,11 +38,16 @@ class Hadith {
     this.hasUsulHadith = false,
     this.hasSharhMetadata = false,
     this.sharhId,
+    this.explanation,
+    this.hasSimilarHadith = false,
     this.hasAlternateHadithSahih = false,
   });
 
   /// Creates a Hadith from API JSON response.
   factory Hadith.fromJson(Map<String, dynamic> json) {
+    final sharh = json['sharhMetadata'] as Map<String, dynamic>?;
+    final sharhId = sharh?['id']?.toString();
+    final explanation = sharh?['sharh'] as String?;
     return Hadith(
       id: json['hadithId']?.toString() ?? '',
       text: json['hadith'] ?? '',
@@ -61,8 +68,12 @@ class Hadith {
           .where((category) => category.name.trim().isNotEmpty)
           .toList(),
       hasUsulHadith: json['hasUsulHadith'] == true,
-      hasSharhMetadata: json['hasSharhMetadata'] ?? false,
-      sharhId: json['sharhMetadata']?['id']?.toString(),
+      hasSharhMetadata: json['hasSharhMetadata'] == true,
+      sharhId: sharhId == null || sharhId.isEmpty || sharhId == '0'
+          ? null
+          : sharhId,
+      explanation: explanation?.trim().isNotEmpty == true ? explanation : null,
+      hasSimilarHadith: json['hasSimilarHadith'] == true,
       hasAlternateHadithSahih: json['hasAlternateHadithSahih'] == true,
     );
   }
@@ -85,9 +96,19 @@ class Hadith {
     ],
     'hasUsulHadith': hasUsulHadith,
     'hasSharhMetadata': hasSharhMetadata,
-    'sharhMetadata': {'id': sharhId},
+    'sharhMetadata': {
+      'id': sharhId,
+      'isContainSharh': explanation != null,
+      if (explanation != null) 'sharh': explanation,
+    },
+    'hasSimilarHadith': hasSimilarHadith,
     'hasAlternateHadithSahih': hasAlternateHadithSahih,
   };
+
+  bool get hasExplanation =>
+      hasSharhMetadata ||
+      (sharhId != null && sharhId!.isNotEmpty && sharhId != '0') ||
+      explanation?.trim().isNotEmpty == true;
 
   /// Creates a Hadith from local database row.
   factory Hadith.fromDatabase(Map<String, dynamic> row) {

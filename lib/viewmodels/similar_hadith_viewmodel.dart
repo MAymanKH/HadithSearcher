@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/hadith.dart';
 import '../services/api_service.dart';
 import '../services/database_service.dart';
+import '../services/explanation_service.dart';
 import '../services/favourite_details_service.dart';
 
 /// ViewModel for similar hadith view.
@@ -123,10 +124,14 @@ class SimilarHadithViewModel extends ChangeNotifier {
 
   /// Get sharh (explanation) for a hadith.
   Future<ApiResult<String>> getSharh(Hadith hadith) async {
-    if (!hadith.hasSharhMetadata || hadith.sharhId == null) {
+    if (!hadith.hasExplanation) {
       return ApiResult.error(ApiError.notFound);
     }
-    return _api.getSharh(hadith.sharhId!);
+    return ExplanationService().getExplanation(
+      hadith.id,
+      sharhId: hadith.sharhId,
+      explanation: hadith.explanation,
+    );
   }
 
   @override

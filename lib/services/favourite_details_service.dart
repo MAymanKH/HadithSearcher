@@ -24,8 +24,12 @@ class FavouriteDetailsService {
         if (!await DatabaseService().isFavourite(hadith.id)) return;
         if (full.hasUsulHadith) await getOrigins(full.id);
         final sharhId = full.sharhId ?? hadith.sharhId;
-        if (sharhId != null) {
-          await ExplanationService().getExplanation(full.id, sharhId: sharhId);
+        if (full.hasExplanation || hadith.hasExplanation) {
+          await ExplanationService().getExplanation(
+            full.id,
+            sharhId: sharhId,
+            explanation: full.explanation ?? hadith.explanation,
+          );
         }
       } catch (error, stack) {
         TelemetryService.report(error, stack, 'favourites.saveOffline');

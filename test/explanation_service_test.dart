@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -46,6 +47,34 @@ void main() {
           return response.future;
         }),
       );
+    },
+  );
+
+  test(
+    'explanation returned by metadata lookup needs no second request',
+    () async {
+      final paths = <String>[];
+      final result = await http.runWithClient(
+        () => ExplanationService().getExplanation('metadata-inline'),
+        () => MockClient((request) async {
+          paths.add(request.url.path);
+          return http.Response(
+            jsonEncode({
+              'data': {
+                'hadithId': 'metadata-inline',
+                'hasSharhMetadata': true,
+                'sharhMetadata': {
+                  'id': '123',
+                  'sharh': 'Already returned explanation',
+                },
+              },
+            }),
+            200,
+          );
+        }),
+      );
+      expect(result.data, 'Already returned explanation');
+      expect(paths, ['/v1/site/hadith/metadata-inline']);
     },
   );
 }

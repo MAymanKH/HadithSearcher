@@ -25,6 +25,7 @@ const hadith = Hadith(
   explainGrade: 'حكم مفصل',
   hasUsulHadith: true,
   hasSharhMetadata: true,
+  hasSimilarHadith: true,
   sharhId: 'explanation',
 );
 
@@ -122,6 +123,8 @@ void main() {
       final saved = (await db.getFavourite(hadith.id))!;
       expect(saved.details!.takhrij, hadith.takhrij);
       expect(saved.details!.explainGrade, hadith.explainGrade);
+      expect(saved.hasSimilarHadith, isTrue);
+      expect(saved.hasExplanation, isTrue);
       expect(saved.explanation, 'شرح محفوظ');
       expect(saved.origins!.sources.single.chain, 'إسناد محفوظ');
       await db.removeFavourite(hadith.id);
@@ -138,11 +141,124 @@ void main() {
           expect(details.data!.takhrij, hadith.takhrij);
           expect(origins.data!.sources.single.text, 'متن محفوظ');
           expect(explanation.data, 'شرح محفوظ');
+          final restored = (await db.getFavourite(hadith.id))!;
+          expect(restored.hasSimilarHadith, isTrue);
+          expect(restored.hasExplanation, isTrue);
         },
         () => MockClient(
           (_) async => throw StateError('Offline read used network'),
         ),
       );
+    },
+  );
+
+  for (final available in [false, true]) {
+    test(
+      'availability and returned explanation survive offline saving: $available',
+      () async {
+        final item = Hadith.fromJson({
+          ...hadith.toJson(),
+          'hadithId': 'availability-$available',
+          'hasUsulHadith': false,
+          'hasSimilarHadith': available,
+          'hasSharhMetadata': available,
+          'sharhMetadata': available
+              ? {
+                  'id': 'inline',
+                  'isContainSharh': true,
+                  'sharh': 'شرح من نتائج البحث',
+                }
+              : null,
+        });
+        await db.addFavourite(
+          hadithId: item.id,
+          hadithText: item.text,
+          hadithInfo: item.formattedInfo,
+          hadith: item,
+          sharhId: item.sharhId,
+        );
+        final initial = (await db.getFavourite(item.id))!;
+        expect(initial.hasSimilarHadith, available);
+        expect(initial.hasExplanation, available);
+        expect(initial.details!.explanation, item.explanation);
+        expect(initial.explanation, item.explanation);
+
+        final paths = <String>[];
+        await http.runWithClient(
+          () => FavouriteDetailsService().saveOffline(item),
+          () => MockClient((request) async {
+            paths.add(request.url.path);
+            // The full metadata response need not repeat the explanation text.
+            return response({
+              'data': {
+                ...item.toJson(),
+                'sharhMetadata': available ? {'id': 'inline'} : null,
+              },
+            });
+          }),
+        );
+        expect(paths, ['/v1/site/hadith/${item.id}']);
+        final saved = (await db.getFavourite(item.id))!;
+        expect(saved.hasSimilarHadith, available);
+        expect(saved.hasExplanation, available);
+        expect(saved.explanation, item.explanation);
+        await db.removeFavourite(item.id);
+        await db.restoreFavourite(saved);
+        await http.runWithClient(
+          () async {
+            final restored = (await db.getFavourite(item.id))!;
+            expect(restored.hasSimilarHadith, available);
+            expect(restored.hasExplanation, available);
+            if (available) {
+              expect(
+                (await ExplanationService().getExplanation(item.id)).data,
+                item.explanation,
+              );
+            }
+          },
+          () => MockClient(
+            (_) async => throw StateError('Offline read used network'),
+          ),
+        );
+      },
+    );
+  }
+
+  test(
+    'snapshot explanation opens offline before background downloads finish',
+    () async {
+      final item = Hadith.fromJson({
+        ...hadith.toJson(),
+        'hadithId': 'snapshot-only',
+        'sharhMetadata': {
+          'isContainSharh': true,
+          'sharh': 'شرح محفوظ مع النتائج',
+        },
+      });
+      await db.addFavourite(
+        hadithId: item.id,
+        hadithText: item.text,
+        hadithInfo: item.formattedInfo,
+      );
+      await db.saveDetails(item);
+      await http.runWithClient(
+        () async {
+          final saved = (await db.getFavourite(item.id))!;
+          expect(saved.sharhId, isNull);
+          expect(saved.explanation, isNull);
+          expect(saved.hasExplanation, isTrue);
+          expect(
+            (await ExplanationService().getExplanation(item.id)).data,
+            item.explanation,
+          );
+        },
+        () => MockClient(
+          (_) async =>
+              throw StateError('Returned explanation was downloaded again'),
+        ),
+      );
+      final cached = (await db.getFavourite(item.id))!;
+      expect(cached.explanation, item.explanation);
     },
   );
 
@@ -165,6 +281,7 @@ void main() {
             ...hadith.toJson(),
             'hadithId': id,
             'hasUsulHadith': false,
+            'hasSharhMetadata': false,
             'sharhMetadata': null,
           });
           final first = FavouriteDetailsService().saveOffline(item('one'));

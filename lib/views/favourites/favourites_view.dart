@@ -196,8 +196,10 @@ class _FavouriteHadithCard extends StatelessWidget {
         fetchDetails: favourite.details == null,
       ),
       isFavourite: true,
-      onExplanation: onGetSharh,
-      onSimilar: () => _showSimilar(context),
+      onExplanation: favourite.hasExplanation ? onGetSharh : null,
+      onSimilar: favourite.hasSimilarHadith
+          ? () => _showSimilar(context)
+          : null,
       onShare: () async {
         TelemetryService.event('share_opened', {
           'hadith_id': favourite.hadithId,

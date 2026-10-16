@@ -13,8 +13,9 @@ class HadithCardLayout extends StatelessWidget {
   final String? scholar;
   final String attribution;
   final bool isFavourite;
-  final VoidCallback onExplanation;
+  final VoidCallback? onExplanation;
   final VoidCallback? onSimilar;
+  final bool showSimilarButton;
   final VoidCallback onShare;
   final VoidCallback onFavourite;
   final VoidCallback? onAlternate;
@@ -30,6 +31,7 @@ class HadithCardLayout extends StatelessWidget {
     required this.isFavourite,
     required this.onExplanation,
     required this.onSimilar,
+    this.showSimilarButton = true,
     required this.onShare,
     required this.onFavourite,
     required this.onAlternate,
@@ -91,11 +93,11 @@ class HadithCardLayout extends StatelessWidget {
                   onPressed: onExplanation,
                   foregroundColor: colors.surface,
                 ),
-                if (onSimilar != null)
+                if (showSimilarButton)
                   _CardAction(
                     icon: Icons.library_books_outlined,
                     label: context.l10n.similar,
-                    onPressed: onSimilar!,
+                    onPressed: onSimilar,
                     foregroundColor: colors.surface,
                   ),
                 _CardAction(
@@ -128,7 +130,7 @@ class HadithCardLayout extends StatelessWidget {
 class _CardAction extends StatelessWidget {
   final IconData icon;
   final String label;
-  final VoidCallback onPressed;
+  final VoidCallback? onPressed;
   final Color foregroundColor;
 
   const _CardAction({
@@ -144,6 +146,7 @@ class _CardAction extends StatelessWidget {
       onPressed: onPressed,
       style: TextButton.styleFrom(
         foregroundColor: foregroundColor,
+        disabledForegroundColor: foregroundColor.withValues(alpha: 0.38),
         padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
         minimumSize: const Size(0, 62),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
