@@ -96,7 +96,7 @@ class HadithCardLayout extends StatelessWidget {
             const SizedBox(height: 4),
           ],
           Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               Expanded(child: SelectableText(attribution, style: textStyle)),
               if (onSourceInfo != null)

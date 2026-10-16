@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -38,7 +39,68 @@ class SavedFavourites extends FavouritesViewModel {
 }
 
 void main() {
+  setUpAll(() async {
+    final font = FontLoader('Cairo')
+      ..addFont(rootBundle.load('assets/fonts/Cairo-Variable.ttf'));
+    await font.load();
+  });
   setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  for (final width in [320.0, 450.0]) {
+    testWidgets(
+      'source info icon aligns with Arabic reference at width $width',
+      (tester) async {
+        tester.view.physicalSize = Size(width, 850);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final settings = SettingsViewModel();
+        addTearDown(settings.dispose);
+        await settings.setFontSize(20);
+        await settings.setFontFamily('Cairo');
+        await tester.pumpWidget(
+          ChangeNotifierProvider.value(
+            value: settings,
+            child: MaterialApp(
+              theme: AppTheme.darkTheme,
+              home: Directionality(
+                textDirection: TextDirection.rtl,
+                child: Scaffold(
+                  body: SingleChildScrollView(
+                    child: HadithCardLayout(
+                      text: 'نص الحديث',
+                      grading: 'صحيح',
+                      attribution: 'الألباني، السلسلة الصحيحة (6/488)',
+                      isFavourite: false,
+                      onSourceInfo: () {},
+                      onExplanation: null,
+                      onSimilar: null,
+                      onShare: () {},
+                      onFavourite: () {},
+                      onAlternate: null,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        final reference = tester.getRect(
+          find.text('الألباني، السلسلة الصحيحة (6/488)'),
+        );
+        final icon = tester.getRect(find.byIcon(Icons.error_outline_rounded));
+        expect(icon.center.dy, closeTo(reference.center.dy, 1));
+        expect(
+          tester
+              .getSize(
+                find.widgetWithIcon(IconButton, Icons.error_outline_rounded),
+              )
+              .shortestSide,
+          greaterThanOrEqualTo(48),
+        );
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
 
   test('saved citations preserve every field, including multiline grading', () {
     final restored = HadithCitation.tryParse(hadith.formattedInfo)!;
