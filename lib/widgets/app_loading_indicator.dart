@@ -23,7 +23,7 @@ class AppLoadingIndicator extends StatelessWidget {
     if (MediaQuery.disableAnimationsOf(context)) return child;
     return TweenAnimationBuilder<double>(
       tween: Tween(begin: 0, end: 1),
-      duration: const Duration(milliseconds: 250),
+      duration: const Duration(milliseconds: 350),
       curve: Curves.easeOutCubic,
       builder: (context, value, child) => Opacity(
         opacity: value,
@@ -54,7 +54,7 @@ class AppLoadingSwitcher extends StatelessWidget {
     required this.loading,
     required this.child,
     this.loadingWidget = const AppLoadingIndicator(),
-    this.duration = const Duration(milliseconds: 250),
+    this.duration = const Duration(milliseconds: 350),
   });
 
   @override
