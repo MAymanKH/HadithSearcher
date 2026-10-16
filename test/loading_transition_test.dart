@@ -44,4 +44,28 @@ void main() {
     expect(find.text('done'), findsOneWidget);
     expect(find.byType(AppLoadingIndicator), findsNothing);
   });
+
+  testWidgets('content stays top-pinned while the switcher grows', (
+    tester,
+  ) async {
+    Widget frame(bool loading) => MaterialApp(
+      home: Scaffold(
+        body: AppLoadingSwitcher(
+          loading: loading,
+          child: const SizedBox(height: 400, child: Text('done')),
+        ),
+      ),
+    );
+    await tester.pumpWidget(frame(true));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 350));
+
+    await tester.pumpWidget(frame(false));
+    await tester.pump(const Duration(milliseconds: 100));
+    final midTop = tester.getTopLeft(find.text('done')).dy;
+
+    await tester.pumpAndSettle();
+    final endTop = tester.getTopLeft(find.text('done')).dy;
+    expect(midTop, endTop);
+  });
 }
