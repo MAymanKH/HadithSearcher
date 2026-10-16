@@ -145,7 +145,7 @@ void main() {
             );
             expect(
               find.text(
-                'الراوي: ${hadith.rawi}\n${hadith.mohdith}، ${hadith.book} ${hadith.numberOrPage}',
+                'الراوي: ${hadith.rawi}\n${hadith.mohdith}، ${hadith.book} (${hadith.numberOrPage})',
               ),
               findsOneWidget,
             );
@@ -237,7 +237,7 @@ void main() {
           await tester.pumpAndSettle();
           expect(
             find.text(
-              'الراوي: ${saved.rawi}\n${saved.mohdith}، ${saved.book} ${saved.numberOrPage}',
+              'الراوي: ${saved.rawi}\n${saved.mohdith}، ${saved.book} (${saved.numberOrPage})',
             ),
             findsOneWidget,
           );

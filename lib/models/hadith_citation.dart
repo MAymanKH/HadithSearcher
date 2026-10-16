@@ -40,7 +40,7 @@ class HadithCitation {
   String get compactSource {
     final reference = [
       book,
-      numberOrPage,
+      if (numberOrPage.trim().isNotEmpty) '(${numberOrPage.trim()})',
     ].map((value) => value.trim()).where((value) => value.isNotEmpty).join(' ');
     return [
       mohdith.trim(),

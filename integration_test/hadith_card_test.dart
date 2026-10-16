@@ -100,7 +100,7 @@ void main() {
       final attribution = find.byWidgetPredicate(
         (widget) =>
             widget is SelectableText &&
-            widget.data == 'الراوي: عمر بن الخطاب\nالبخاري، صحيح البخاري 1',
+            widget.data == 'الراوي: عمر بن الخطاب\nالبخاري، صحيح البخاري (1)',
       );
       expect(tester.widget<SelectableText>(body).style!.fontSize, 20);
       expect(tester.widget<SelectableText>(grading).style!.fontSize, 20);
