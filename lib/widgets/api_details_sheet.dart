@@ -104,7 +104,7 @@ class _ApiDetailsContentState<T extends Object>
               if (text.isNotEmpty)
                 Align(
                   alignment: AlignmentDirectional.centerEnd,
-                  child: TextButton.icon(
+                  child: ElevatedButton.icon(
                     onPressed: () =>
                         Clipboard.setData(ClipboardData(text: text)),
                     icon: const Icon(Icons.copy_outlined),

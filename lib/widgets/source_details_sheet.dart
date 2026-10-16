@@ -153,7 +153,7 @@ class _SourceDetailsSectionState<T extends Object>
                       ),
                       Align(
                         alignment: AlignmentDirectional.centerEnd,
-                        child: TextButton.icon(
+                        child: ElevatedButton.icon(
                           onPressed: () =>
                               Clipboard.setData(ClipboardData(text: text)),
                           icon: const Icon(Icons.copy_outlined),

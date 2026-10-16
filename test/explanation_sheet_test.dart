@@ -117,7 +117,7 @@ void main() {
           await tester.tap(find.text('أعد المحاولة'));
           await tester.pumpAndSettle();
           expect(find.text('نص الشرح'), findsOneWidget);
-          expect(find.widgetWithText(TextButton, 'نسخ'), findsOneWidget);
+          expect(find.widgetWithText(ElevatedButton, 'نسخ'), findsOneWidget);
           expect(calls, 2);
         }
         await tester.tap(find.byTooltip('إغلاق'));
