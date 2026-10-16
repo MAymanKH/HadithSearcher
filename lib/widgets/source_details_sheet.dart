@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import '../l10n/localization.dart';
 import '../models/hadith_details.dart';
@@ -139,13 +140,29 @@ class _SourceDetailsSectionState<T extends Object>
                 );
               } else {
                 final text = widget.format(result!.data!).trim();
-                content = text.isEmpty
-                    ? Text(context.l10n.noAdditionalInfo)
-                    : SelectableText(
+                if (text.isEmpty) {
+                  content = Text(context.l10n.noAdditionalInfo);
+                } else {
+                  content = Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      SelectableText(
                         text,
                         style: style,
                         textDirection: TextDirection.rtl,
-                      );
+                      ),
+                      Align(
+                        alignment: AlignmentDirectional.centerEnd,
+                        child: TextButton.icon(
+                          onPressed: () =>
+                              Clipboard.setData(ClipboardData(text: text)),
+                          icon: const Icon(Icons.copy_outlined),
+                          label: Text(context.l10n.copy),
+                        ),
+                      ),
+                    ],
+                  );
+                }
               }
               return AppLoadingSwitcher(loading: loading, child: content);
             },
