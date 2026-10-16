@@ -1,8 +1,8 @@
 # Compact filter exclusions
 
-The picker stores the smaller side of a catalog selection. Selecting all 11,435 narrators and clearing two sends `rawi[]=0&excludeRawi[]=1&excludeRawi[]=2` rather than 11,433 included IDs. Grades keep their four local inclusion options.
+The picker stores the smaller side of a catalog selection. Selecting all 11,435 narrators and clearing two sends `rawi[]=0&xrawi[]=1&xrawi[]=2` rather than 11,433 included IDs. Grades keep their four local inclusion options.
 
-The API must support `excludeRawi[]`, `excludeMohdith[]`, and `excludeBook[]` on `/v1/site/hadith/search`. Responses must confirm `metadata.exclusionsApplied: true`; otherwise the app reports that the server needs updating and does not display unfiltered results. Deploy the API change before distributing the app update.
+The API must support `xrawi[]`, `xm[]`, and `xs[]` on `/v1/site/hadith/search`. Responses must confirm `metadata.exclusionsApplied: true`; otherwise the app reports that the server needs updating and does not display unfiltered results. Deploy the API change before distributing the app update.
 
 Exclusions are saved separately under `searchFilterExclusions`. Large inclusion lists saved by older versions are compacted against the catalog before their next search, or when the picker loads. Disabling saved filters removes both saved inclusion and exclusion lists.
 

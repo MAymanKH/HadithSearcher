@@ -545,7 +545,7 @@ void main() {
         exclusions: {SearchFilter.narrator: latestExcluded},
       );
       expect(params.toQueryString().length, lessThan(500));
-      expect(params.toQueryParams()['excludeRawi[]'], ['1', '2']);
+      expect(params.toQueryParams()['xrawi[]'], ['1', '2']);
       final selected = List.of(latestSelection);
       final excluded = List.of(latestExcluded);
       tester.state<NavigatorState>(find.byType(Navigator)).pop();

@@ -297,9 +297,9 @@ void main() {
     await tester.tap(find.widgetWithText(ElevatedButton, 'بحث'));
     await waitFor(find.byType(HadithCard));
     expect(searches.single.queryParametersAll['s[]'], ['0']);
-    expect(searches.single.queryParametersAll['excludeBook[]'], ['96']);
+    expect(searches.single.queryParametersAll['xs[]'], ['96']);
     expect(searches.single.queryParametersAll['rawi[]'], ['0']);
-    expect(searches.single.queryParametersAll['excludeRawi[]'], ['1', '2']);
+    expect(searches.single.queryParametersAll['xrawi[]'], ['1', '2']);
     expect(searches.single.toString().length, lessThan(1000));
     expect(searches.single.queryParameters['specialist'], 'true');
     expect(preferences.getBool('searchSpecialist'), isTrue);

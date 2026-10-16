@@ -62,7 +62,7 @@ void main() {
         () => MockClient((request) async {
           requests++;
           expect(request.url.queryParametersAll['rawi[]'], ['0']);
-          expect(request.url.queryParametersAll['excludeRawi[]'], ['1', '2']);
+          expect(request.url.queryParametersAll['xrawi[]'], ['1', '2']);
           expect(request.url.toString().length, lessThan(500));
           return response(next: requests == 1, id: '$requests');
         }),
@@ -174,7 +174,7 @@ void main() {
               200,
             );
           }
-          expect(request.url.queryParametersAll['excludeRawi[]'], ['1', '2']);
+          expect(request.url.queryParametersAll['xrawi[]'], ['1', '2']);
           expect(request.url.toString().length, lessThan(500));
           return response();
         }),

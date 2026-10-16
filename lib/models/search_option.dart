@@ -77,8 +77,8 @@ enum SearchFilter {
 
   String? get exclusionQueryKey => switch (this) {
     SearchFilter.grade => null,
-    SearchFilter.scholar => 'excludeMohdith[]',
-    SearchFilter.book => 'excludeBook[]',
-    SearchFilter.narrator => 'excludeRawi[]',
+    SearchFilter.scholar => 'xm[]',
+    SearchFilter.book => 'xs[]',
+    SearchFilter.narrator => 'xrawi[]',
   };
 }
