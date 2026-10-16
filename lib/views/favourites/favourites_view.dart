@@ -26,6 +26,7 @@ class FavouritesView extends StatefulWidget {
 }
 
 class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
+  final _sharhInFlight = <String>{};
   @override
   void initState() {
     super.initState();
@@ -111,24 +112,32 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
   }
 
   Future<void> _getSharh(FavouritesViewModel vm, String hadithId) async {
-    // Show searching snackbar
-    showAppSnackBar(
-      context,
-      SnackBar(
-        content: Text(context.l10n.loadingExplanation),
-        duration: ApiService.requestTimeout * 2 + const Duration(seconds: 5),
-      ),
-    );
+    if (!_sharhInFlight.add(hadithId)) return;
+    final messenger = ScaffoldMessenger.of(context);
+    late final ApiResult<String> result;
+    try {
+      // Show searching snackbar
+      showAppSnackBar(
+        context,
+        SnackBar(
+          content: Text(context.l10n.loadingExplanation),
+          duration: ApiService.requestTimeout * 2 + const Duration(seconds: 5),
+        ),
+      );
 
-    final result = await vm.getSharh(hadithId);
+      result = await vm.getSharh(hadithId);
 
+      if (messenger.mounted) {
+        messenger.clearSnackBars();
+        messenger.removeCurrentSnackBar();
+      }
+    } finally {
+      _sharhInFlight.remove(hadithId);
+    }
     if (!mounted) return;
 
-    // Hide the searching snackbar
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
     if (result.isSuccess) {
-      showMessageDialog(
+      await showMessageDialog(
         context,
         title: context.l10n.explanation,
         content: result.data!,

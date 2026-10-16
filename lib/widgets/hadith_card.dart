@@ -17,6 +17,7 @@ import 'message_dialog.dart';
 
 /// Displays a hadith with actions (sharh, similar, share, favourite).
 class HadithCard extends StatelessWidget {
+  static final _sharhInFlight = <String>{};
   final EdgeInsetsGeometry margin;
   final Hadith hadith;
   final bool isFavourite;
@@ -61,28 +62,37 @@ class HadithCard extends StatelessWidget {
   }
 
   Future<void> _showSharh(BuildContext context) async {
-    // Show searching snackbar
-    showAppSnackBar(
-      context,
-      SnackBar(
-        content: Text(context.l10n.loadingExplanation),
-        duration: ApiService.requestTimeout + const Duration(seconds: 5),
-      ),
-    );
+    // Ignore repeated taps while an explanation is loading.
+    if (!_sharhInFlight.add(hadith.id)) return;
+    final messenger = ScaffoldMessenger.of(context);
+    late final ApiResult<String> result;
+    try {
+      // Show searching snackbar
+      showAppSnackBar(
+        context,
+        SnackBar(
+          content: Text(context.l10n.loadingExplanation),
+          duration: ApiService.requestTimeout + const Duration(seconds: 5),
+        ),
+      );
 
-    final result = await ExplanationService().getExplanation(
-      hadith.id,
-      sharhId: hadith.sharhId,
-      explanation: hadith.explanation,
-    );
+      result = await ExplanationService().getExplanation(
+        hadith.id,
+        sharhId: hadith.sharhId,
+        explanation: hadith.explanation,
+      );
 
+      if (messenger.mounted) {
+        messenger.clearSnackBars();
+        messenger.removeCurrentSnackBar();
+      }
+    } finally {
+      _sharhInFlight.remove(hadith.id);
+    }
     if (!context.mounted) return;
 
-    // Hide the searching snackbar
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-
     if (result.isSuccess) {
-      showMessageDialog(
+      await showMessageDialog(
         context,
         title: context.l10n.explanation,
         content: result.data!,

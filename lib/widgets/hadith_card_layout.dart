@@ -70,8 +70,8 @@ class HadithCardLayout extends StatelessWidget {
           ),
           if (grading != null) ...[
             SelectableText(grading!, style: textStyle),
-            if (scholar != null) SelectableText(scholar!, style: textStyle),
             if (onAlternate != null) _buildAlternateButton(context),
+            if (scholar != null) SelectableText(scholar!, style: textStyle),
             const SizedBox(height: 4),
           ],
           SelectableText(attribution, style: textStyle),
