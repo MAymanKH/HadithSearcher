@@ -14,7 +14,7 @@
         },
         "content": {
           "onSurface": "#000000",
-          "onSurfaceVariant": "#50535A"
+          "onSurfaceVariant": "#45474D"
         },
         "accent": {
           "primary": "#000000",
@@ -22,7 +22,7 @@
         },
         "boundaries": {
           "outline": "#656970",
-          "outlineVariant": "#B6B8BD"
+          "outlineVariant": "#95979B"
         },
         "feedback": {
           "error": "#A01818",
@@ -39,7 +39,7 @@
         },
         "content": {
           "onSurface": "#FFFFFF",
-          "onSurfaceVariant": "#BDBAC3"
+          "onSurfaceVariant": "#C6C4CB"
         },
         "accent": {
           "primary": "#FFFFFF",
@@ -47,7 +47,7 @@
         },
         "boundaries": {
           "outline": "#9B97A1",
-          "outlineVariant": "#504E53"
+          "outlineVariant": "#706E72"
         },
         "feedback": {
           "error": "#FFB4AB",
@@ -66,7 +66,7 @@
         },
         "content": {
           "onSurface": "#352B1E",
-          "onSurfaceVariant": "#62523E"
+          "onSurfaceVariant": "#5C4D3A"
         },
         "accent": {
           "primary": "#76501D",
@@ -74,7 +74,7 @@
         },
         "boundaries": {
           "outline": "#7A684E",
-          "outlineVariant": "#C3B499"
+          "outlineVariant": "#A99B83"
         },
         "feedback": {
           "error": "#A01818",
@@ -91,7 +91,7 @@
         },
         "content": {
           "onSurface": "#F0E3CA",
-          "onSurfaceVariant": "#C5B69C"
+          "onSurfaceVariant": "#CBBCA2"
         },
         "accent": {
           "primary": "#E6BC7A",
@@ -99,7 +99,7 @@
         },
         "boundaries": {
           "outline": "#A7977C",
-          "outlineVariant": "#5A5040"
+          "outlineVariant": "#756A59"
         },
         "feedback": {
           "error": "#FFB4AB",
@@ -118,7 +118,7 @@
         },
         "content": {
           "onSurface": "#202D3C",
-          "onSurfaceVariant": "#4D6073"
+          "onSurfaceVariant": "#47596B"
         },
         "accent": {
           "primary": "#245C89",
@@ -126,7 +126,7 @@
         },
         "boundaries": {
           "outline": "#657A8E",
-          "outlineVariant": "#B5C2CE"
+          "outlineVariant": "#9AA7B4"
         },
         "feedback": {
           "error": "#A01818",
@@ -143,7 +143,7 @@
         },
         "content": {
           "onSurface": "#E3EBF4",
-          "onSurfaceVariant": "#B2C3D5"
+          "onSurfaceVariant": "#B9C9D9"
         },
         "accent": {
           "primary": "#9ECBF5",
@@ -151,7 +151,7 @@
         },
         "boundaries": {
           "outline": "#8FA5BC",
-          "outlineVariant": "#4A5A6C"
+          "outlineVariant": "#667484"
         },
         "feedback": {
           "error": "#FFB4AB",
@@ -170,7 +170,7 @@
         },
         "content": {
           "onSurface": "#243528",
-          "onSurfaceVariant": "#4B6250"
+          "onSurfaceVariant": "#465C4A"
         },
         "accent": {
           "primary": "#2D6544",
@@ -178,7 +178,7 @@
         },
         "boundaries": {
           "outline": "#637B68",
-          "outlineVariant": "#B4C4B5"
+          "outlineVariant": "#9AAA9C"
         },
         "feedback": {
           "error": "#A01818",
@@ -195,7 +195,7 @@
         },
         "content": {
           "onSurface": "#E2EDE1",
-          "onSurfaceVariant": "#B4CAB7"
+          "onSurfaceVariant": "#BACFBD"
         },
         "accent": {
           "primary": "#9ED5AE",
@@ -203,7 +203,7 @@
         },
         "boundaries": {
           "outline": "#8DAA93",
-          "outlineVariant": "#4A5F50"
+          "outlineVariant": "#65796A"
         },
         "feedback": {
           "error": "#FFB4AB",
@@ -274,7 +274,7 @@
         },
         "content": {
           "onSurface": "#33283F",
-          "onSurfaceVariant": "#665574"
+          "onSurfaceVariant": "#5F4F6D"
         },
         "accent": {
           "primary": "#684587",
@@ -282,7 +282,7 @@
         },
         "boundaries": {
           "outline": "#806B90",
-          "outlineVariant": "#C4B8D0"
+          "outlineVariant": "#AA9EB6"
         },
         "feedback": {
           "error": "#A01818",
@@ -299,7 +299,7 @@
         },
         "content": {
           "onSurface": "#EFE5F7",
-          "onSurfaceVariant": "#C8B5D9"
+          "onSurfaceVariant": "#CDBCDD"
         },
         "accent": {
           "primary": "#D5B3F0",
@@ -307,7 +307,7 @@
         },
         "boundaries": {
           "outline": "#A38CB4",
-          "outlineVariant": "#584A64"
+          "outlineVariant": "#73667E"
         },
         "feedback": {
           "error": "#FFB4AB",
@@ -326,7 +326,7 @@
         },
         "content": {
           "onSurface": "#422B33",
-          "onSurfaceVariant": "#755563"
+          "onSurfaceVariant": "#6E4F5C"
         },
         "accent": {
           "primary": "#8B405C",
@@ -334,7 +334,7 @@
         },
         "boundaries": {
           "outline": "#936C7B",
-          "outlineVariant": "#D0B7BF"
+          "outlineVariant": "#B69EA6"
         },
         "feedback": {
           "error": "#A01818",
@@ -351,7 +351,7 @@
         },
         "content": {
           "onSurface": "#F8E3EA",
-          "onSurfaceVariant": "#DAB8C6"
+          "onSurfaceVariant": "#DEBECB"
         },
         "accent": {
           "primary": "#EEB0C8",
@@ -359,7 +359,7 @@
         },
         "boundaries": {
           "outline": "#B78E9E",
-          "outlineVariant": "#664C58"
+          "outlineVariant": "#806772"
         },
         "feedback": {
           "error": "#FFB4AB",
@@ -378,7 +378,7 @@
         },
         "content": {
           "onSurface": "#20383C",
-          "onSurfaceVariant": "#4A6368"
+          "onSurfaceVariant": "#445D62"
         },
         "accent": {
           "primary": "#1D6873",
@@ -386,7 +386,7 @@
         },
         "boundaries": {
           "outline": "#617F85",
-          "outlineVariant": "#B2C5C8"
+          "outlineVariant": "#98ACAF"
         },
         "feedback": {
           "error": "#A01818",
@@ -403,7 +403,7 @@
         },
         "content": {
           "onSurface": "#E0F0F2",
-          "onSurfaceVariant": "#B1CCD1"
+          "onSurfaceVariant": "#B8D1D6"
         },
         "accent": {
           "primary": "#91D5E0",
@@ -411,7 +411,7 @@
         },
         "boundaries": {
           "outline": "#86ADB5",
-          "outlineVariant": "#466269"
+          "outlineVariant": "#627C82"
         },
         "feedback": {
           "error": "#FFB4AB",
@@ -430,7 +430,7 @@
         },
         "content": {
           "onSurface": "#3C301A",
-          "onSurfaceVariant": "#6F5A36"
+          "onSurfaceVariant": "#685432"
         },
         "accent": {
           "primary": "#805B13",
@@ -438,7 +438,7 @@
         },
         "boundaries": {
           "outline": "#89734C",
-          "outlineVariant": "#CCBC9D"
+          "outlineVariant": "#B2A385"
         },
         "feedback": {
           "error": "#A01818",
@@ -455,7 +455,7 @@
         },
         "content": {
           "onSurface": "#F5E9CF",
-          "onSurfaceVariant": "#D3BE94"
+          "onSurfaceVariant": "#D8C49C"
         },
         "accent": {
           "primary": "#E9C46A",
@@ -463,7 +463,7 @@
         },
         "boundaries": {
           "outline": "#B19A69",
-          "outlineVariant": "#63553A"
+          "outlineVariant": "#7D7055"
         },
         "feedback": {
           "error": "#FFB4AB",
@@ -482,7 +482,7 @@
         },
         "content": {
           "onSurface": "#292929",
-          "onSurfaceVariant": "#555555"
+          "onSurfaceVariant": "#4F4F4F"
         },
         "accent": {
           "primary": "#454545",
@@ -490,7 +490,7 @@
         },
         "boundaries": {
           "outline": "#737373",
-          "outlineVariant": "#BDBDBD"
+          "outlineVariant": "#A2A2A2"
         },
         "feedback": {
           "error": "#A01818",
@@ -507,7 +507,7 @@
         },
         "content": {
           "onSurface": "#EAEAEA",
-          "onSurfaceVariant": "#BBBBBB"
+          "onSurfaceVariant": "#C2C2C2"
         },
         "accent": {
           "primary": "#D2D2D2",
@@ -515,7 +515,7 @@
         },
         "boundaries": {
           "outline": "#999999",
-          "outlineVariant": "#535353"
+          "outlineVariant": "#6E6E6E"
         },
         "feedback": {
           "error": "#FFB4AB",

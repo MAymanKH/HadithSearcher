@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../core/theme/app_theme.dart';
+import 'package:provider/provider.dart';
+import '../viewmodels/settings_viewmodel.dart';
 
 class HadithDetailButton extends StatelessWidget {
   final IconData icon;
@@ -16,6 +18,9 @@ class HadithDetailButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final settings = context.watch<SettingsViewModel?>();
+    final textStyle =
+        settings?.readingTextStyle ?? const TextStyle(fontSize: 20);
     return Align(
       alignment: AlignmentDirectional.centerStart,
       child: Padding(
@@ -33,10 +38,7 @@ class HadithDetailButton extends StatelessWidget {
             minimumSize: const Size(0, 44),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             tapTargetSize: MaterialTapTargetSize.padded,
-            textStyle: const TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-            ),
+            textStyle: textStyle.copyWith(fontSize: textStyle.fontSize! * .8),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),

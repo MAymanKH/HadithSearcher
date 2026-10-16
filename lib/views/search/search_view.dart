@@ -168,23 +168,19 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
           children: [
             _buildSearchBar(screenWidth),
             const SizedBox(height: _filterGap),
-            AnimatedSwitcher(
+            AnimatedSize(
               key: const ValueKey('active-filters-transition'),
               duration: MediaQuery.disableAnimationsOf(context)
                   ? Duration.zero
                   : const Duration(milliseconds: 300),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.easeInCubic,
-              transitionBuilder: (child, animation) => SizeTransition(
-                sizeFactor: animation,
-                child: FadeTransition(opacity: animation, child: child),
-              ),
+              curve: Curves.easeInOutCubic,
+              alignment: Alignment.topCenter,
               child: vm.activeFilters.isNotEmpty && vm.showActiveFilters
                   ? Padding(
                       padding: const EdgeInsets.only(bottom: _filterGap),
                       child: _buildActiveFilters(vm),
                     )
-                  : const SizedBox.shrink(),
+                  : const SizedBox(width: double.infinity, height: 0),
             ),
             if (vm.isAdvancedSearchOpen)
               _buildAdvancedSearch(vm)
@@ -254,6 +250,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
               subtitle: context.l10n.rememberFiltersHelp,
               value: vm.saveAdvancedSettings,
               onChanged: vm.setSaveAdvancedSettings,
+              customized: !vm.saveAdvancedSettings,
             ),
             _buildFilterSwitch(
               title: context.l10n.specialistSearch,
@@ -330,16 +327,11 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
       vm.excludedOptions(filter).isNotEmpty ||
       vm.selectedOptions(filter).any((option) => option.apiCode != '0');
 
-  Widget _customizedDot() => ExcludeSemantics(
-    child: Container(
-      key: const Key('filter-customized-dot'),
-      width: 8,
-      height: 8,
-      decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primary,
-        shape: BoxShape.circle,
-      ),
-    ),
+  Widget _customizedIndicator() => Icon(
+    Icons.check_circle_rounded,
+    key: const Key('filter-customized-indicator'),
+    size: 16,
+    color: Theme.of(context).colorScheme.primary,
   );
 
   Widget _filterLabel(String text, bool customized) => Text.rich(
@@ -351,7 +343,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
             alignment: PlaceholderAlignment.middle,
             child: Padding(
               padding: const EdgeInsetsDirectional.only(start: 6),
-              child: _customizedDot(),
+              child: _customizedIndicator(),
             ),
           ),
       ],
@@ -492,7 +484,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
               ),
               if (customized) ...[
                 const SizedBox(width: 8),
-                _customizedDot(),
+                _customizedIndicator(),
               ],
             ],
           ),
@@ -655,10 +647,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
                 return HadithCard(
                   key: PageStorageKey<String>('search-hadith-${hadith.id}'),
                   hadith: hadith,
-                  margin:
-                      index == 0 &&
-                          vm.activeFilters.isNotEmpty &&
-                          vm.showActiveFilters
+                  margin: index == 0
                       ? const EdgeInsets.fromLTRB(10, 0, 10, 10)
                       : const EdgeInsets.all(10),
                   isFavourite: vm.isFavourite(hadith.id),

@@ -86,7 +86,6 @@ class _AlternateHadithBody extends StatelessWidget {
       margin: EdgeInsets.zero,
       hadith: hadith,
       isFavourite: vm.isFavourite(hadith.id),
-      showSimilarButton: false,
       onFavouriteToggle: () async {
         final error = await vm.toggleFavourite(hadith);
         if (error != null && context.mounted) {

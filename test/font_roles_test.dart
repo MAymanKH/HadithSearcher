@@ -109,6 +109,15 @@ void main() {
             await settings.setFontFamily(font);
             await tester.pumpAndSettle();
             expectReadingFont(font);
+            final cardLabel = tester.widget<Text>(
+              find.descendant(
+                of: find.byType(HadithCardLayout),
+                matching: find.text(language == 'ar' ? 'الشرح' : 'Explanation'),
+              ),
+            );
+            expect(cardLabel.style!.fontFamily, font);
+            expect(cardLabel.style!.fontWeight, settings.fontWeight);
+            expect(cardLabel.style!.fontSize, settings.fontSize * .6);
             for (final action in ['explanation', 'source']) {
               await tester.tap(find.text(action));
               await tester.pumpAndSettle();

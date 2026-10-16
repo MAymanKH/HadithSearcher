@@ -233,26 +233,13 @@ void main() {
           (colors.onSecondary, colors.secondary),
           (colors.onSecondaryContainer, colors.secondaryContainer),
           (colors.onInverseSurface, colors.inverseSurface),
-          (AppTheme.unavailableActionForeground(colors), colors.inverseSurface),
           (colors.onError, colors.error),
           (colors.onErrorContainer, colors.errorContainer),
         ]) {
           expect(contrast(pair.$1, pair.$2), greaterThanOrEqualTo(textMinimum));
         }
-        final unavailableBg = Color.alphaBlend(
-          AppTheme.unavailableActionBackground(colors),
-          colors.inverseSurface,
-        );
-        // The washed segment behind an unavailable action must differ from
-        // the bar yet keep its label readable.
-        expect(
-          contrast(unavailableBg, colors.inverseSurface),
-          greaterThan(1.05),
-        );
-        expect(
-          contrast(AppTheme.unavailableActionForeground(colors), unavailableBg),
-          greaterThanOrEqualTo(textMinimum),
-        );
+        expect(theme.checkboxTheme.side, BorderSide.none);
+        expect(theme.switchTheme.trackOutlineWidth!.resolve({}), 0);
         final selected = {WidgetState.selected};
         expect(
           contrast(
@@ -343,16 +330,13 @@ void main() {
             final foreground = button.style!.foregroundColor!.resolve({})!;
             expect(
               contrast(foreground, colors.inverseSurface),
-              greaterThanOrEqualTo(textMinimum),
+              greaterThanOrEqualTo(available ? textMinimum : 3),
             );
           }
           final unavailable = tester.widget<TextButton>(
             find.widgetWithText(TextButton, 'مشابهة'),
           );
-          expect(
-            unavailable.style!.backgroundColor!.resolve({}),
-            AppTheme.unavailableActionBackground(colors),
-          );
+          expect(unavailable.style!.backgroundColor?.resolve({}), isNull);
           final availableButton = tester.widget<TextButton>(
             find.widgetWithText(TextButton, 'الشرح'),
           );

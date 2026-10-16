@@ -199,11 +199,6 @@ class _CardAction extends StatelessWidget {
         disabledForegroundColor: AppTheme.unavailableActionForeground(
           Theme.of(context).colorScheme,
         ),
-        backgroundColor: onPressed == null
-            ? AppTheme.unavailableActionBackground(
-                Theme.of(context).colorScheme,
-              )
-            : null,
         padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
         minimumSize: const Size(0, 62),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -217,7 +212,9 @@ class _CardAction extends StatelessWidget {
           Text(
             label,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+            style: context.watch<SettingsViewModel>().readingTextStyle.copyWith(
+              fontSize: context.watch<SettingsViewModel>().fontSize * .6,
+            ),
           ),
         ],
       ),

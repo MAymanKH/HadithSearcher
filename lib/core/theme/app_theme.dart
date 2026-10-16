@@ -12,33 +12,17 @@ class AppTheme {
   static ThemeData get darkTheme =>
       build(ColorSchemePreference.classic, Brightness.dark);
 
-  /// Unavailable card actions still open an explanation, so keep their labels
-  /// readable rather than using Material's low-contrast disabled opacity.
   static Color unavailableActionForeground(ColorScheme colors) =>
       Color.alphaBlend(
-        colors.onInverseSurface.withValues(alpha: .72),
+        colors.onInverseSurface.withValues(alpha: .52),
         colors.inverseSurface,
       );
 
-  /// Truly disabled controls (null `onPressed`) must stay legible too.
-  /// Material's 38% opacity drops below 3:1 contrast on most dark card
-  /// surfaces, so every button theme below derives from this blend.
-  /// It resolves against the real background at paint time while staying
-  /// visibly dimmer than the enabled foreground.
   static Color disabledForeground(ColorScheme colors) =>
       colors.onSurface.withValues(alpha: .6);
 
-  /// Disabled button fill: a translucent wash of the foreground, so it
-  /// greys out against any surface it sits on in both brightnesses while
-  /// staying clearly flatter than an enabled fill.
   static Color disabledBackground(ColorScheme colors) =>
       colors.onSurface.withValues(alpha: .12);
-
-  /// Wash applied behind an unavailable card action (one that still explains
-  /// itself on tap). It greys out the whole button segment so the state is
-  /// unmistakable, while the 72% foreground above stays legible.
-  static Color unavailableActionBackground(ColorScheme colors) =>
-      colors.onInverseSurface.withValues(alpha: .06);
 
   static SystemUiOverlayStyle systemUiOverlayStyle(Brightness brightness) {
     final icons = brightness == Brightness.dark
@@ -64,6 +48,15 @@ class AppTheme {
       useMaterial3: true,
       fontFamily: 'Cairo',
       colorScheme: colors,
+      pageTransitionsTheme: const PageTransitionsTheme(
+        builders: {
+          TargetPlatform.android: _FadePageTransitionsBuilder(),
+          TargetPlatform.iOS: _FadePageTransitionsBuilder(),
+          TargetPlatform.linux: _FadePageTransitionsBuilder(),
+          TargetPlatform.macOS: _FadePageTransitionsBuilder(),
+          TargetPlatform.windows: _FadePageTransitionsBuilder(),
+        },
+      ),
       scaffoldBackgroundColor: colors.surface,
       canvasColor: colors.surface,
       cardColor: colors.surfaceContainer,
@@ -78,13 +71,11 @@ class AppTheme {
       iconTheme: IconThemeData(color: colors.onSurface),
       checkboxTheme: CheckboxThemeData(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-        side: WidgetStateBorderSide.resolveWith(
-          (_) => BorderSide(color: colors.outline, width: 1.5),
-        ),
+        side: BorderSide.none,
         fillColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)
               ? colors.primary
-              : transparent,
+              : colors.outlineVariant,
         ),
         checkColor: WidgetStatePropertyAll(colors.onPrimary),
       ),
@@ -92,14 +83,15 @@ class AppTheme {
         trackColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)
               ? colors.primary
-              : colors.surface,
+              : colors.outlineVariant,
         ),
         thumbColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)
               ? colors.onPrimary
               : colors.onSurfaceVariant,
         ),
-        trackOutlineColor: WidgetStatePropertyAll(colors.outline),
+        trackOutlineColor: WidgetStatePropertyAll(transparent),
+        trackOutlineWidth: const WidgetStatePropertyAll(0),
       ),
       inputDecorationTheme: InputDecorationTheme(
         hintStyle: TextStyle(color: colors.onSurfaceVariant),
@@ -230,4 +222,17 @@ class AppTheme {
       ),
     );
   }
+}
+
+class _FadePageTransitionsBuilder extends PageTransitionsBuilder {
+  const _FadePageTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) => FadeTransition(opacity: animation, child: child);
 }

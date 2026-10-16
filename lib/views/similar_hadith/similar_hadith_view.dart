@@ -160,7 +160,6 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
         return HadithCard(
           hadith: hadith,
           isFavourite: vm.isFavourite(hadith.id),
-          showSimilarButton: false, // Don't show similar button in similar view
           onFavouriteToggle: () async {
             final error = await vm.toggleFavourite(hadith);
             if (error != null && context.mounted) {

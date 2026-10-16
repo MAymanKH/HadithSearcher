@@ -27,10 +27,7 @@ class AppLoadingIndicator extends StatelessWidget {
       curve: Curves.easeOutCubic,
       builder: (context, value, child) => Opacity(
         opacity: value,
-        child: Transform.scale(
-          scale: 0.92 + 0.08 * value,
-          child: child,
-        ),
+        child: Transform.scale(scale: 0.92 + 0.08 * value, child: child),
       ),
       child: child,
     );
@@ -70,16 +67,10 @@ class AppLoadingSwitcher extends StatelessWidget {
         alignment: Alignment.topCenter,
         children: [...previous, if (current != null) current],
       ),
-      transitionBuilder: (child, animation) => SizeTransition(
-        sizeFactor: animation,
-        alignment: Alignment.topCenter,
-        child: FadeTransition(opacity: animation, child: child),
-      ),
+      transitionBuilder: (child, animation) =>
+          FadeTransition(opacity: animation, child: child),
       child: loading
-          ? KeyedSubtree(
-              key: const ValueKey('loading'),
-              child: loadingWidget,
-            )
+          ? KeyedSubtree(key: const ValueKey('loading'), child: loadingWidget)
           : KeyedSubtree(key: const ValueKey('content'), child: child),
     );
   }

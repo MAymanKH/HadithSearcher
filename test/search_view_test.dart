@@ -565,6 +565,24 @@ void main() {
           expect(above, 10);
           expect(below, above);
           expect(tester.getTopLeft(surface).dy, tester.getTopLeft(results).dy);
+          final cardInset =
+              tester.getTopLeft(surface).dy - tester.getTopLeft(results).dy;
+          await tester.tap(find.byTooltip('إخفاء عوامل التصفية النشطة'));
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 100));
+          expect(
+            tester.getTopLeft(surface).dy - tester.getTopLeft(results).dy,
+            cardInset,
+          );
+          await tester.pumpAndSettle();
+          await tester.tap(find.byTooltip('إظهار عوامل التصفية النشطة'));
+          await tester.pump();
+          await tester.pump(const Duration(milliseconds: 100));
+          expect(
+            tester.getTopLeft(surface).dy - tester.getTopLeft(results).dy,
+            cardInset,
+          );
+          await tester.pumpAndSettle();
           await tester.drag(results, const Offset(0, -400));
           await tester.pumpAndSettle();
           expect(

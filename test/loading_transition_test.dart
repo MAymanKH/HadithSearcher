@@ -63,6 +63,7 @@ void main() {
     await tester.pumpWidget(frame(false));
     await tester.pump(const Duration(milliseconds: 100));
     final midTop = tester.getTopLeft(find.text('done')).dy;
+    expect(find.byType(SizeTransition), findsNothing);
 
     await tester.pumpAndSettle();
     final endTop = tester.getTopLeft(find.text('done')).dy;
