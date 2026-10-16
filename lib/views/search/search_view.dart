@@ -107,34 +107,12 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
 
     return Scaffold(
       appBar: AppBar(
-        title: FittedBox(
-          fit: BoxFit.scaleDown,
-          alignment: AlignmentDirectional.centerStart,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                context.l10n.search,
-                style: const TextStyle(
-                  fontSize: 25,
-                  fontWeight: FontWeight.bold,
-                  height: 1.1,
-                ),
-              ),
-              if (!vm.isLoading &&
-                  !vm.isAdvancedSearchOpen &&
-                  vm.resultTotal != null)
-                Text(
-                  context.l10n.resultCount(vm.resultTotal!),
-                  key: const ValueKey('search-result-total'),
-                  style: TextStyle(
-                    fontSize: 12,
-                    height: 1.3,
-                    color: Theme.of(context).colorScheme.onSurfaceVariant,
-                  ),
-                ),
-            ],
+        title: Text(
+          context.l10n.search,
+          style: const TextStyle(
+            fontSize: 25,
+            fontWeight: FontWeight.bold,
+            height: 1.1,
           ),
         ),
         actionsPadding: const EdgeInsetsDirectional.only(end: 10),

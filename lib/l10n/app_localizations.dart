@@ -104,12 +104,6 @@ abstract class AppLocalizations {
   /// **'Search'**
   String get search;
 
-  /// Total results for the search mode that produced the displayed results
-  ///
-  /// In en, this message translates to:
-  /// **'Results: {count}'**
-  String resultCount(int count);
-
   /// No description provided for @favourites.
   ///
   /// In en, this message translates to:
