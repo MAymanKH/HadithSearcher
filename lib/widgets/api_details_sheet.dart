@@ -69,24 +69,25 @@ class _ApiDetailsContentState<T extends Object>
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              if (loading)
-                const AppLoadingIndicator()
-              else if (text.isNotEmpty)
-                SelectableText(
-                  text,
-                  style: settings.readingTextStyle,
-                  textDirection: TextDirection.rtl,
-                )
-              else
-                Text(
-                  result?.error == ApiError.notFound ||
-                          result?.isSuccess == true
-                      ? widget.emptyMessage ?? context.l10n.noAdditionalInfo
-                      : context.l10n.infoLoadFailed(
-                          result?.error?.title(context.l10n) ??
-                              context.l10n.retry,
-                        ),
-                ),
+              AppLoadingSwitcher(
+                loading: loading,
+                child: text.isNotEmpty
+                    ? SelectableText(
+                        text,
+                        style: settings.readingTextStyle,
+                        textDirection: TextDirection.rtl,
+                      )
+                    : Text(
+                        result?.error == ApiError.notFound ||
+                                result?.isSuccess == true
+                            ? widget.emptyMessage ??
+                                  context.l10n.noAdditionalInfo
+                            : context.l10n.infoLoadFailed(
+                                result?.error?.title(context.l10n) ??
+                                    context.l10n.retry,
+                              ),
+                      ),
+              ),
               if (!loading &&
                   (result?.isError == true || snapshot.hasError) &&
                   result?.error != ApiError.notFound)

@@ -176,7 +176,10 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              if (_loading) const AppLoadingIndicator(),
+                              AppLoadingSwitcher(
+                                loading: _loading,
+                                child: const SizedBox.shrink(),
+                              ),
                               if (_error != null) ...[
                                 Text(
                                   context.l10n.additionalInfoLoadFailed(

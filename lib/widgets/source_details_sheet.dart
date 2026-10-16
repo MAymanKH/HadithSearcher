@@ -124,26 +124,30 @@ class _SourceDetailsSectionState<T extends Object>
           FutureBuilder<ApiResult<T>>(
             future: _result,
             builder: (context, snapshot) {
-              if (snapshot.connectionState != ConnectionState.done) {
-                return const AppLoadingIndicator();
-              }
+              final loading =
+                  snapshot.connectionState != ConnectionState.done;
               final result = snapshot.data;
-              if (result?.isSuccess != true) {
-                return SourceDetailsMessage(
+              final Widget content;
+              if (loading) {
+                content = const SizedBox.shrink();
+              } else if (result?.isSuccess != true) {
+                content = SourceDetailsMessage(
                   error: result?.error,
                   onRetry: () => setState(() {
                     _result = widget.load();
                   }),
                 );
+              } else {
+                final text = widget.format(result!.data!).trim();
+                content = text.isEmpty
+                    ? Text(context.l10n.noAdditionalInfo)
+                    : SelectableText(
+                        text,
+                        style: style,
+                        textDirection: TextDirection.rtl,
+                      );
               }
-              final text = widget.format(result!.data!).trim();
-              return text.isEmpty
-                  ? Text(context.l10n.noAdditionalInfo)
-                  : SelectableText(
-                      text,
-                      style: style,
-                      textDirection: TextDirection.rtl,
-                    );
+              return AppLoadingSwitcher(loading: loading, child: content);
             },
           ),
         ],

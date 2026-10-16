@@ -55,11 +55,10 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
         ),
       ),
       body: Center(
-        child: vm.isLoading
-            ? const AppLoadingIndicator()
-            : vm.isEmpty
-            ? _buildEmptyState()
-            : _buildFavouritesList(vm),
+        child: AppLoadingSwitcher(
+          loading: vm.isLoading,
+          child: vm.isEmpty ? _buildEmptyState() : _buildFavouritesList(vm),
+        ),
       ),
       floatingActionButton: buildBackToTopButton(),
     );

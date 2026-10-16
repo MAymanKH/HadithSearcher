@@ -51,27 +51,33 @@ class _HadithSourceSheetState extends State<_HadithSourceSheet> {
   Widget build(BuildContext context) => FutureBuilder<ApiResult<Hadith>>(
     future: _hadith,
     builder: (context, snapshot) {
-      if (snapshot.connectionState != ConnectionState.done) {
-        return const AppLoadingIndicator();
-      }
+      final loading = snapshot.connectionState != ConnectionState.done;
       final result = snapshot.data;
       final hadith = result?.data;
+      final Widget content;
       if (hadith == null) {
-        return SourceDetailsMessage(
-          error: result?.error,
-          onRetry: () => setState(() {
-            _hadith = _load();
-          }),
+        content = loading
+            ? const SizedBox.shrink()
+            : SourceDetailsMessage(
+                error: result?.error,
+                onRetry: () => setState(() {
+                  _hadith = _load();
+                }),
+              );
+      } else {
+        content = Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            ScholarSourceDetails(
+              name: hadith.mohdith,
+              id: hadith.mohdithId,
+            ),
+            const SizedBox(height: 16),
+            BookSourceDetails(name: hadith.book, id: hadith.bookId),
+          ],
         );
       }
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          ScholarSourceDetails(name: hadith.mohdith, id: hadith.mohdithId),
-          const SizedBox(height: 16),
-          BookSourceDetails(name: hadith.book, id: hadith.bookId),
-        ],
-      );
+      return AppLoadingSwitcher(loading: loading, child: content);
     },
   );
 }

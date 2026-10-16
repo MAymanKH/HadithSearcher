@@ -47,11 +47,10 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
       body: SafeArea(
         top: false,
         child: Center(
-          child: vm.isLoading
-              ? const AppLoadingIndicator()
-              : vm.isEmpty
-              ? _buildEmptyState(vm)
-              : _buildResults(vm),
+          child: AppLoadingSwitcher(
+            loading: vm.isLoading,
+            child: vm.isEmpty ? _buildEmptyState(vm) : _buildResults(vm),
+          ),
         ),
       ),
       floatingActionButton: buildBackToTopButton(),

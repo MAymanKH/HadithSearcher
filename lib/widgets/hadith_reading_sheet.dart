@@ -44,9 +44,20 @@ class _AlternateHadithContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<SimilarHadithViewModel>();
-    if (vm.isLoading) {
-      return const AppLoadingIndicator();
-    }
+    return AppLoadingSwitcher(
+      loading: vm.isLoading,
+      child: _AlternateHadithBody(hadithId: hadithId),
+    );
+  }
+}
+
+class _AlternateHadithBody extends StatelessWidget {
+  final String hadithId;
+  const _AlternateHadithBody({required this.hadithId});
+
+  @override
+  Widget build(BuildContext context) {
+    final vm = context.watch<SimilarHadithViewModel>();
     if (vm.isEmpty) {
       final missing = vm.errorMessage == 'noSimilar';
       return Column(
@@ -69,6 +80,7 @@ class _AlternateHadithContent extends StatelessWidget {
         ],
       );
     }
+    if (vm.results.isEmpty) return const SizedBox.shrink();
     final hadith = vm.results.single;
     return HadithCard(
       margin: EdgeInsets.zero,
