@@ -252,6 +252,8 @@ void main() {
       );
       expect(result.text, saved.text);
       expect(result.narrator, saved.narrator);
+      expect(saved.onSourceInfo, isNotNull);
+      expect(result.onSourceInfo, isNotNull);
       expect(result.grading, saved.grading);
       expect(result.attribution, saved.attribution);
       await tester.pumpWidget(const SizedBox());

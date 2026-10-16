@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../widgets/hadith_source_sheet.dart';
 import '../../l10n/localization.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../services/telemetry/telemetry_service.dart';
@@ -195,6 +196,12 @@ class _FavouriteHadithCard extends StatelessWidget {
           ? null
           : context.l10n.gradeLabel(citation.grade),
       attribution: citation?.compactSource ?? favourite.hadithInfo,
+      onSourceInfo: citation == null && favourite.details == null
+          ? null
+          : () => showHadithSourceSheet(
+              context,
+              favourite.details ?? Hadith.fromDatabase(favourite.toDatabase()),
+            ),
       additionalInfo: HadithAdditionalInfo(
         key: ValueKey(favourite.hadithId),
         hadith:

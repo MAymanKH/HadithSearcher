@@ -112,6 +112,109 @@ void main() {
 
   for (final dark in [false, true]) {
     testWidgets(
+      'source sheet loads on demand and retries each section in ${dark ? 'dark' : 'light'} mode',
+      (tester) async {
+        var scholarCalls = 0;
+        var bookCalls = 0;
+        await http.runWithClient(
+          () async {
+            await mount(
+              tester,
+              Hadith.fromJson(richJson),
+              dark: dark,
+              fontSize: 40,
+            );
+            expect(scholarCalls, 0);
+            expect(bookCalls, 0);
+            final info = find.byTooltip('معلومات المحدث والكتاب');
+            await tester.ensureVisible(info);
+            await tester.runAsync(() async {
+              await tester.tap(info);
+              await Future<void>.delayed(const Duration(milliseconds: 50));
+            });
+            await tester.pumpAndSettle();
+            expect(find.byType(BottomSheet), findsOneWidget);
+            expect(scholarCalls, 1);
+            expect(bookCalls, 1);
+            expect(find.text('المؤلف: مؤلف الكتاب'), findsOneWidget);
+            final retry = find.text('أعد المحاولة');
+            await tester.ensureVisible(retry);
+            await tester.runAsync(() async {
+              await tester.tap(retry);
+              await tester.pump();
+              await Future<void>.delayed(const Duration(milliseconds: 50));
+            });
+            await tester.pumpAndSettle();
+            expect(find.text('نبذة عن المحدث'), findsOneWidget);
+            expect(scholarCalls, 2);
+            expect(bookCalls, 1);
+            await tester.ensureVisible(find.byTooltip('إغلاق'));
+            await tester.tap(find.byTooltip('إغلاق'));
+            await tester.pumpAndSettle();
+            expect(find.byType(BottomSheet), findsNothing);
+            expect(tester.takeException(), isNull);
+          },
+          () => MockClient((request) async {
+            if (request.url.path.endsWith('/mohdith/256')) {
+              scholarCalls++;
+              return scholarCalls == 1
+                  ? response({}, status: 503)
+                  : response({
+                      'data': {'name': 'البخاري', 'info': 'نبذة عن المحدث'},
+                    });
+            }
+            if (request.url.path.endsWith('/book/6216')) {
+              bookCalls++;
+              return response({
+                'data': {'name': 'صحيح البخاري', 'author': 'مؤلف الكتاب'},
+              });
+            }
+            throw StateError('Unexpected request: ${request.url}');
+          }),
+        );
+      },
+    );
+  }
+
+  testWidgets(
+    'source sheet resolves IDs for saved citations and handles missing information',
+    (tester) async {
+      final requests = <String>[];
+      final saved = Hadith.fromDatabase(Hadith.fromJson(richJson).toDatabase());
+      await http.runWithClient(
+        () async {
+          await mount(tester, saved);
+          expect(requests, isEmpty);
+          final info = find.byTooltip('معلومات المحدث والكتاب');
+          await tester.ensureVisible(info);
+          await tester.runAsync(() async {
+            await tester.tap(info);
+            await Future<void>.delayed(const Duration(milliseconds: 150));
+          });
+          await tester.pumpAndSettle();
+          expect(requests, contains('/v1/site/hadith/test-hadith'));
+          expect(requests, contains('/v1/site/mohdith/256'));
+          expect(requests, contains('/v1/site/book/6216'));
+          expect(
+            find.text('لا تتوفر معلومات إضافية من المصدر'),
+            findsNWidgets(2),
+          );
+          expect(find.text('أعد المحاولة'), findsNothing);
+          expect(tester.takeException(), isNull);
+        },
+        () => MockClient((request) async {
+          requests.add(request.url.path);
+          if (request.url.path.endsWith('/hadith/test-hadith')) {
+            return response({'data': richJson});
+          }
+          return response({'data': null});
+        }),
+      );
+    },
+  );
+
+  for (final dark in [false, true]) {
+    testWidgets(
       'extra information slides inside the existing card in ${dark ? 'dark' : 'light'} mode',
       (tester) async {
         final hadith = Hadith.fromJson(richJson);
@@ -170,7 +273,7 @@ void main() {
               find.text('التصنيف الموضوعي: رقائق وزهد - النية'),
               findsOneWidget,
             );
-            expect(find.byIcon(Icons.error_outline_rounded), findsNothing);
+            expect(find.byIcon(Icons.error_outline_rounded), findsOneWidget);
             await tester.ensureVisible(find.text('أصول الحديث وطرق إخراجه'));
             await tester.runAsync(() async {
               await tester.tap(find.text('أصول الحديث وطرق إخراجه'));

@@ -11,6 +11,7 @@ import '../services/explanation_service.dart';
 import '../viewmodels/similar_hadith_viewmodel.dart';
 import 'favourite_undo.dart';
 import 'hadith_card_layout.dart';
+import 'hadith_source_sheet.dart';
 import '../views/similar_hadith/similar_hadith_view.dart';
 import 'hadith_additional_info.dart';
 import 'message_dialog.dart';
@@ -42,6 +43,7 @@ class HadithCard extends StatelessWidget {
       narrator: citation.rawi,
       grading: context.l10n.gradeLabel(citation.grade),
       attribution: citation.compactSource,
+      onSourceInfo: () => showHadithSourceSheet(context, hadith),
       additionalInfo: HadithAdditionalInfo(
         key: ValueKey(hadith.id),
         hadith: hadith,

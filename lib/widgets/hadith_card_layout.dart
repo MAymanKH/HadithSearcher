@@ -13,6 +13,7 @@ class HadithCardLayout extends StatelessWidget {
   final String? narrator;
   final String? grading;
   final String attribution;
+  final VoidCallback? onSourceInfo;
   final bool isFavourite;
   final VoidCallback? onExplanation;
   final VoidCallback? onSimilar;
@@ -29,6 +30,7 @@ class HadithCardLayout extends StatelessWidget {
     this.narrator,
     required this.grading,
     required this.attribution,
+    this.onSourceInfo,
     required this.isFavourite,
     required this.onExplanation,
     required this.onSimilar,
@@ -93,7 +95,19 @@ class HadithCardLayout extends StatelessWidget {
             if (onAlternate != null) _buildAlternateButton(context),
             const SizedBox(height: 4),
           ],
-          SelectableText(attribution, style: textStyle),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: SelectableText(attribution, style: textStyle)),
+              if (onSourceInfo != null)
+                IconButton(
+                  tooltip: context.l10n.sourceDetails,
+                  onPressed: onSourceInfo,
+                  icon: const Icon(Icons.error_outline_rounded),
+                  color: colors.secondaryContainer,
+                ),
+            ],
+          ),
           if (grading == null && onAlternate != null)
             _buildAlternateButton(context),
           ?additionalInfo,

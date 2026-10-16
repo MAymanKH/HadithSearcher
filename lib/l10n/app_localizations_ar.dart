@@ -9,6 +9,9 @@ class AppLocalizationsAr extends AppLocalizations {
   AppLocalizationsAr([String locale = 'ar']) : super(locale);
 
   @override
+  String get sourceDetails => 'معلومات المحدث والكتاب';
+
+  @override
   String get search => 'البحث';
 
   @override

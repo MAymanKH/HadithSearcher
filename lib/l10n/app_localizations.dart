@@ -98,6 +98,12 @@ abstract class AppLocalizations {
     Locale('en'),
   ];
 
+  /// No description provided for @sourceDetails.
+  ///
+  /// In en, this message translates to:
+  /// **'Scholar and book details'**
+  String get sourceDetails;
+
   /// No description provided for @search.
   ///
   /// In en, this message translates to:
