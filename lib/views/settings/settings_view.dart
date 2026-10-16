@@ -28,6 +28,19 @@ class SettingsView extends StatelessWidget {
             child: Column(
               children: [
                 const SizedBox(height: 15),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(20, 4, 20, 12),
+                  child: Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Text(
+                      context.l10n.appearanceSettings,
+                      style: TextStyle(
+                        fontSize: 23,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
                 const AppearancePreferences(),
                 const SizedBox(height: 20),
                 Padding(
@@ -85,6 +98,7 @@ class SettingsView extends StatelessWidget {
   }
 
   Widget _buildFontFamilySection(BuildContext context, SettingsViewModel vm) {
+    final isArabic = vm.locale.languageCode == 'ar';
     return AppDropdown<String>.settings(
       title: context.l10n.fontFamily,
       value: vm.fontFamily,
@@ -96,7 +110,7 @@ class SettingsView extends StatelessWidget {
             (f) => DropdownMenuItem(
               value: f,
               child: Text(
-                f,
+                _localizedFontName(f, isArabic),
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(fontSize: 18, fontFamily: f),
               ),
@@ -104,6 +118,22 @@ class SettingsView extends StatelessWidget {
           )
           .toList(),
     );
+  }
+
+  String _localizedFontName(String family, bool isArabic) {
+    if (!isArabic) return family;
+    return switch (family) {
+      'Roboto' => 'روبوتو',
+      'Cairo' => 'القاهرة',
+      'Tajawal' => 'تجوال',
+      'Noto Naskh Arabic' => 'نوتو نسخ عربي',
+      'Amiri' => 'أميري',
+      'Lateef' => 'لطيف',
+      'Gulzar' => 'غلزار',
+      'Aref Ruqaa' => 'عارف رقعة',
+      'Reem Kufi' => 'ريم كوفي',
+      _ => family,
+    };
   }
 
   Widget _buildFontWeightSection(BuildContext context, SettingsViewModel vm) {

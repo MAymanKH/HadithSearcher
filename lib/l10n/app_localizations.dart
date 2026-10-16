@@ -134,6 +134,12 @@ abstract class AppLocalizations {
   /// **'Hadith and explanation text'**
   String get readingSettings;
 
+  /// No description provided for @appearanceSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance settings'**
+  String get appearanceSettings;
+
   /// No description provided for @privacySettings.
   ///
   /// In en, this message translates to:

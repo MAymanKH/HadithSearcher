@@ -70,7 +70,7 @@ void main() {
     }
     await tester.tap(find.text('نوع الخط'));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Noto Naskh Arabic').last);
+    await tester.tap(find.text('نوتو نسخ عربي').last);
     await tester.pumpAndSettle();
     expect(settings.fontFamily, 'Noto Naskh Arabic');
     final privacy = find.text('الخصوصية والقياس الاختياري');

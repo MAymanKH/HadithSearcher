@@ -27,6 +27,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get readingSettings => 'إعدادات نص الأحاديث والشرح';
 
   @override
+  String get appearanceSettings => 'إعدادات المظهر';
+
+  @override
   String get privacySettings => 'الخصوصية والقياس الاختياري';
 
   @override
