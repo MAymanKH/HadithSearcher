@@ -90,6 +90,52 @@ void main() {
       .widget<CustomScrollView>(find.byType(CustomScrollView))
       .controller!;
 
+  for (final filter in [
+    SearchFilter.narrator,
+    SearchFilter.scholar,
+    SearchFilter.book,
+  ]) {
+    testWidgets('${filter.name} search puts normalized prefix matches first', (
+      tester,
+    ) async {
+      final options = [
+        ...List.generate(41, (i) => SearchOption('${i + 1}', 'ابن أبي $i')),
+        const SearchOption('prefix1', 'أَبِي بكر'),
+        const SearchOption('prefix2', 'إبي عمر'),
+        const SearchOption('prefix3', 'آبى زيد'),
+        const SearchOption('unmatched', 'محمد'),
+      ];
+      await openPicker(
+        tester,
+        filter: filter,
+        load: () async => ApiResult.success(options),
+      );
+      await settle(tester);
+      expect(find.text('أَبِي بكر'), findsNothing);
+
+      await tester.enterText(find.byType(TextField), ' أبي ');
+      await tester.pump(const Duration(milliseconds: 250));
+      await tester.pumpAndSettle();
+
+      expect(optionCount(tester), 40);
+      final names = ['أَبِي بكر', 'إبي عمر', 'آبى زيد', 'ابن أبي 0'];
+      for (var i = 0; i < names.length - 1; i++) {
+        expect(
+          tester.getTopLeft(find.text(names[i])).dy,
+          lessThan(tester.getTopLeft(find.text(names[i + 1])).dy),
+        );
+      }
+      expect(find.text('محمد'), findsNothing);
+
+      await tester.enterText(find.byType(TextField), '');
+      await tester.pump(const Duration(milliseconds: 250));
+      await tester.pumpAndSettle();
+      expect(optionCount(tester), 40);
+      expect(find.text('ابن أبي 0'), findsOneWidget);
+      expect(find.text('أَبِي بكر'), findsNothing);
+    });
+  }
+
   testWidgets('scrolling appends options lazily and search resets the batch', (
     tester,
   ) async {

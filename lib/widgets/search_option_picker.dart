@@ -144,7 +144,14 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
 
   void _resetVisibleOptions() {
     _matches = _options
-        .where((entry) => entry.searchName.contains(_query))
+        .where((entry) => entry.searchName.startsWith(_query))
+        .followedBy(
+          _options.where(
+            (entry) =>
+                entry.searchName.contains(_query) &&
+                !entry.searchName.startsWith(_query),
+          ),
+        )
         .iterator;
     _visibleOptions.clear();
     _hasMoreOptions = true;
