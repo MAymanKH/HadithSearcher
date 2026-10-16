@@ -195,6 +195,7 @@ void main() {
         .element(find.byType(TextField))
         .read<SettingsViewModel>();
     await settings.setTheme(ThemePreference.light);
+    await tester.tap(find.byType(TextField));
     await tester.enterText(find.byType(TextField), 'إنما الأعمال بالنيات');
     await tester.tap(find.widgetWithText(TextButton, 'التصفية'));
     await tester.pumpAndSettle();

@@ -80,6 +80,7 @@ void main() {
       await telemetry.save(diagnostics: false, analytics: false);
       await tester.pumpAndSettle();
       expect(find.text('initial shared text'), findsOneWidget);
+      expect(tester.testTextInput.isVisible, isFalse);
       await tester.tap(find.text('الإعدادات').last);
       await tester.pumpAndSettle();
       final accepted = Completer<void>();
@@ -97,6 +98,8 @@ void main() {
         0,
       );
       expect(find.text('second shared text'), findsOneWidget);
+      expect(tester.testTextInput.isVisible, isFalse);
+      await tester.tap(find.byType(TextField));
       await tester.enterText(find.byType(TextField), 'edited phrase');
       await tester.tap(find.text('الإعدادات').last);
       await tester.pumpAndSettle();

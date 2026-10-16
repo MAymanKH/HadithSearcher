@@ -6,6 +6,7 @@ import 'dart:convert';
 import 'dart:ui' as ui;
 import 'package:flutter/rendering.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:hadithsearcher/models/settings.dart';
@@ -76,12 +77,20 @@ void main() {
         (await SharedPreferences.getInstance()).containsKey('recentSearches'),
         isFalse,
       );
+      await tester.tap(find.byType(TextField));
       await tester.enterText(find.byType(TextField), 'session query');
       await tester.tap(find.text('الإعدادات').last);
       await tester.pumpAndSettle();
       await tester.tap(find.text('البحث').last);
       await tester.pumpAndSettle();
       expect(find.text('session query'), findsOneWidget);
+      expect(
+        tester
+            .widget<EditableText>(find.byType(EditableText))
+            .focusNode
+            .hasFocus,
+        isFalse,
+      );
       await tester.pumpWidget(const SizedBox());
       await mount(tester, width: 800);
       expect(
@@ -95,6 +104,55 @@ void main() {
       await tester.pumpWidget(const SizedBox());
     },
   );
+
+  testWidgets('search focus requires a tap every time it is regained', (
+    tester,
+  ) async {
+    await mount(tester, width: 800);
+    final field = find.byType(TextField).first;
+    final focus = tester
+        .widget<EditableText>(find.byType(EditableText).first)
+        .focusNode;
+    expect(focus.hasFocus, isFalse);
+    focus.requestFocus();
+    await tester.pump();
+    expect(focus.hasFocus, isFalse);
+    for (var i = 0; i < 12; i++) {
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      expect(focus.hasFocus, isFalse);
+    }
+    await tester.tap(field);
+    await tester.pump();
+    expect(focus.hasFocus, isTrue);
+    expect(tester.testTextInput.isVisible, isTrue);
+    await tester.enterText(field, 'query');
+    final dialog = showDialog<void>(
+      context: tester.element(field),
+      builder: (_) => const AlertDialog(content: Text('Focus test')),
+    );
+    await tester.pumpAndSettle();
+    tester.state<NavigatorState>(find.byType(Navigator)).pop();
+    await dialog;
+    await tester.pumpAndSettle();
+    expect(focus.hasFocus, isFalse);
+    expect(tester.testTextInput.isVisible, isFalse);
+    focus.requestFocus();
+    await tester.pump();
+    expect(focus.hasFocus, isFalse);
+    await tester.tap(field);
+    await tester.pump();
+    expect(focus.hasFocus, isTrue);
+    focus.unfocus();
+    await tester.pump();
+    focus.requestFocus();
+    await tester.pump();
+    expect(focus.hasFocus, isFalse);
+    await tester.tap(field);
+    await tester.pump();
+    expect(focus.hasFocus, isTrue);
+    await tester.pumpWidget(const SizedBox());
+  });
 
   for (final mode in [ThemeMode.light, ThemeMode.dark]) {
     testWidgets(
@@ -205,6 +263,7 @@ void main() {
                   mode == 'dark' ? ThemePreference.dark : ThemePreference.light,
                 );
             await tester.pumpAndSettle();
+            await tester.tap(find.byType(TextField));
             await tester.enterText(find.byType(TextField), 'first query');
             await tester.tap(find.widgetWithText(ElevatedButton, 'بحث'));
             await tester.pumpAndSettle();
@@ -235,6 +294,7 @@ void main() {
               tester.widget<ListView>(list).controller!.offset,
               closeTo(savedOffset, 1),
             );
+            await tester.tap(find.byType(TextField));
             await tester.enterText(find.byType(TextField), 'second query');
             await tester.tap(find.widgetWithText(ElevatedButton, 'بحث'));
             await tester.pumpAndSettle();
@@ -275,7 +335,11 @@ void main() {
       () async {
         await mount(tester, includeNarrators: false);
         expect(requests.map((url) => url.path), ['/v1/data/rawi']);
+        await tester.tap(find.byType(TextField));
         await tester.enterText(find.byType(TextField), 'query');
+        final searchFocus = tester
+            .widget<EditableText>(find.byType(EditableText))
+            .focusNode;
         await tester.tap(find.widgetWithText(TextButton, 'التصفية'));
         await tester.pumpAndSettle();
         expect(requests.map((url) => url.path), ['/v1/data/rawi']);
@@ -297,6 +361,8 @@ void main() {
         await tester.pumpAndSettle();
         tester.state<NavigatorState>(find.byType(Navigator)).pop();
         await tester.pumpAndSettle();
+        expect(searchFocus.hasFocus, isFalse);
+        expect(tester.testTextInput.isVisible, isFalse);
         await tester.tap(find.widgetWithText(TextButton, 'التصفية'));
         await tester.pumpAndSettle();
         expect(requests.last.queryParameters['rawi[]'], '8918');
@@ -475,6 +541,7 @@ void main() {
     await http.runWithClient(
       () async {
         await mount(tester, width: 400);
+        await tester.tap(find.byType(TextField));
         await tester.enterText(find.byType(TextField), 'first');
         expect(tester.testTextInput.isVisible, isTrue);
         await tester.tap(find.widgetWithText(ElevatedButton, 'بحث'));
@@ -483,6 +550,7 @@ void main() {
         expect(tester.testTextInput.isVisible, isFalse);
         expect(find.byType(CircularProgressIndicator), findsOneWidget);
         expect(find.byType(TextField), findsOneWidget);
+        await tester.tap(find.byType(TextField));
         await tester.enterText(find.byType(TextField), 'second');
         expect(find.text('second'), findsOneWidget);
         response.complete(

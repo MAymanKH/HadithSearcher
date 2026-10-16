@@ -80,6 +80,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    await tester.tap(find.byType(TextField));
     await tester.enterText(find.byType(TextField), 'إنما الأعمال بالنيات');
     await tester.tap(find.widgetWithText(ElevatedButton, 'بحث'));
     await tester.pumpAndSettle();

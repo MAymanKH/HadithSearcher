@@ -24,11 +24,16 @@ class SearchView extends StatefulWidget {
 class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
   static const _filterGap = 10.0;
   final _textController = TextEditingController();
+  final _searchFocusNode = FocusNode(
+    canRequestFocus: false,
+    skipTraversal: true,
+  );
   final _excludedWordsController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
+    _searchFocusNode.addListener(_onSearchFocusChanged);
     initScrollController();
     scrollController.addListener(_loadNearEnd);
 
@@ -61,6 +66,17 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     }
   }
 
+  void _onSearchFocusChanged() {
+    if (!_searchFocusNode.hasFocus) {
+      setState(() => _searchFocusNode.canRequestFocus = false);
+    }
+  }
+
+  void _focusSearchFromTap() {
+    setState(() => _searchFocusNode.canRequestFocus = true);
+    _searchFocusNode.requestFocus();
+  }
+
   void _loadNearEnd() {
     if (scrollController.hasClients &&
         scrollController.position.extentAfter < 500) {
@@ -70,6 +86,8 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
 
   @override
   void dispose() {
+    _searchFocusNode.removeListener(_onSearchFocusChanged);
+    _searchFocusNode.dispose();
     _textController.dispose();
     _excludedWordsController.dispose();
     scrollController.removeListener(_loadNearEnd);
@@ -204,6 +222,10 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
           Expanded(
             child: TextField(
               autofocus: false,
+              focusNode: _searchFocusNode,
+              canRequestFocus: _searchFocusNode.canRequestFocus,
+              onTap: _focusSearchFromTap,
+              onTapAlwaysCalled: true,
               textInputAction: TextInputAction.search,
               controller: _textController,
               decoration: InputDecoration(
