@@ -66,8 +66,10 @@ class AppLoadingSwitcher extends StatelessWidget {
       duration: effectiveDuration,
       switchInCurve: Curves.easeOutCubic,
       switchOutCurve: Curves.easeInCubic,
-      transitionBuilder: (child, animation) =>
-          FadeTransition(opacity: animation, child: child),
+      transitionBuilder: (child, animation) => SizeTransition(
+        sizeFactor: animation,
+        child: FadeTransition(opacity: animation, child: child),
+      ),
       child: loading
           ? KeyedSubtree(
               key: const ValueKey('loading'),
