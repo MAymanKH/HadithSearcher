@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../core/theme/app_theme.dart';
 
 class HadithDetailButton extends StatelessWidget {
   final IconData icon;
@@ -26,6 +27,8 @@ class HadithDetailButton extends StatelessWidget {
           style: OutlinedButton.styleFrom(
             foregroundColor: colors.onSurface,
             backgroundColor: colors.surfaceContainerHigh,
+            disabledForegroundColor: AppTheme.disabledForeground(colors),
+            disabledBackgroundColor: AppTheme.disabledBackground(colors),
             side: BorderSide(color: colors.outline),
             minimumSize: const Size(0, 44),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),

@@ -4,6 +4,7 @@ import '../l10n/localization.dart';
 import '../models/settings.dart';
 import '../viewmodels/settings_viewmodel.dart';
 import 'app_dropdown.dart';
+import 'color_scheme_card_preview.dart';
 import '../core/theme/app_palettes.g.dart';
 
 /// Shared appearance controls for the welcome page and settings.
@@ -52,6 +53,10 @@ class AppearancePreferences extends StatelessWidget {
         AppDropdown<ColorSchemePreference>.settings(
           key: const Key('color-scheme-selector'),
           title: context.l10n.colorScheme,
+          itemLeadingBuilder: (context, scheme) => ColorSchemeCardPreview(
+            key: ValueKey('scheme-preview-${scheme.name}'),
+            colors: AppPalettes.resolve(scheme, Theme.of(context).brightness),
+          ),
           value: vm.settings.colorScheme,
           onChanged: (value) {
             if (value != null) vm.setColorScheme(value);

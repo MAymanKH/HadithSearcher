@@ -199,6 +199,11 @@ class _CardAction extends StatelessWidget {
         disabledForegroundColor: AppTheme.unavailableActionForeground(
           Theme.of(context).colorScheme,
         ),
+        backgroundColor: onPressed == null
+            ? AppTheme.unavailableActionBackground(
+                Theme.of(context).colorScheme,
+              )
+            : null,
         padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
         minimumSize: const Size(0, 62),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,

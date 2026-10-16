@@ -11,7 +11,9 @@ import 'package:hadithsearcher/models/settings.dart';
 import 'package:hadithsearcher/services/settings_service.dart';
 import 'package:hadithsearcher/viewmodels/settings_viewmodel.dart';
 import 'package:hadithsearcher/widgets/appearance_preferences.dart';
+import 'package:hadithsearcher/widgets/color_scheme_card_preview.dart';
 import 'package:hadithsearcher/widgets/hadith_card_layout.dart';
+import 'package:hadithsearcher/widgets/hadith_detail_button.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -106,6 +108,43 @@ void main() {
     expect(reset.theme, ThemePreference.system);
   });
 
+  testWidgets('disabled detail button uses central greyed colors', (
+    tester,
+  ) async {
+    for (final palette in ColorSchemePreference.values) {
+      for (final brightness in Brightness.values) {
+        await tester.pumpWidget(
+          MaterialApp(
+            theme: AppTheme.build(palette, brightness),
+            home: const Scaffold(
+              body: HadithDetailButton(
+                icon: Icons.fact_check_outlined,
+                label: 'x',
+                onPressed: null,
+              ),
+            ),
+          ),
+        );
+        await tester.pumpAndSettle();
+        final button = tester.widget<OutlinedButton>(
+          find.byType(OutlinedButton),
+        );
+        expect(button.onPressed, isNull);
+        final colors = AppTheme.build(palette, brightness).colorScheme;
+        expect(
+          button.style!.foregroundColor!.resolve({WidgetState.disabled}),
+          AppTheme.disabledForeground(colors),
+        );
+        expect(
+          button.style!.backgroundColor!.resolve({WidgetState.disabled}),
+          AppTheme.disabledBackground(colors),
+        );
+      }
+    }
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox());
+  });
+
   for (final palette in ColorSchemePreference.values) {
     for (final brightness in Brightness.values) {
       final name = '${palette.name}-${brightness.name}';
@@ -134,6 +173,60 @@ void main() {
           }
           expect(contrast(colors.outline, background), greaterThanOrEqualTo(3));
         }
+        for (final background in [
+          colors.surface,
+          colors.surfaceContainer,
+          colors.surfaceContainerHigh,
+        ]) {
+          expect(
+            contrast(AppTheme.disabledForeground(colors), background),
+            greaterThanOrEqualTo(3),
+          );
+        }
+        final disabled = {WidgetState.disabled};
+        expect(
+          theme.textButtonTheme.style!.foregroundColor!.resolve(disabled),
+          AppTheme.disabledForeground(colors),
+        );
+        expect(
+          theme.outlinedButtonTheme.style!.foregroundColor!.resolve(disabled),
+          AppTheme.disabledForeground(colors),
+        );
+        expect(
+          theme.outlinedButtonTheme.style!.backgroundColor!.resolve(disabled),
+          AppTheme.disabledBackground(colors),
+        );
+        expect(
+          theme.filledButtonTheme.style!.backgroundColor!.resolve(disabled),
+          AppTheme.disabledBackground(colors),
+        );
+        for (final background in [
+          colors.surface,
+          colors.surfaceContainer,
+          colors.surfaceContainerHigh,
+        ]) {
+          // The greyed fill must stay distinguishable from the surface.
+          expect(
+            contrast(AppTheme.disabledBackground(colors), background),
+            greaterThan(1.15),
+          );
+        }
+        expect(
+          theme.outlinedButtonTheme.style!.side!.resolve(disabled),
+          BorderSide(color: colors.outline),
+        );
+        expect(
+          theme.filledButtonTheme.style!.foregroundColor!.resolve(disabled),
+          AppTheme.disabledForeground(colors),
+        );
+        expect(
+          theme.iconButtonTheme.style!.foregroundColor!.resolve(disabled),
+          AppTheme.disabledForeground(colors),
+        );
+        expect(
+          theme.iconButtonTheme.style!.iconColor!.resolve(disabled),
+          AppTheme.disabledForeground(colors),
+        );
         for (final pair in [
           (colors.onPrimary, colors.primary),
           (colors.onPrimaryContainer, colors.primaryContainer),
@@ -146,6 +239,20 @@ void main() {
         ]) {
           expect(contrast(pair.$1, pair.$2), greaterThanOrEqualTo(textMinimum));
         }
+        final unavailableBg = Color.alphaBlend(
+          AppTheme.unavailableActionBackground(colors),
+          colors.inverseSurface,
+        );
+        // The washed segment behind an unavailable action must differ from
+        // the bar yet keep its label readable.
+        expect(
+          contrast(unavailableBg, colors.inverseSurface),
+          greaterThan(1.05),
+        );
+        expect(
+          contrast(AppTheme.unavailableActionForeground(colors), unavailableBg),
+          greaterThanOrEqualTo(textMinimum),
+        );
         final selected = {WidgetState.selected};
         expect(
           contrast(
@@ -239,6 +346,17 @@ void main() {
               greaterThanOrEqualTo(textMinimum),
             );
           }
+          final unavailable = tester.widget<TextButton>(
+            find.widgetWithText(TextButton, 'مشابهة'),
+          );
+          expect(
+            unavailable.style!.backgroundColor!.resolve({}),
+            AppTheme.unavailableActionBackground(colors),
+          );
+          final availableButton = tester.widget<TextButton>(
+            find.widgetWithText(TextButton, 'الشرح'),
+          );
+          expect(availableButton.style!.backgroundColor?.resolve({}), isNull);
           if (capture) {
             await tester.runAsync(() async {
               final render =
@@ -259,6 +377,10 @@ void main() {
           await tester.pumpAndSettle();
           final sheet = find.byType(BottomSheet);
           final sheetContext = tester.element(sheet);
+          expect(
+            find.descendant(of: sheet, matching: find.byIcon(Icons.check)),
+            findsOneWidget,
+          );
           final scrollable = find.descendant(
             of: sheet,
             matching: find.byType(Scrollable),
@@ -275,6 +397,13 @@ void main() {
               scrollable: scrollable,
             );
             expect(option, findsOneWidget);
+            final preview = tester.widget<ColorSchemeCardPreview>(
+              find.byKey(ValueKey('scheme-preview-${choice.name}')),
+            );
+            expect(
+              preview.colors,
+              AppTheme.build(choice, brightness).colorScheme,
+            );
           }
           // Select the final option to cover choices below the initial viewport.
           await tester.tap(

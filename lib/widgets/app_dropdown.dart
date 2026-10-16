@@ -9,6 +9,7 @@ class AppDropdown<T> extends StatelessWidget {
   final List<DropdownMenuItem<T>> items;
   final ValueChanged<T?> onChanged;
   final InputDecoration decoration;
+  final Widget Function(BuildContext, T)? itemLeadingBuilder;
   final bool _settingsRow;
 
   const AppDropdown({
@@ -17,6 +18,7 @@ class AppDropdown<T> extends StatelessWidget {
     required this.value,
     required this.items,
     required this.onChanged,
+    this.itemLeadingBuilder,
     this.decoration = const InputDecoration(
       border: InputBorder.none,
       enabledBorder: InputBorder.none,
@@ -31,6 +33,7 @@ class AppDropdown<T> extends StatelessWidget {
     required this.value,
     required this.items,
     required this.onChanged,
+    this.itemLeadingBuilder,
   }) : decoration = const InputDecoration(),
        _settingsRow = true;
 
@@ -46,7 +49,11 @@ class AppDropdown<T> extends StatelessWidget {
           itemCount: items.length,
           itemBuilder: (context, index) {
             final item = items[index];
+            final itemValue = item.value;
             return AppSelectionTile(
+              leading: itemValue == null
+                  ? null
+                  : itemLeadingBuilder?.call(context, itemValue),
               title: item.child,
               selected: item.value == value,
               onTap: item.enabled

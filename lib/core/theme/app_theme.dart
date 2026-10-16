@@ -20,6 +20,26 @@ class AppTheme {
         colors.inverseSurface,
       );
 
+  /// Truly disabled controls (null `onPressed`) must stay legible too.
+  /// Material's 38% opacity drops below 3:1 contrast on most dark card
+  /// surfaces, so every button theme below derives from this blend.
+  /// It resolves against the real background at paint time while staying
+  /// visibly dimmer than the enabled foreground.
+  static Color disabledForeground(ColorScheme colors) =>
+      colors.onSurface.withValues(alpha: .6);
+
+  /// Disabled button fill: a translucent wash of the foreground, so it
+  /// greys out against any surface it sits on in both brightnesses while
+  /// staying clearly flatter than an enabled fill.
+  static Color disabledBackground(ColorScheme colors) =>
+      colors.onSurface.withValues(alpha: .12);
+
+  /// Wash applied behind an unavailable card action (one that still explains
+  /// itself on tap). It greys out the whole button segment so the state is
+  /// unmistakable, while the 72% foreground above stays legible.
+  static Color unavailableActionBackground(ColorScheme colors) =>
+      colors.onInverseSurface.withValues(alpha: .06);
+
   static SystemUiOverlayStyle systemUiOverlayStyle(Brightness brightness) {
     final icons = brightness == Brightness.dark
         ? Brightness.light
@@ -110,6 +130,41 @@ class AppTheme {
           foregroundColor: colors.onSecondary,
           disabledBackgroundColor: colors.surfaceContainer,
           disabledForegroundColor: colors.onSurfaceVariant,
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          disabledForegroundColor: disabledForeground(colors),
+        ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style:
+            OutlinedButton.styleFrom(
+              disabledForegroundColor: disabledForeground(colors),
+              disabledBackgroundColor: disabledBackground(colors),
+            ).copyWith(
+              side: WidgetStateBorderSide.resolveWith(
+                (states) => BorderSide(
+                  // Keep the shape visible when disabled; only the content dims.
+                  color: colors.outline,
+                ),
+              ),
+            ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          disabledForegroundColor: disabledForeground(colors),
+          disabledBackgroundColor: disabledBackground(colors),
+        ),
+      ),
+      iconButtonTheme: IconButtonThemeData(
+        style: ButtonStyle(
+          foregroundColor: WidgetStateProperty<Color?>.fromMap({
+            WidgetState.disabled: disabledForeground(colors),
+          }),
+          iconColor: WidgetStateProperty<Color?>.fromMap({
+            WidgetState.disabled: disabledForeground(colors),
+          }),
         ),
       ),
       floatingActionButtonTheme: FloatingActionButtonThemeData(
