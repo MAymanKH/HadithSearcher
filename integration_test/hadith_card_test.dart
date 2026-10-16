@@ -131,7 +131,7 @@ void main() {
     }
     await tester.tap(find.widgetWithText(OutlinedButton, 'البديل الصحيح'));
     await tester.pumpAndSettle();
-    expect(find.widgetWithText(AppBar, 'البديل الصحيح'), findsOneWidget);
+    expect(find.byType(BottomSheet), findsOneWidget);
     await tester.runAsync(() async {
       for (var attempt = 0; attempt < 30 && alternateRequests == 0; attempt++) {
         await Future<void>.delayed(const Duration(milliseconds: 100));

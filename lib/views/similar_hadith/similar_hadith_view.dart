@@ -9,9 +9,8 @@ import '../../widgets/hadith_card.dart';
 
 class SimilarHadithView extends StatefulWidget {
   final String? hadithId;
-  final bool alternate;
 
-  const SimilarHadithView({super.key, this.hadithId, this.alternate = false});
+  const SimilarHadithView({super.key, this.hadithId});
 
   @override
   State<SimilarHadithView> createState() => _SimilarHadithViewState();
@@ -27,7 +26,6 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
       if (widget.hadithId != null) {
         context.read<SimilarHadithViewModel>().loadSimilarHadith(
           widget.hadithId!,
-          alternate: widget.alternate,
         );
       }
     });
@@ -44,13 +42,7 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
     final vm = context.watch<SimilarHadithViewModel>();
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          widget.alternate
-              ? context.l10n.alternate
-              : context.l10n.similarHadiths,
-        ),
-      ),
+      appBar: AppBar(title: Text(context.l10n.similarHadiths)),
       body: SafeArea(
         top: false,
         child: Center(
@@ -77,9 +69,7 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
           ),
           const SizedBox(height: 20),
           Text(
-            widget.alternate
-                ? context.l10n.noAlternate
-                : context.l10n.noSimilar,
+            context.l10n.noSimilar,
             style: TextStyle(
               fontSize: 20,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
@@ -141,10 +131,7 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
             ElevatedButton.icon(
               onPressed: () {
                 if (widget.hadithId != null) {
-                  vm.loadSimilarHadith(
-                    widget.hadithId!,
-                    alternate: widget.alternate,
-                  );
+                  vm.loadSimilarHadith(widget.hadithId!);
                 }
               },
               icon: const Icon(Icons.refresh),

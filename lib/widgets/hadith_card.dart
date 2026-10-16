@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import '../l10n/localization.dart';
-import 'app_snack_bar.dart';
 import '../services/telemetry/telemetry_service.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import '../models/hadith.dart';
-import '../services/api_service.dart';
 import '../services/database_service.dart';
 import '../services/explanation_service.dart';
 import '../viewmodels/similar_hadith_viewmodel.dart';
@@ -14,7 +12,7 @@ import 'hadith_card_layout.dart';
 import 'hadith_source_sheet.dart';
 import '../views/similar_hadith/similar_hadith_view.dart';
 import 'hadith_additional_info.dart';
-import 'message_dialog.dart';
+import 'hadith_reading_sheet.dart';
 
 /// Displays a hadith with actions (sharh, similar, share, favourite).
 class HadithCard extends StatelessWidget {
@@ -56,85 +54,34 @@ class HadithCard extends StatelessWidget {
       onShare: () => _share(context),
       onFavourite: () => _toggleFavourite(context),
       onAlternate: hadith.hasAlternateHadithSahih
-          ? () => _showSimilar(context, alternate: true)
+          ? () => showAlternateHadithSheet(context, hadith.id)
           : null,
     );
   }
 
   Future<void> _showSharh(BuildContext context) async {
-    // Ignore repeated taps while an explanation is loading.
     if (!_sharhInFlight.add(hadith.id)) return;
-    final messenger = ScaffoldMessenger.of(context);
-    late final ApiResult<String> result;
     try {
-      // Show searching snackbar
-      showAppSnackBar(
+      await showExplanationSheet(
         context,
-        SnackBar(
-          content: Text(context.l10n.loadingExplanation),
-          duration: ApiService.requestTimeout + const Duration(seconds: 5),
+        load: () => ExplanationService().getExplanation(
+          hadith.id,
+          sharhId: hadith.sharhId,
+          explanation: hadith.explanation,
         ),
       );
-
-      result = await ExplanationService().getExplanation(
-        hadith.id,
-        sharhId: hadith.sharhId,
-        explanation: hadith.explanation,
-      );
-
-      if (messenger.mounted) {
-        messenger.clearSnackBars();
-        messenger.removeCurrentSnackBar();
-      }
     } finally {
       _sharhInFlight.remove(hadith.id);
     }
-    if (!context.mounted) return;
-
-    if (result.isSuccess) {
-      await showMessageDialog(
-        context,
-        title: context.l10n.explanation,
-        content: result.data!,
-        useReadingSettings: true,
-      );
-    } else {
-      // Show error as snackbar
-      String errorMessage;
-      if (result.error == ApiError.notFound) {
-        errorMessage = context.l10n.noExplanation;
-      } else if (result.error == ApiError.noConnection) {
-        errorMessage = context.l10n.connectionHelp;
-      } else if (result.error == ApiError.timeout) {
-        errorMessage = context.l10n.explanationTimeout;
-      } else {
-        errorMessage = context.l10n.unexpectedHelp;
-      }
-
-      showAppSnackBar(
-        context,
-        SnackBar(
-          content: Text(errorMessage),
-          duration: const Duration(seconds: 3),
-          behavior: SnackBarBehavior.floating,
-          action: result.error != ApiError.notFound
-              ? SnackBarAction(
-                  label: context.l10n.retry,
-                  onPressed: () => _showSharh(context),
-                )
-              : null,
-        ),
-      );
-    }
   }
 
-  void _showSimilar(BuildContext context, {bool alternate = false}) {
+  void _showSimilar(BuildContext context) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => ChangeNotifierProvider(
           create: (_) => SimilarHadithViewModel(),
-          child: SimilarHadithView(hadithId: hadith.id, alternate: alternate),
+          child: SimilarHadithView(hadithId: hadith.id),
         ),
       ),
     );

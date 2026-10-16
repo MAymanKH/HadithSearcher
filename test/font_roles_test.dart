@@ -6,9 +6,9 @@ import 'package:hadithsearcher/core/theme/app_theme.dart';
 import 'package:hadithsearcher/l10n/localization.dart';
 import 'package:hadithsearcher/services/api_service.dart';
 import 'package:hadithsearcher/viewmodels/settings_viewmodel.dart';
-import 'package:hadithsearcher/widgets/api_details_dialog.dart';
+import 'package:hadithsearcher/widgets/api_details_sheet.dart';
 import 'package:hadithsearcher/widgets/hadith_card_layout.dart';
-import 'package:hadithsearcher/widgets/message_dialog.dart';
+import 'package:hadithsearcher/widgets/hadith_reading_sheet.dart';
 
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
@@ -64,16 +64,14 @@ void main() {
                             onAlternate: null,
                           ),
                           TextButton(
-                            onPressed: () => showMessageDialog(
+                            onPressed: () => showExplanationSheet(
                               context,
-                              title: context.l10n.explanation,
-                              content: 'نص الشرح',
-                              useReadingSettings: true,
+                              load: () async => ApiResult.success('نص الشرح'),
                             ),
                             child: const Text('explanation'),
                           ),
                           TextButton(
-                            onPressed: () => showApiDetailsDialog<String>(
+                            onPressed: () => showApiDetailsSheet<String>(
                               context,
                               title: context.l10n.additionalInfo,
                               load: () async =>
@@ -115,7 +113,7 @@ void main() {
               await tester.tap(find.text(action));
               await tester.pumpAndSettle();
               expectReadingFont(font);
-              Navigator.of(tester.element(find.byType(AlertDialog))).pop();
+              Navigator.of(tester.element(find.byType(BottomSheet))).pop();
               await tester.pumpAndSettle();
             }
           }

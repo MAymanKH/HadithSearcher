@@ -6,7 +6,6 @@ import '../../services/telemetry/telemetry_service.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
-import '../../services/api_service.dart';
 import '../../services/database_service.dart';
 import '../../viewmodels/favourites_viewmodel.dart';
 import '../../models/hadith_citation.dart';
@@ -14,7 +13,7 @@ import '../../models/hadith.dart';
 import '../../widgets/hadith_additional_info.dart';
 import '../../widgets/hadith_card_layout.dart';
 import '../../widgets/back_to_top_button.dart';
-import '../../widgets/message_dialog.dart';
+import '../../widgets/hadith_reading_sheet.dart';
 import '../../widgets/favourite_undo.dart';
 import '../../viewmodels/similar_hadith_viewmodel.dart';
 import '../similar_hadith/similar_hadith_view.dart';
@@ -121,63 +120,10 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
 
   Future<void> _getSharh(FavouritesViewModel vm, String hadithId) async {
     if (!_sharhInFlight.add(hadithId)) return;
-    final messenger = ScaffoldMessenger.of(context);
-    late final ApiResult<String> result;
     try {
-      // Show searching snackbar
-      showAppSnackBar(
-        context,
-        SnackBar(
-          content: Text(context.l10n.loadingExplanation),
-          duration: ApiService.requestTimeout * 2 + const Duration(seconds: 5),
-        ),
-      );
-
-      result = await vm.getSharh(hadithId);
-
-      if (messenger.mounted) {
-        messenger.clearSnackBars();
-        messenger.removeCurrentSnackBar();
-      }
+      await showExplanationSheet(context, load: () => vm.getSharh(hadithId));
     } finally {
       _sharhInFlight.remove(hadithId);
-    }
-    if (!mounted) return;
-
-    if (result.isSuccess) {
-      await showMessageDialog(
-        context,
-        title: context.l10n.explanation,
-        content: result.data!,
-        useReadingSettings: true,
-      );
-    } else {
-      // Show error as snackbar for all errors
-      String errorMessage;
-      if (result.error == ApiError.notFound) {
-        errorMessage = context.l10n.noExplanation;
-      } else if (result.error == ApiError.noConnection) {
-        errorMessage = context.l10n.connectionHelp;
-      } else if (result.error == ApiError.timeout) {
-        errorMessage = context.l10n.explanationTimeout;
-      } else {
-        errorMessage = context.l10n.unexpectedHelp;
-      }
-
-      showAppSnackBar(
-        context,
-        SnackBar(
-          content: Text(errorMessage),
-          duration: const Duration(seconds: 3),
-          behavior: SnackBarBehavior.floating,
-          action: result.error != ApiError.notFound
-              ? SnackBarAction(
-                  label: context.l10n.retry,
-                  onPressed: () => _getSharh(vm, hadithId),
-                )
-              : null,
-        ),
-      );
     }
   }
 }
@@ -233,21 +179,18 @@ class _FavouriteHadithCard extends StatelessWidget {
       },
       onFavourite: onRemove,
       onAlternate: favourite.hasAlternate
-          ? () => _showSimilar(context, alternate: true)
+          ? () => showAlternateHadithSheet(context, favourite.hadithId)
           : null,
     );
   }
 
-  void _showSimilar(BuildContext context, {bool alternate = false}) {
+  void _showSimilar(BuildContext context) {
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (_) => ChangeNotifierProvider(
           create: (_) => SimilarHadithViewModel(),
-          child: SimilarHadithView(
-            hadithId: favourite.hadithId,
-            alternate: alternate,
-          ),
+          child: SimilarHadithView(hadithId: favourite.hadithId),
         ),
       ),
     );

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../l10n/localization.dart';
 import '../models/search_option.dart';
 import 'source_details_sheet.dart';
+import 'details_sheet.dart';
 import 'selection_sheet.dart';
 import 'app_selection_tile.dart';
 import '../services/api_service.dart';
@@ -244,7 +245,7 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
     _emitSelection();
   }
 
-  Future<void> _showInfo(SearchOption option) => showSourceDetailsSheet(
+  Future<void> _showInfo(SearchOption option) => showDetailsSheet(
     context,
     title: widget.filter.label(context.l10n),
     child: widget.filter == SearchFilter.book

@@ -1,7 +1,7 @@
 import 'fixtures/search_catalogs.dart';
 import 'package:hadithsearcher/widgets/app_dropdown.dart';
-import 'package:hadithsearcher/widgets/api_details_dialog.dart';
-import 'package:hadithsearcher/widgets/message_dialog.dart';
+import 'package:hadithsearcher/widgets/api_details_sheet.dart';
+import 'package:hadithsearcher/widgets/hadith_reading_sheet.dart';
 import 'package:hadithsearcher/services/api_service.dart';
 import 'package:hadithsearcher/widgets/hadith_card_layout.dart';
 import 'dart:async';
@@ -178,23 +178,21 @@ void main() {
             final pending = Completer<ApiResult<String>>();
             final context = tester.element(field);
             final dialog = sources
-                ? showApiDetailsDialog<String>(
+                ? showApiDetailsSheet<String>(
                     context,
                     title: 'أصول الحديث',
                     load: () => pending.future,
                     format: (value) => value,
                   )
-                : showMessageDialog(
+                : showExplanationSheet(
                     context,
-                    title: 'الشرح',
-                    content: 'نص الشرح',
-                    useReadingSettings: true,
+                    load: () async => ApiResult.success('نص الشرح'),
                   );
             await tester.pump();
             await tester.pump(const Duration(milliseconds: 300));
-            expect(find.byType(AlertDialog), findsOneWidget);
+            expect(find.byType(BottomSheet), findsOneWidget);
             if (dismissal == 'close') {
-              await tester.tap(find.text('إغلاق'));
+              await tester.tap(find.byTooltip('إغلاق'));
             } else if (dismissal == 'barrier') {
               await tester.tapAt(const Offset(5, 5));
             } else {
@@ -203,7 +201,7 @@ void main() {
             await dialog;
             pending.complete(ApiResult.success('Late source details'));
             await tester.pumpAndSettle();
-            expect(find.byType(AlertDialog), findsNothing);
+            expect(find.byType(BottomSheet), findsNothing);
             expect(focus.hasFocus, isFalse);
             expect(tester.testTextInput.isVisible, isFalse);
             focus.requestFocus();

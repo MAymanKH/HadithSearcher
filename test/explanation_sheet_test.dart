@@ -13,6 +13,7 @@ import 'package:hadithsearcher/views/favourites/favourites_view.dart';
 import 'package:hadithsearcher/viewmodels/settings_viewmodel.dart';
 import 'package:hadithsearcher/widgets/app_snack_bar.dart';
 import 'package:hadithsearcher/widgets/hadith_card.dart';
+import 'package:hadithsearcher/widgets/hadith_reading_sheet.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:provider/provider.dart';
@@ -75,10 +76,62 @@ void main() {
   });
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
+  for (final missing in [false, true]) {
+    testWidgets(
+      'explanation sheet handles ${missing ? 'missing content' : 'retry'}',
+      (tester) async {
+        var calls = 0;
+        final settings = SettingsViewModel();
+        addTearDown(settings.dispose);
+        await tester.pumpWidget(
+          ChangeNotifierProvider.value(
+            value: settings,
+            child: MaterialApp(
+              home: Scaffold(
+                body: Builder(
+                  builder: (context) => TextButton(
+                    onPressed: () => showExplanationSheet(
+                      context,
+                      load: () async {
+                        calls++;
+                        if (missing) return ApiResult.error(ApiError.notFound);
+                        return calls == 1
+                            ? ApiResult.error(ApiError.noConnection)
+                            : ApiResult.success('نص الشرح');
+                      },
+                    ),
+                    child: const Text('فتح الشرح'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+        await tester.tap(find.text('فتح الشرح'));
+        await tester.pumpAndSettle();
+        expect(find.byType(BottomSheet), findsOneWidget);
+        if (missing) {
+          expect(find.text('لا يوجد شرح لهذا الحديث'), findsOneWidget);
+          expect(find.text('أعد المحاولة'), findsNothing);
+        } else {
+          await tester.tap(find.text('أعد المحاولة'));
+          await tester.pumpAndSettle();
+          expect(find.text('نص الشرح'), findsOneWidget);
+          expect(find.widgetWithText(TextButton, 'نسخ'), findsOneWidget);
+          expect(calls, 2);
+        }
+        await tester.tap(find.byTooltip('إغلاق'));
+        await tester.pumpAndSettle();
+        expect(find.byType(BottomSheet), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+    );
+  }
+
   for (final saved in [false, true]) {
     for (final earlierNotice in [false, true]) {
       testWidgets(
-        'explanation clears loading notices with saved=$saved and earlierNotice=$earlierNotice',
+        'explanation sheet loads once with saved=$saved and earlierNotice=$earlierNotice',
         (tester) async {
           final settings = SettingsViewModel();
           final favourites = SavedFavourites();
@@ -122,8 +175,11 @@ void main() {
                 );
               }
               await tester.pumpAndSettle();
-              await tester.tap(find.text('الشرح'));
-              await tester.tap(find.text('الشرح'));
+              final explain = tester
+                  .widget<TextButton>(find.widgetWithText(TextButton, 'الشرح'))
+                  .onPressed!;
+              explain();
+              explain();
               for (var i = 0; i < 100 && !requested.isCompleted; i++) {
                 await tester.runAsync(
                   () => Future<void>.delayed(const Duration(milliseconds: 10)),
@@ -131,6 +187,9 @@ void main() {
                 await tester.pump();
               }
               expect(requested.isCompleted, isTrue);
+              expect(find.byType(BottomSheet), findsOneWidget);
+              expect(find.byType(AlertDialog), findsNothing);
+              expect(find.byType(CircularProgressIndicator), findsOneWidget);
               response.complete(
                 http.Response(
                   jsonEncode({
@@ -155,6 +214,9 @@ void main() {
               expect(find.text('Explanation content'), findsOneWidget);
               expect(find.text('جارٍ البحث عن الشرح...'), findsNothing);
               expect(find.byType(SnackBar), findsNothing);
+              await tester.tap(find.byTooltip('إغلاق'));
+              await tester.pumpAndSettle();
+              expect(find.byType(BottomSheet), findsNothing);
             },
             () => MockClient((_) {
               requested.complete();

@@ -7,7 +7,7 @@ import '../models/hadith_details.dart';
 import '../services/api_service.dart';
 import '../services/favourite_details_service.dart';
 import '../viewmodels/settings_viewmodel.dart';
-import 'api_details_dialog.dart';
+import 'api_details_sheet.dart';
 import 'hadith_card_layout.dart';
 import 'hadith_detail_button.dart';
 
@@ -216,7 +216,7 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
                                   _hadith.id.isNotEmpty)
                                 HadithDetailButton(
                                   onPressed: () =>
-                                      showApiDetailsDialog<HadithOrigins>(
+                                      showApiDetailsSheet<HadithOrigins>(
                                         context,
                                         title: context.l10n.hadithSources,
                                         load: () => FavouriteDetailsService()

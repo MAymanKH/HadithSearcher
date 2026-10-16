@@ -4,9 +4,10 @@ import '../models/hadith.dart';
 import '../services/api_service.dart';
 import '../services/favourite_details_service.dart';
 import 'source_details_sheet.dart';
+import 'details_sheet.dart';
 
 Future<void> showHadithSourceSheet(BuildContext context, Hadith hadith) =>
-    showSourceDetailsSheet(
+    showDetailsSheet(
       context,
       title: context.l10n.sourceDetails,
       child: _HadithSourceSheet(hadith: hadith),

@@ -138,6 +138,73 @@ void main() {
     );
   });
 
+  for (final missing in [false, true]) {
+    testWidgets(
+      'authentic alternative sheet handles ${missing ? 'missing content' : 'retry and card actions'}',
+      (tester) async {
+        var calls = 0;
+        await http.runWithClient(
+          () async {
+            await mount(
+              tester,
+              Hadith.fromJson({...richJson, 'hasAlternateHadithSahih': true}),
+            );
+            final action = find.widgetWithText(OutlinedButton, 'البديل الصحيح');
+            await tester.ensureVisible(action);
+            await tester.runAsync(() async {
+              await tester.tap(action);
+              await tester.pump();
+              await Future<void>.delayed(const Duration(milliseconds: 100));
+            });
+            await tester.pumpAndSettle();
+            expect(find.byType(BottomSheet), findsOneWidget);
+            expect(find.byType(AlertDialog), findsNothing);
+            expect(find.byType(AppBar), findsNothing);
+            if (missing) {
+              expect(find.text('لا يوجد بديل صحيح متاح'), findsOneWidget);
+              expect(find.text('أعد المحاولة'), findsNothing);
+            } else {
+              await tester.runAsync(() async {
+                await tester.tap(find.text('أعد المحاولة'));
+                await tester.pump();
+                await Future<void>.delayed(const Duration(milliseconds: 100));
+              });
+              await tester.pumpAndSettle();
+              expect(find.text('نص البديل الصحيح'), findsOneWidget);
+              expect(find.text('خلاصة حكم المحدث: حكم المصدر'), findsOneWidget);
+              expect(
+                find.widgetWithText(TextButton, 'مشاركة'),
+                findsNWidgets(2),
+              );
+              expect(
+                find.widgetWithText(TextButton, 'المفضلة'),
+                findsNWidgets(2),
+              );
+              expect(calls, 2);
+            }
+            await tester.tap(find.byTooltip('إغلاق'));
+            await tester.pumpAndSettle();
+            expect(find.byType(BottomSheet), findsNothing);
+            expect(tester.takeException(), isNull);
+          },
+          () => MockClient((request) async {
+            expect(request.url.path, '/v1/site/hadith/alternate/test-hadith');
+            calls++;
+            if (missing) return response({'data': null}, status: 404);
+            if (calls == 1) return response({}, status: 503);
+            return response({
+              'data': {
+                'hadithId': 'authentic-alternative',
+                'hadith': 'نص البديل الصحيح',
+                'grade': 'حكم المصدر',
+              },
+            });
+          }),
+        );
+      },
+    );
+  }
+
   for (final missingHadith in [false, true]) {
     testWidgets(
       'source sheet handles absent scholar and book metadata, lookup=$missingHadith',
@@ -352,7 +419,9 @@ void main() {
               findsOneWidget,
             );
             expect(find.textContaining('المتن: نص الرواية'), findsOneWidget);
-            await tester.tap(find.text('إغلاق'));
+            expect(find.byType(BottomSheet), findsOneWidget);
+            expect(find.byType(AlertDialog), findsNothing);
+            await tester.tap(find.byTooltip('إغلاق'));
             await tester.pumpAndSettle();
             await tester.ensureVisible(find.text('إخفاء المعلومات الإضافية'));
             final expandedPanel = tester.getRect(
