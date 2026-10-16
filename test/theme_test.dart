@@ -99,7 +99,7 @@ void main() {
       expect(reloaded.theme, ThemePreference.dark);
     }
     await vm.setTheme(ThemePreference.light);
-    expect(vm.settings.colorScheme, ColorSchemePreference.highContrast);
+    expect(vm.settings.colorScheme, ColorSchemePreference.values.last);
     await vm.resetToDefaults();
     final reset = await SettingsService().getSettings();
     expect(reset.colorScheme, ColorSchemePreference.classic);
@@ -257,15 +257,36 @@ void main() {
           expect(tester.takeException(), isNull);
           await tester.tap(find.byKey(const Key('color-scheme-selector')));
           await tester.pumpAndSettle();
-          for (final label in [
-            'كلاسيكي',
-            'بني دافئ',
-            'أزرق رمادي',
-            'أخضر هادئ',
-            'تباين عالٍ',
-          ]) {
-            expect(find.text(label), findsWidgets);
+          final sheet = find.byType(BottomSheet);
+          final sheetContext = tester.element(sheet);
+          final scrollable = find.descendant(
+            of: sheet,
+            matching: find.byType(Scrollable),
+          );
+          for (final choice in ColorSchemePreference.values) {
+            final label = choice.label(sheetContext.l10n);
+            final option = find.descendant(
+              of: sheet,
+              matching: find.text(label),
+            );
+            await tester.scrollUntilVisible(
+              option,
+              150,
+              scrollable: scrollable,
+            );
+            expect(option, findsOneWidget);
           }
+          // Select the final option to cover choices below the initial viewport.
+          await tester.tap(
+            find.descendant(
+              of: sheet,
+              matching: find.text(
+                ColorSchemePreference.values.last.label(sheetContext.l10n),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+          expect(vm.settings.colorScheme, ColorSchemePreference.values.last);
           expect(tester.takeException(), isNull);
           await tester.pumpWidget(const SizedBox());
         },

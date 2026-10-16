@@ -161,5 +161,10 @@
   "sepiaColorScheme": "بني دافئ",
   "slateColorScheme": "أزرق رمادي",
   "forestColorScheme": "أخضر هادئ",
-  "highContrastColorScheme": "تباين عالٍ"
+  "highContrastColorScheme": "تباين عالٍ",
+  "lavenderColorScheme": "لافندر",
+  "roseColorScheme": "وردي",
+  "oceanColorScheme": "أزرق مخضر",
+  "amberColorScheme": "كهرماني",
+  "graphiteColorScheme": "رمادي محايد"
 }

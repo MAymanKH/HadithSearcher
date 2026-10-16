@@ -2,7 +2,7 @@
 
 `lib/core/theme/colors.json` owns every authored UI color. It groups values by palette, brightness, and purpose. `scripts/generate_colors.py` emits the complete Material `ColorScheme` catalog, Android color resources, and the color entries in `pubspec.yaml`. `scripts/generate_branding.py` reads the same shared colors for generated artwork. Both scripts support `--check` to detect stale output.
 
-The five palettes are Classic, Sepia, Slate, Forest, and High contrast. Each has a light variant and a dark variant. `AppSettings.colorScheme` chooses the palette independently from `AppSettings.theme`, which chooses System, Light, or Dark. Both settings are available on the welcome screen and in Settings. Startup reads both before the first Flutter frame.
+The ten palettes are Classic, Sepia, Slate, Forest, High contrast, Lavender, Rose, Ocean, Amber, and Graphite. Each has a light variant and a dark variant. `AppSettings.colorScheme` chooses the palette independently from `AppSettings.theme`, which chooses System, Light, or Dark. Both settings are available on the welcome screen and in Settings. Startup reads both before the first Flutter frame.
 
 ## Color ownership
 
@@ -33,4 +33,4 @@ These checks establish color contrast for the specified pairs. They do not estab
 
 Two designs were compared: standard Material roles and a categorized `AppColors` extension with a Material adapter. The independent review chose Material roles because current app colors fit them without a second widget vocabulary. The extension design contributed mandatory native generation and the ban on widget-local color calculations. A future domain-specific status may justify a small extension when Material has no suitable role.
 
-The chosen interface hides all ten palette definitions behind `AppTheme.build`. Explicit authored colors avoid SDK-dependent seed palette changes. The generated catalog is larger than a seed-based implementation, while the editable manifest stays compact and categorized.
+The chosen interface hides all twenty palette variants behind `AppTheme.build`. Explicit authored colors avoid SDK-dependent seed palette changes. The generated catalog is larger than a seed-based implementation, while the editable manifest stays compact and categorized.

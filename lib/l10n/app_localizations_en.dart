@@ -540,4 +540,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get highContrastColorScheme => 'High contrast';
+
+  @override
+  String get lavenderColorScheme => 'Lavender';
+
+  @override
+  String get roseColorScheme => 'Rose';
+
+  @override
+  String get oceanColorScheme => 'Ocean';
+
+  @override
+  String get amberColorScheme => 'Amber';
+
+  @override
+  String get graphiteColorScheme => 'Graphite';
 }

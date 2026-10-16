@@ -532,4 +532,19 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get highContrastColorScheme => 'تباين عالٍ';
+
+  @override
+  String get lavenderColorScheme => 'لافندر';
+
+  @override
+  String get roseColorScheme => 'وردي';
+
+  @override
+  String get oceanColorScheme => 'أزرق مخضر';
+
+  @override
+  String get amberColorScheme => 'كهرماني';
+
+  @override
+  String get graphiteColorScheme => 'رمادي محايد';
 }

@@ -1069,6 +1069,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'High contrast'**
   String get highContrastColorScheme;
+
+  /// No description provided for @lavenderColorScheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Lavender'**
+  String get lavenderColorScheme;
+
+  /// No description provided for @roseColorScheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Rose'**
+  String get roseColorScheme;
+
+  /// No description provided for @oceanColorScheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Ocean'**
+  String get oceanColorScheme;
+
+  /// No description provided for @amberColorScheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Amber'**
+  String get amberColorScheme;
+
+  /// No description provided for @graphiteColorScheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Graphite'**
+  String get graphiteColorScheme;
 }
 
 class _AppLocalizationsDelegate

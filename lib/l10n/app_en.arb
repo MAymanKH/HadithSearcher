@@ -269,5 +269,10 @@
   "sepiaColorScheme": "Sepia",
   "slateColorScheme": "Slate",
   "forestColorScheme": "Forest",
-  "highContrastColorScheme": "High contrast"
+  "highContrastColorScheme": "High contrast",
+  "lavenderColorScheme": "Lavender",
+  "roseColorScheme": "Rose",
+  "oceanColorScheme": "Ocean",
+  "amberColorScheme": "Amber",
+  "graphiteColorScheme": "Graphite"
 }

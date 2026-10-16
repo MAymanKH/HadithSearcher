@@ -31,6 +31,11 @@ extension LocalizedColorScheme on ColorSchemePreference {
     ColorSchemePreference.slate => l.slateColorScheme,
     ColorSchemePreference.forest => l.forestColorScheme,
     ColorSchemePreference.highContrast => l.highContrastColorScheme,
+    ColorSchemePreference.lavender => l.lavenderColorScheme,
+    ColorSchemePreference.rose => l.roseColorScheme,
+    ColorSchemePreference.ocean => l.oceanColorScheme,
+    ColorSchemePreference.amber => l.amberColorScheme,
+    ColorSchemePreference.graphite => l.graphiteColorScheme,
   };
 }
 

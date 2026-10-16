@@ -264,6 +264,266 @@
           "onErrorContainer": "#FFDAD6"
         }
       }
+    },
+    "lavender": {
+      "light": {
+        "surfaces": {
+          "surface": "#F5F2FA",
+          "surfaceContainer": "#E9E1F2",
+          "surfaceContainerHigh": "#F1EBF7"
+        },
+        "content": {
+          "onSurface": "#33283F",
+          "onSurfaceVariant": "#665574"
+        },
+        "accent": {
+          "primary": "#684587",
+          "onPrimary": "#FFFFFF"
+        },
+        "boundaries": {
+          "outline": "#806B90",
+          "outlineVariant": "#C4B8D0"
+        },
+        "feedback": {
+          "error": "#A01818",
+          "onError": "#FFFFFF",
+          "errorContainer": "#FFDAD6",
+          "onErrorContainer": "#410002"
+        }
+      },
+      "dark": {
+        "surfaces": {
+          "surface": "#211B29",
+          "surfaceContainer": "#302639",
+          "surfaceContainerHigh": "#3B3047"
+        },
+        "content": {
+          "onSurface": "#EFE5F7",
+          "onSurfaceVariant": "#C8B5D9"
+        },
+        "accent": {
+          "primary": "#D5B3F0",
+          "onPrimary": "#352044"
+        },
+        "boundaries": {
+          "outline": "#A38CB4",
+          "outlineVariant": "#584A64"
+        },
+        "feedback": {
+          "error": "#FFB4AB",
+          "onError": "#490B09",
+          "errorContainer": "#680F0B",
+          "onErrorContainer": "#FFDAD6"
+        }
+      }
+    },
+    "rose": {
+      "light": {
+        "surfaces": {
+          "surface": "#FBF2F3",
+          "surfaceContainer": "#F1DFE3",
+          "surfaceContainerHigh": "#F8EAED"
+        },
+        "content": {
+          "onSurface": "#422B33",
+          "onSurfaceVariant": "#755563"
+        },
+        "accent": {
+          "primary": "#8B405C",
+          "onPrimary": "#FFFFFF"
+        },
+        "boundaries": {
+          "outline": "#936C7B",
+          "outlineVariant": "#D0B7BF"
+        },
+        "feedback": {
+          "error": "#A01818",
+          "onError": "#FFFFFF",
+          "errorContainer": "#FFDAD6",
+          "onErrorContainer": "#410002"
+        }
+      },
+      "dark": {
+        "surfaces": {
+          "surface": "#2B1D23",
+          "surfaceContainer": "#3B2932",
+          "surfaceContainerHigh": "#48343E"
+        },
+        "content": {
+          "onSurface": "#F8E3EA",
+          "onSurfaceVariant": "#DAB8C6"
+        },
+        "accent": {
+          "primary": "#EEB0C8",
+          "onPrimary": "#45172B"
+        },
+        "boundaries": {
+          "outline": "#B78E9E",
+          "outlineVariant": "#664C58"
+        },
+        "feedback": {
+          "error": "#FFB4AB",
+          "onError": "#490B09",
+          "errorContainer": "#680F0B",
+          "onErrorContainer": "#FFDAD6"
+        }
+      }
+    },
+    "ocean": {
+      "light": {
+        "surfaces": {
+          "surface": "#EFF6F6",
+          "surfaceContainer": "#DDEBEC",
+          "surfaceContainerHigh": "#E7F1F2"
+        },
+        "content": {
+          "onSurface": "#20383C",
+          "onSurfaceVariant": "#4A6368"
+        },
+        "accent": {
+          "primary": "#1D6873",
+          "onPrimary": "#FFFFFF"
+        },
+        "boundaries": {
+          "outline": "#617F85",
+          "outlineVariant": "#B2C5C8"
+        },
+        "feedback": {
+          "error": "#A01818",
+          "onError": "#FFFFFF",
+          "errorContainer": "#FFDAD6",
+          "onErrorContainer": "#410002"
+        }
+      },
+      "dark": {
+        "surfaces": {
+          "surface": "#17282C",
+          "surfaceContainer": "#233A40",
+          "surfaceContainerHigh": "#2D4850"
+        },
+        "content": {
+          "onSurface": "#E0F0F2",
+          "onSurfaceVariant": "#B1CCD1"
+        },
+        "accent": {
+          "primary": "#91D5E0",
+          "onPrimary": "#0D353D"
+        },
+        "boundaries": {
+          "outline": "#86ADB5",
+          "outlineVariant": "#466269"
+        },
+        "feedback": {
+          "error": "#FFB4AB",
+          "onError": "#490B09",
+          "errorContainer": "#680F0B",
+          "onErrorContainer": "#FFDAD6"
+        }
+      }
+    },
+    "amber": {
+      "light": {
+        "surfaces": {
+          "surface": "#FAF3E6",
+          "surfaceContainer": "#F0E3C9",
+          "surfaceContainerHigh": "#F7ECD9"
+        },
+        "content": {
+          "onSurface": "#3C301A",
+          "onSurfaceVariant": "#6F5A36"
+        },
+        "accent": {
+          "primary": "#805B13",
+          "onPrimary": "#FFFFFF"
+        },
+        "boundaries": {
+          "outline": "#89734C",
+          "outlineVariant": "#CCBC9D"
+        },
+        "feedback": {
+          "error": "#A01818",
+          "onError": "#FFFFFF",
+          "errorContainer": "#FFDAD6",
+          "onErrorContainer": "#410002"
+        }
+      },
+      "dark": {
+        "surfaces": {
+          "surface": "#292216",
+          "surfaceContainer": "#393021",
+          "surfaceContainerHigh": "#463B29"
+        },
+        "content": {
+          "onSurface": "#F5E9CF",
+          "onSurfaceVariant": "#D3BE94"
+        },
+        "accent": {
+          "primary": "#E9C46A",
+          "onPrimary": "#3C2B05"
+        },
+        "boundaries": {
+          "outline": "#B19A69",
+          "outlineVariant": "#63553A"
+        },
+        "feedback": {
+          "error": "#FFB4AB",
+          "onError": "#490B09",
+          "errorContainer": "#680F0B",
+          "onErrorContainer": "#FFDAD6"
+        }
+      }
+    },
+    "graphite": {
+      "light": {
+        "surfaces": {
+          "surface": "#F3F3F3",
+          "surfaceContainer": "#E5E5E5",
+          "surfaceContainerHigh": "#EDEDED"
+        },
+        "content": {
+          "onSurface": "#292929",
+          "onSurfaceVariant": "#555555"
+        },
+        "accent": {
+          "primary": "#454545",
+          "onPrimary": "#FFFFFF"
+        },
+        "boundaries": {
+          "outline": "#737373",
+          "outlineVariant": "#BDBDBD"
+        },
+        "feedback": {
+          "error": "#A01818",
+          "onError": "#FFFFFF",
+          "errorContainer": "#FFDAD6",
+          "onErrorContainer": "#410002"
+        }
+      },
+      "dark": {
+        "surfaces": {
+          "surface": "#202020",
+          "surfaceContainer": "#2D2D2D",
+          "surfaceContainerHigh": "#383838"
+        },
+        "content": {
+          "onSurface": "#EAEAEA",
+          "onSurfaceVariant": "#BBBBBB"
+        },
+        "accent": {
+          "primary": "#D2D2D2",
+          "onPrimary": "#252525"
+        },
+        "boundaries": {
+          "outline": "#999999",
+          "outlineVariant": "#535353"
+        },
+        "feedback": {
+          "error": "#FFB4AB",
+          "onError": "#490B09",
+          "errorContainer": "#680F0B",
+          "onErrorContainer": "#FFDAD6"
+        }
+      }
     }
   }
 }

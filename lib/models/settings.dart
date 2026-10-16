@@ -152,7 +152,12 @@ enum ColorSchemePreference {
   sepia,
   slate,
   forest,
-  highContrast;
+  highContrast,
+  lavender,
+  rose,
+  ocean,
+  amber,
+  graphite;
 
   static ColorSchemePreference fromString(String? value) => values.firstWhere(
     (scheme) => scheme.name == value,
