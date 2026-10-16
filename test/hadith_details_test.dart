@@ -138,14 +138,20 @@ void main() {
                 .height;
             expect(during, inExclusiveRange(collapsed, expanded));
             expect(find.byType(Scaffold), findsOneWidget);
-            expect(find.text(hadith.text), findsOneWidget);
+            expect(
+              find.text(
+                'عن ${hadith.rawi}: ${hadith.text}',
+                findRichText: true,
+              ),
+              findsOneWidget,
+            );
             expect(
               find.text('خلاصة حكم المحدث: ${hadith.grade}'),
               findsOneWidget,
             );
             expect(
               find.text(
-                'الراوي: ${hadith.rawi}\n${hadith.mohdith}، ${hadith.book} (${hadith.numberOrPage})',
+                '${hadith.mohdith}، ${hadith.book} (${hadith.numberOrPage})',
               ),
               findsOneWidget,
             );
@@ -237,7 +243,7 @@ void main() {
           await tester.pumpAndSettle();
           expect(
             find.text(
-              'الراوي: ${saved.rawi}\n${saved.mohdith}، ${saved.book} (${saved.numberOrPage})',
+              '${saved.mohdith}، ${saved.book} (${saved.numberOrPage})',
             ),
             findsOneWidget,
           );
@@ -279,7 +285,11 @@ void main() {
     await mount(tester, hadith, fontSize: 40);
     final basicStyle = tester
         .widgetList<SelectableText>(find.byType(SelectableText))
-        .firstWhere((text) => text.data == hadith.text)
+        .firstWhere(
+          (text) =>
+              text.textSpan?.toPlainText() ==
+              'عن ${hadith.rawi}: ${hadith.text}',
+        )
         .style!;
     final toggle = find.text('معلومات إضافية');
     final toggleStyle = tester.widget<Text>(toggle).style!;

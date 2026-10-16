@@ -190,12 +190,11 @@ class _FavouriteHadithCard extends StatelessWidget {
     final citation = HadithCitation.tryParse(favourite.hadithInfo);
     return HadithCardLayout(
       text: favourite.hadithText,
+      narrator: citation?.rawi,
       grading: citation == null
           ? null
           : context.l10n.gradeLabel(citation.grade),
-      attribution:
-          citation?.localizedCardAttribution(context.l10n) ??
-          favourite.hadithInfo,
+      attribution: citation?.compactSource ?? favourite.hadithInfo,
       additionalInfo: HadithAdditionalInfo(
         key: ValueKey(favourite.hadithId),
         hadith:

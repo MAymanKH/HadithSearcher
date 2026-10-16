@@ -116,9 +116,6 @@ extension LocalizedCitation on HadithCitation {
   String localizedAttribution(AppLocalizations l) =>
       '${l.narratorLabel(rawi)}\n${l.sourceLabel(book)}\n${l.pageLabel(numberOrPage)}';
 
-  String localizedCardAttribution(AppLocalizations l) =>
-      '${l.narratorLabel(rawi)}\n$compactSource';
-
   String localizedInfo(AppLocalizations l) =>
       '${localizedGrading(l)}\n${localizedAttribution(l)}';
 }

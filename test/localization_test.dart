@@ -279,9 +279,12 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text(hadith.text), findsOneWidget);
+    expect(
+      find.text('عن ${hadith.rawi}: ${hadith.text}', findRichText: true),
+      findsOneWidget,
+    );
     expect(find.text('Grading: صحيح من المصدر'), findsOneWidget);
-    expect(find.text('Scholar: محدث'), findsOneWidget);
+    expect(find.text('محدث، كتاب المصدر (١٢)'), findsOneWidget);
     expect(find.text('Explanation'), findsOneWidget);
     expect(find.text('Share'), findsOneWidget);
     expect(
@@ -289,7 +292,9 @@ void main() {
           .widget<SelectableText>(
             find.byWidgetPredicate(
               (widget) =>
-                  widget is SelectableText && widget.data == hadith.text,
+                  widget is SelectableText &&
+                  widget.textSpan?.toPlainText() ==
+                      'عن ${hadith.rawi}: ${hadith.text}',
             ),
           )
           .textDirection,

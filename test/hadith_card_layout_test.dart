@@ -100,8 +100,9 @@ void main() {
                 body: SingleChildScrollView(
                   child: HadithCardLayout(
                     text: hadith.text,
+                    narrator: hadith.rawi,
                     grading: 'خلاصة حكم المحدث: ${hadith.grade}',
-                    attribution: 'الراوي: Narrator\nScholar، Source (1/2)',
+                    attribution: 'Scholar، Source (1/2)',
                     isFavourite: true,
                     onExplanation: () => pressed.add('explanation'),
                     onSimilar: () => pressed.add('similar'),
@@ -122,11 +123,24 @@ void main() {
           textWidgets.map((text) => text.style!.fontSize),
           everyElement(50),
         );
-        expect(textWidgets.map((text) => text.data), [
-          hadith.text,
-          'خلاصة حكم المحدث: ${hadith.grade}',
-          'الراوي: Narrator\nScholar، Source (1/2)',
-        ]);
+        expect(
+          textWidgets.map((text) => text.data ?? text.textSpan!.toPlainText()),
+          [
+            'عن Narrator: ${hadith.text}',
+            'خلاصة حكم المحدث: ${hadith.grade}',
+            'Scholar، Source (1/2)',
+          ],
+        );
+        final body = textWidgets.first;
+        final prefix = body.textSpan!.children!.first as TextSpan;
+        expect(prefix.text, 'عن Narrator: ');
+        expect(prefix.style!.color, isNot(body.style!.color));
+        expect(
+          prefix.style!.color!.computeLuminance(),
+          mode == 'dark'
+              ? lessThan(body.style!.color!.computeLuminance())
+              : greaterThan(body.style!.color!.computeLuminance()),
+        );
         expect(
           find.descendant(
             of: find.byType(HadithCardLayout),
@@ -207,10 +221,7 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('خلاصة حكم المحدث: ${hadith.grade}'), findsOneWidget);
-      expect(
-        find.text('الراوي: Narrator\nScholar، Source (1/2)'),
-        findsOneWidget,
-      );
+      expect(find.text('Scholar، Source (1/2)'), findsOneWidget);
       expect(
         find.text('Legacy citation\nUnstructured extra details'),
         findsOneWidget,
@@ -240,6 +251,7 @@ void main() {
         find.byType(HadithCardLayout),
       );
       expect(result.text, saved.text);
+      expect(result.narrator, saved.narrator);
       expect(result.grading, saved.grading);
       expect(result.attribution, saved.attribution);
       await tester.pumpWidget(const SizedBox());

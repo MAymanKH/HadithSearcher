@@ -10,6 +10,7 @@ class HadithCardLayout extends StatelessWidget {
   static const panelBorderRadius = BorderRadius.all(Radius.circular(20));
   final EdgeInsetsGeometry margin;
   final String text;
+  final String? narrator;
   final String? grading;
   final String attribution;
   final bool isFavourite;
@@ -25,6 +26,7 @@ class HadithCardLayout extends StatelessWidget {
     super.key,
     this.margin = const EdgeInsets.all(10),
     required this.text,
+    this.narrator,
     required this.grading,
     required this.attribution,
     required this.isFavourite,
@@ -54,11 +56,31 @@ class HadithCardLayout extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          SelectableText(
-            text,
-            style: textStyle,
-            textDirection: TextDirection.rtl,
-          ),
+          if (narrator?.trim().isNotEmpty ?? false)
+            SelectableText.rich(
+              TextSpan(
+                children: [
+                  TextSpan(
+                    text: 'عن ${narrator!.trim()}: ',
+                    style: TextStyle(
+                      color: Color.alphaBlend(
+                        colors.secondaryContainer.withValues(alpha: 0.65),
+                        colors.primaryContainer,
+                      ),
+                    ),
+                  ),
+                  TextSpan(text: text),
+                ],
+              ),
+              style: textStyle,
+              textDirection: TextDirection.rtl,
+            )
+          else
+            SelectableText(
+              text,
+              style: textStyle,
+              textDirection: TextDirection.rtl,
+            ),
           Padding(
             padding: const EdgeInsets.only(top: 14, bottom: 12),
             child: Divider(
