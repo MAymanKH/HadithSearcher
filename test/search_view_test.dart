@@ -1,5 +1,8 @@
 import 'fixtures/search_catalogs.dart';
 import 'package:hadithsearcher/widgets/app_dropdown.dart';
+import 'package:hadithsearcher/widgets/api_details_dialog.dart';
+import 'package:hadithsearcher/widgets/message_dialog.dart';
+import 'package:hadithsearcher/services/api_service.dart';
 import 'package:hadithsearcher/widgets/hadith_card_layout.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -28,6 +31,7 @@ void main() {
     WidgetTester tester, {
     double width = 320,
     bool includeNarrators = true,
+    NavigationMode navigationMode = NavigationMode.traditional,
   }) async {
     await seedCatalogCache(includeNarrators: includeNarrators);
     tester.view.physicalSize = Size(width, 850);
@@ -44,9 +48,14 @@ void main() {
     await telemetry.save(diagnostics: false, analytics: false);
     addTearDown(telemetry.dispose);
     await tester.pumpWidget(
-      HadithSearcherApp(
-        initialThemeMode: ThemeMode.light,
-        telemetry: telemetry,
+      MediaQuery(
+        data: MediaQueryData.fromView(
+          tester.view,
+        ).copyWith(navigationMode: navigationMode),
+        child: HadithSearcherApp(
+          initialThemeMode: ThemeMode.light,
+          telemetry: telemetry,
+        ),
       ),
     );
     await finishCatalogPreload(
@@ -153,6 +162,63 @@ void main() {
     expect(focus.hasFocus, isTrue);
     await tester.pumpWidget(const SizedBox());
   });
+
+  for (final navigation in NavigationMode.values) {
+    for (final sources in [false, true]) {
+      for (final dismissal in ['close', 'barrier', 'back']) {
+        testWidgets(
+          '${sources ? 'sources' : 'explanation'} cancellation by $dismissal does not restore search focus in ${navigation.name} navigation',
+          (tester) async {
+            await mount(tester, width: 800, navigationMode: navigation);
+            final field = find.byType(TextField).first;
+            final focus = tester.widget<TextField>(field).focusNode!;
+            await tester.tap(field);
+            await tester.pump();
+            expect(focus.hasFocus, isTrue);
+            final pending = Completer<ApiResult<String>>();
+            final context = tester.element(field);
+            final dialog = sources
+                ? showApiDetailsDialog<String>(
+                    context,
+                    title: 'أصول الحديث',
+                    load: () => pending.future,
+                    format: (value) => value,
+                  )
+                : showMessageDialog(
+                    context,
+                    title: 'الشرح',
+                    content: 'نص الشرح',
+                    useReadingSettings: true,
+                  );
+            await tester.pump();
+            await tester.pump(const Duration(milliseconds: 300));
+            expect(find.byType(AlertDialog), findsOneWidget);
+            if (dismissal == 'close') {
+              await tester.tap(find.text('إغلاق'));
+            } else if (dismissal == 'barrier') {
+              await tester.tapAt(const Offset(5, 5));
+            } else {
+              await tester.binding.handlePopRoute();
+            }
+            await dialog;
+            pending.complete(ApiResult.success('Late source details'));
+            await tester.pumpAndSettle();
+            expect(find.byType(AlertDialog), findsNothing);
+            expect(focus.hasFocus, isFalse);
+            expect(tester.testTextInput.isVisible, isFalse);
+            focus.requestFocus();
+            await tester.pump();
+            expect(focus.hasFocus, isFalse);
+            await tester.tap(field);
+            await tester.pump();
+            expect(focus.hasFocus, isTrue);
+            expect(tester.testTextInput.isVisible, isTrue);
+            await tester.pumpWidget(const SizedBox());
+          },
+        );
+      }
+    }
+  }
 
   for (final mode in [ThemeMode.light, ThemeMode.dark]) {
     testWidgets(

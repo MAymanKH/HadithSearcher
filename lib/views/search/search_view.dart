@@ -24,16 +24,12 @@ class SearchView extends StatefulWidget {
 class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
   static const _filterGap = 10.0;
   final _textController = TextEditingController();
-  final _searchFocusNode = FocusNode(
-    canRequestFocus: false,
-    skipTraversal: true,
-  );
+  final _searchFocusNode = _SearchFocusNode();
   final _excludedWordsController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _searchFocusNode.addListener(_onSearchFocusChanged);
     initScrollController();
     scrollController.addListener(_loadNearEnd);
 
@@ -66,17 +62,6 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     }
   }
 
-  void _onSearchFocusChanged() {
-    if (!_searchFocusNode.hasFocus) {
-      setState(() => _searchFocusNode.canRequestFocus = false);
-    }
-  }
-
-  void _focusSearchFromTap() {
-    setState(() => _searchFocusNode.canRequestFocus = true);
-    _searchFocusNode.requestFocus();
-  }
-
   void _loadNearEnd() {
     if (scrollController.hasClients &&
         scrollController.position.extentAfter < 500) {
@@ -86,7 +71,6 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
 
   @override
   void dispose() {
-    _searchFocusNode.removeListener(_onSearchFocusChanged);
     _searchFocusNode.dispose();
     _textController.dispose();
     _excludedWordsController.dispose();
@@ -223,8 +207,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
             child: TextField(
               autofocus: false,
               focusNode: _searchFocusNode,
-              canRequestFocus: _searchFocusNode.canRequestFocus,
-              onTap: _focusSearchFromTap,
+              onTap: _searchFocusNode.requestFocusFromTap,
               onTapAlwaysCalled: true,
               textInputAction: TextInputAction.search,
               controller: _textController,
@@ -645,5 +628,24 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
         ],
       ),
     );
+  }
+}
+
+class _SearchFocusNode extends FocusNode {
+  _SearchFocusNode() : super(skipTraversal: true);
+
+  bool _handlingTap = false;
+
+  @override
+  bool get canRequestFocus =>
+      super.canRequestFocus && (hasFocus || _handlingTap);
+
+  void requestFocusFromTap() {
+    _handlingTap = true;
+    try {
+      requestFocus();
+    } finally {
+      _handlingTap = false;
+    }
   }
 }
