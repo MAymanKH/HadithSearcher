@@ -33,6 +33,7 @@
   "similarHadiths": "Similar hadiths",
   "noAlternate": "No authentic alternative available",
   "noSimilar": "No similar hadiths",
+  "noSimilarForHadith": "No similar hadiths available for this hadith",
   "noExplanation": "No explanation available for this hadith",
   "loadingExplanation": "Finding the explanation...",
   "connectionError": "Connection error",

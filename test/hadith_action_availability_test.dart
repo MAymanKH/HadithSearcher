@@ -11,6 +11,7 @@ import 'package:hadithsearcher/viewmodels/favourites_viewmodel.dart';
 import 'package:hadithsearcher/viewmodels/settings_viewmodel.dart';
 import 'package:hadithsearcher/views/favourites/favourites_view.dart';
 import 'package:hadithsearcher/widgets/hadith_card.dart';
+import 'package:hadithsearcher/widgets/hadith_card_layout.dart';
 
 Hadith item(Map<String, Object?> metadata) => Hadith.fromJson({
   'hadithId': 'availability',
@@ -105,11 +106,20 @@ void main() {
             final explanationButton = find.widgetWithText(TextButton, 'الشرح');
             expect(similarButton, findsOneWidget);
             expect(explanationButton, findsOneWidget);
-            expect(tester.widget<TextButton>(similarButton).enabled, similar);
-            expect(
-              tester.widget<TextButton>(explanationButton).enabled,
-              explanation,
+            final layout = tester.widget<HadithCardLayout>(
+              find.byType(HadithCardLayout),
             );
+            expect(layout.onSimilar != null, similar);
+            expect(layout.onExplanation != null, explanation);
+            for (final (finder, available) in [
+              (similarButton, similar),
+              (explanationButton, explanation),
+            ]) {
+              final button = tester.widget<TextButton>(finder);
+              expect(button.enabled, isTrue);
+              final color = button.style!.foregroundColor!.resolve({})!;
+              expect(color.a, closeTo(available ? 1 : 0.38, 0.01));
+            }
             expect(
               tester
                   .widget<TextButton>(find.widgetWithText(TextButton, 'مشاركة'))
@@ -124,19 +134,37 @@ void main() {
                   .enabled,
               isTrue,
             );
-            if (!similar && !explanation) {
-              await http.runWithClient(
-                () async {
+            await http.runWithClient(
+              () async {
+                if (!similar) {
                   await tester.tap(similarButton);
+                  await tester.pumpAndSettle();
+                  expect(
+                    find.text('لا توجد أحاديث مشابهة لهذا الحديث'),
+                    findsOneWidget,
+                  );
+                  expect(find.byType(HadithCardLayout), findsOneWidget);
+                }
+                if (!explanation) {
                   await tester.tap(explanationButton);
                   await tester.pumpAndSettle();
+                  expect(find.text('لا يوجد شرح لهذا الحديث'), findsOneWidget);
+                  expect(
+                    find.text('لا توجد أحاديث مشابهة لهذا الحديث'),
+                    findsNothing,
+                  );
+                }
+                if (!similar || !explanation) {
+                  await tester.pump(const Duration(seconds: 2));
+                  await tester.pumpAndSettle();
                   expect(find.byType(SnackBar), findsNothing);
-                },
-                () => MockClient(
-                  (_) async => throw StateError('Disabled action used network'),
-                ),
-              );
-            }
+                }
+              },
+              () => MockClient(
+                (_) async =>
+                    throw StateError('Unavailable action used network'),
+              ),
+            );
             expect(tester.takeException(), isNull);
             await tester.pumpWidget(const SizedBox());
           }

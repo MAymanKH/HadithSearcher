@@ -102,6 +102,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get noSimilar => 'لا توجد أحاديث مشابهة';
 
   @override
+  String get noSimilarForHadith => 'لا توجد أحاديث مشابهة لهذا الحديث';
+
+  @override
   String get noExplanation => 'لا يوجد شرح لهذا الحديث';
 
   @override

@@ -29,6 +29,7 @@
   "similarHadiths": "أحاديث مشابهة",
   "noAlternate": "لا يوجد بديل صحيح متاح",
   "noSimilar": "لا توجد أحاديث مشابهة",
+  "noSimilarForHadith": "لا توجد أحاديث مشابهة لهذا الحديث",
   "noExplanation": "لا يوجد شرح لهذا الحديث",
   "loadingExplanation": "جارٍ البحث عن الشرح...",
   "connectionError": "خطأ بالإتصال بالإنترنت",

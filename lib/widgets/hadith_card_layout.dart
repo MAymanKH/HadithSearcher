@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/localization.dart';
 import '../viewmodels/settings_viewmodel.dart';
+import 'app_snack_bar.dart';
 import 'hadith_detail_button.dart';
 
 class HadithCardLayout extends StatelessWidget {
@@ -91,6 +92,7 @@ class HadithCardLayout extends StatelessWidget {
                   icon: Icons.article_outlined,
                   label: context.l10n.explanation,
                   onPressed: onExplanation,
+                  unavailableMessage: context.l10n.noExplanation,
                   foregroundColor: colors.surface,
                 ),
                 if (showSimilarButton)
@@ -98,6 +100,7 @@ class HadithCardLayout extends StatelessWidget {
                     icon: Icons.library_books_outlined,
                     label: context.l10n.similar,
                     onPressed: onSimilar,
+                    unavailableMessage: context.l10n.noSimilarForHadith,
                     foregroundColor: colors.surface,
                   ),
                 _CardAction(
@@ -132,20 +135,38 @@ class _CardAction extends StatelessWidget {
   final String label;
   final VoidCallback? onPressed;
   final Color foregroundColor;
+  final String? unavailableMessage;
 
   const _CardAction({
     required this.icon,
     required this.label,
     required this.onPressed,
     required this.foregroundColor,
+    this.unavailableMessage,
   });
 
   @override
   Widget build(BuildContext context) {
     final button = TextButton(
-      onPressed: onPressed,
+      onPressed:
+          onPressed ??
+          (unavailableMessage == null
+              ? null
+              : () {
+                  ScaffoldMessenger.of(context).removeCurrentSnackBar();
+                  showAppSnackBar(
+                    context,
+                    SnackBar(
+                      content: Text(unavailableMessage!),
+                      duration: const Duration(seconds: 2),
+                      behavior: SnackBarBehavior.floating,
+                    ),
+                  );
+                }),
       style: TextButton.styleFrom(
-        foregroundColor: foregroundColor,
+        foregroundColor: onPressed == null
+            ? foregroundColor.withValues(alpha: 0.38)
+            : foregroundColor,
         disabledForegroundColor: foregroundColor.withValues(alpha: 0.38),
         padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
         minimumSize: const Size(0, 62),

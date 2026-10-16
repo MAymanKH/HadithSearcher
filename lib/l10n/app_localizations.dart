@@ -272,6 +272,12 @@ abstract class AppLocalizations {
   /// **'No similar hadiths'**
   String get noSimilar;
 
+  /// No description provided for @noSimilarForHadith.
+  ///
+  /// In en, this message translates to:
+  /// **'No similar hadiths available for this hadith'**
+  String get noSimilarForHadith;
+
   /// No description provided for @noExplanation.
   ///
   /// In en, this message translates to:

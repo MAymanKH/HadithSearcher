@@ -102,6 +102,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noSimilar => 'No similar hadiths';
 
   @override
+  String get noSimilarForHadith =>
+      'No similar hadiths available for this hadith';
+
+  @override
   String get noExplanation => 'No explanation available for this hadith';
 
   @override
