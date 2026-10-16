@@ -3,8 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../l10n/localization.dart';
 import '../models/search_option.dart';
-import '../models/hadith_details.dart';
-import 'api_details_dialog.dart';
+import 'source_details_sheet.dart';
 import 'selection_sheet.dart';
 import 'app_selection_tile.dart';
 import '../services/api_service.dart';
@@ -245,38 +244,13 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
     _emitSelection();
   }
 
-  Future<void> _showInfo(SearchOption option) async {
-    switch (widget.filter) {
-      case SearchFilter.book:
-        await showApiDetailsDialog<BookDetails>(
-          context,
-          title: option.arabicName,
-          load: () => ApiService().getBookDetails(option.apiCode),
-          format: (book) => _fields([
-            if (book.name.trim() != option.arabicName.trim())
-              (context.l10n.book, book.name),
-            (context.l10n.author, book.author),
-            (context.l10n.reviewer, book.reviewer),
-            (context.l10n.publisher, book.publisher),
-            (context.l10n.edition, book.edition),
-            (context.l10n.editionYear, book.editionYear),
-          ]),
-        );
-      case SearchFilter.scholar:
-        await showApiDetailsDialog<ScholarDetails>(
-          context,
-          title: option.arabicName,
-          load: () => ApiService().getScholarDetails(option.apiCode),
-          format: (scholar) => [
-            if (scholar.name.trim() != option.arabicName.trim()) scholar.name,
-            scholar.info,
-          ].where((text) => text.trim().isNotEmpty).join('\n\n'),
-        );
-      case SearchFilter.grade:
-      case SearchFilter.narrator:
-        break;
-    }
-  }
+  Future<void> _showInfo(SearchOption option) => showSourceDetailsSheet(
+    context,
+    title: widget.filter.label(context.l10n),
+    child: widget.filter == SearchFilter.book
+        ? BookSourceDetails(name: option.arabicName, id: option.apiCode)
+        : ScholarSourceDetails(name: option.arabicName, id: option.apiCode),
+  );
 
   Widget _tile(SearchOption option) {
     final all = option.apiCode == '0';
@@ -367,11 +341,6 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
     ),
   );
 }
-
-String _fields(List<(String, String)> fields) => fields
-    .where((field) => field.$2.trim().isNotEmpty)
-    .map((field) => '${field.$1}: ${field.$2}')
-    .join('\n\n');
 
 String _normalize(String text) => text
     .replaceAll(RegExp(r'[\u064B-\u065F\u0670\u0640]'), '')

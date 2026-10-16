@@ -487,21 +487,9 @@ void main() {
               findsOneWidget,
             );
             expect(latestSelection, isEmpty);
-            final dialog = tester.getRect(
-              find
-                  .descendant(
-                    of: find.byType(AlertDialog),
-                    matching: find.byType(Material),
-                  )
-                  .first,
-            );
-            final close = tester.getRect(
-              find.widgetWithText(TextButton, 'إغلاق'),
-            );
-            final copy = tester.getRect(find.widgetWithText(TextButton, 'نسخ'));
-            expect(close.right, greaterThan(dialog.right - 40));
-            expect(copy.left, lessThan(dialog.left + 40));
-            await tester.tap(find.text('إغلاق'));
+            expect(find.byType(AlertDialog), findsNothing);
+            expect(find.byType(BottomSheet), findsNWidgets(2));
+            await tester.tap(find.byTooltip('إغلاق'));
             await tester.pumpAndSettle();
             expect(tester.widget<Checkbox>(checkbox).value, isFalse);
             await tester.tap(checkbox);
@@ -538,6 +526,49 @@ void main() {
         );
       },
     );
+  }
+
+  for (final filter in [SearchFilter.book, SearchFilter.scholar]) {
+    for (final missing in [false, true]) {
+      testWidgets(
+        '${filter.name} info sheet handles ${missing ? 'missing' : 'empty'} details',
+        (tester) async {
+          const option = SearchOption('source-id', 'اسم المصدر');
+          await http.runWithClient(
+            () async {
+              await openPicker(
+                tester,
+                filter: filter,
+                load: () async => ApiResult.success([option]),
+              );
+              await settle(tester);
+              await tester.tap(find.byTooltip('معلومات عن اسم المصدر'));
+              await tester.pumpAndSettle();
+              expect(find.byType(AlertDialog), findsNothing);
+              expect(find.byType(BottomSheet), findsNWidgets(2));
+              expect(
+                find.text('لا تتوفر معلومات إضافية من المصدر'),
+                findsOneWidget,
+              );
+              expect(find.text('أعد المحاولة'), findsNothing);
+              await tester.tap(find.byTooltip('إغلاق'));
+              await tester.pumpAndSettle();
+              expect(find.byType(BottomSheet), findsOneWidget);
+              expect(tester.takeException(), isNull);
+            },
+            () => MockClient(
+              (_) async => http.Response(
+                jsonEncode({
+                  'data': missing ? null : {'name': option.arabicName},
+                }),
+                missing ? 404 : 200,
+                headers: {'content-type': 'application/json; charset=utf-8'},
+              ),
+            ),
+          );
+        },
+      );
+    }
   }
 
   testWidgets(

@@ -110,6 +110,73 @@ void main() {
     },
   );
 
+  testWidgets('missing scholar details do not hide available book details', (
+    tester,
+  ) async {
+    await http.runWithClient(
+      () async {
+        await mount(tester, Hadith.fromJson(richJson));
+        final info = find.byTooltip('معلومات المحدث والكتاب');
+        await tester.ensureVisible(info);
+        await tester.runAsync(() async {
+          await tester.tap(info);
+          await Future<void>.delayed(const Duration(milliseconds: 50));
+        });
+        await tester.pumpAndSettle();
+        expect(find.text('لا تتوفر معلومات إضافية من المصدر'), findsOneWidget);
+        expect(find.text('المؤلف: مؤلف الكتاب'), findsOneWidget);
+        expect(find.text('أعد المحاولة'), findsNothing);
+        expect(tester.takeException(), isNull);
+      },
+      () => MockClient(
+        (request) async => request.url.path.endsWith('/mohdith/256')
+            ? response({'data': null}, status: 404)
+            : response({
+                'data': {'name': 'صحيح البخاري', 'author': 'مؤلف الكتاب'},
+              }),
+      ),
+    );
+  });
+
+  for (final missingHadith in [false, true]) {
+    testWidgets(
+      'source sheet handles absent scholar and book metadata, lookup=$missingHadith',
+      (tester) async {
+        final hadith = Hadith.fromJson({
+          'hadithId': missingHadith ? 'missing-source-metadata' : '',
+          'hadith': 'نص الحديث',
+          'mohdithId': '0',
+          'bookId': '',
+        });
+        var calls = 0;
+        await http.runWithClient(
+          () async {
+            await mount(tester, hadith);
+            final info = find.byTooltip('معلومات المحدث والكتاب');
+            await tester.ensureVisible(info);
+            await tester.runAsync(() async {
+              await tester.tap(info);
+              await Future<void>.delayed(const Duration(milliseconds: 100));
+            });
+            await tester.pumpAndSettle();
+            expect(
+              find.text('لا تتوفر معلومات إضافية من المصدر'),
+              findsNWidgets(2),
+            );
+            expect(find.text('أعد المحاولة'), findsNothing);
+            expect(calls, missingHadith ? 1 : 0);
+            expect(tester.takeException(), isNull);
+          },
+          () => MockClient((request) async {
+            calls++;
+            expect(request.url.path, '/v1/site/hadith/missing-source-metadata');
+            return response({'data': null}, status: 404);
+          }),
+        );
+      },
+    );
+  }
+
   for (final dark in [false, true]) {
     testWidgets(
       'source sheet loads on demand and retries each section in ${dark ? 'dark' : 'light'} mode',
