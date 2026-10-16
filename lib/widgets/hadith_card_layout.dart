@@ -11,7 +11,6 @@ class HadithCardLayout extends StatelessWidget {
   final EdgeInsetsGeometry margin;
   final String text;
   final String? grading;
-  final String? scholar;
   final String attribution;
   final bool isFavourite;
   final VoidCallback? onExplanation;
@@ -27,7 +26,6 @@ class HadithCardLayout extends StatelessWidget {
     this.margin = const EdgeInsets.all(10),
     required this.text,
     required this.grading,
-    this.scholar,
     required this.attribution,
     required this.isFavourite,
     required this.onExplanation,
@@ -71,7 +69,6 @@ class HadithCardLayout extends StatelessWidget {
           if (grading != null) ...[
             SelectableText(grading!, style: textStyle),
             if (onAlternate != null) _buildAlternateButton(context),
-            if (scholar != null) SelectableText(scholar!, style: textStyle),
             const SizedBox(height: 4),
           ],
           SelectableText(attribution, style: textStyle),

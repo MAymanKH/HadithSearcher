@@ -37,6 +37,17 @@ class HadithCitation {
   String get attribution =>
       'الراوي: $rawi\nالمصدر: $book\nالصفحة أو الرقم: $numberOrPage';
 
+  String get compactSource {
+    final reference = [
+      book,
+      numberOrPage,
+    ].map((value) => value.trim()).where((value) => value.isNotEmpty).join(' ');
+    return [
+      mohdith.trim(),
+      reference,
+    ].where((value) => value.isNotEmpty).join('، ');
+  }
+
   String get combinedInfo => '$grading\n$attribution';
 
   String get formattedInfo =>

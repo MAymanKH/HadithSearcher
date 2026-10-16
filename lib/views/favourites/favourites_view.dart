@@ -193,11 +193,9 @@ class _FavouriteHadithCard extends StatelessWidget {
       grading: citation == null
           ? null
           : context.l10n.gradeLabel(citation.grade),
-      scholar: citation == null || citation.mohdith.trim().isEmpty
-          ? null
-          : '${context.l10n.scholar}: ${citation.mohdith}',
       attribution:
-          citation?.localizedAttribution(context.l10n) ?? favourite.hadithInfo,
+          citation?.localizedCardAttribution(context.l10n) ??
+          favourite.hadithInfo,
       additionalInfo: HadithAdditionalInfo(
         key: ValueKey(favourite.hadithId),
         hadith:

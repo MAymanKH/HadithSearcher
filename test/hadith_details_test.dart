@@ -143,8 +143,12 @@ void main() {
               find.text('خلاصة حكم المحدث: ${hadith.grade}'),
               findsOneWidget,
             );
-            expect(find.text('المحدث: ${hadith.mohdith}'), findsOneWidget);
-            expect(find.text(hadith.citation.attribution), findsOneWidget);
+            expect(
+              find.text(
+                'الراوي: ${hadith.rawi}\n${hadith.mohdith}، ${hadith.book} ${hadith.numberOrPage}',
+              ),
+              findsOneWidget,
+            );
             expect(
               find.text('توضيح الحكم: ${hadith.explainGrade}'),
               findsOneWidget,
@@ -231,7 +235,12 @@ void main() {
             await Future<void>.delayed(const Duration(milliseconds: 50));
           });
           await tester.pumpAndSettle();
-          expect(find.text(saved.citation.attribution), findsOneWidget);
+          expect(
+            find.text(
+              'الراوي: ${saved.rawi}\n${saved.mohdith}، ${saved.book} ${saved.numberOrPage}',
+            ),
+            findsOneWidget,
+          );
           expect(find.text('أعد المحاولة'), findsOneWidget);
           await tester.ensureVisible(find.text('أعد المحاولة'));
           await tester.runAsync(() async {
@@ -408,7 +417,7 @@ void main() {
       await tester.pump();
       final cards = find.byType(HadithCard).evaluate().length;
       expect(cards, lessThan(12));
-      expect(find.byType(SelectableText).evaluate().length, cards * 4);
+      expect(find.byType(SelectableText).evaluate().length, cards * 3);
       expect(tester.takeException(), isNull);
     }
   });

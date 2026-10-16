@@ -101,8 +101,7 @@ void main() {
                   child: HadithCardLayout(
                     text: hadith.text,
                     grading: 'خلاصة حكم المحدث: ${hadith.grade}',
-                    scholar: 'المحدث: ${hadith.mohdith}',
-                    attribution: hadith.citation.attribution,
+                    attribution: 'الراوي: Narrator\nScholar، Source 1/2',
                     isFavourite: true,
                     onExplanation: () => pressed.add('explanation'),
                     onSimilar: () => pressed.add('similar'),
@@ -126,8 +125,7 @@ void main() {
         expect(textWidgets.map((text) => text.data), [
           hadith.text,
           'خلاصة حكم المحدث: ${hadith.grade}',
-          'المحدث: ${hadith.mohdith}',
-          hadith.citation.attribution,
+          'الراوي: Narrator\nScholar، Source 1/2',
         ]);
         expect(
           find.descendant(
@@ -209,8 +207,10 @@ void main() {
       );
       await tester.pumpAndSettle();
       expect(find.text('خلاصة حكم المحدث: ${hadith.grade}'), findsOneWidget);
-      expect(find.text('المحدث: ${hadith.mohdith}'), findsOneWidget);
-      expect(find.text(hadith.citation.attribution), findsOneWidget);
+      expect(
+        find.text('الراوي: Narrator\nScholar، Source 1/2'),
+        findsOneWidget,
+      );
       expect(
         find.text('Legacy citation\nUnstructured extra details'),
         findsOneWidget,
@@ -241,7 +241,6 @@ void main() {
       );
       expect(result.text, saved.text);
       expect(result.grading, saved.grading);
-      expect(result.scholar, saved.scholar);
       expect(result.attribution, saved.attribution);
       await tester.pumpWidget(const SizedBox());
     },
