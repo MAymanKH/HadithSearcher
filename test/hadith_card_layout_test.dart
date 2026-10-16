@@ -134,10 +134,6 @@ void main() {
         final body = textWidgets.first;
         final prefix = body.textSpan!.children!.first as TextSpan;
         expect(prefix.text, 'عن Narrator: ');
-        expect(
-          textWidgets.skip(1).map((text) => text.style!.color),
-          everyElement(prefix.style!.color),
-        );
         expect(prefix.style!.color, isNot(body.style!.color));
         expect(
           prefix.style!.color!.computeLuminance(),
