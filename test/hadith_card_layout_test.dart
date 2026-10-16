@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hadithsearcher/core/theme/app_theme.dart';
 import 'package:hadithsearcher/models/hadith.dart';
+import 'package:hadithsearcher/l10n/localization.dart';
 import 'package:hadithsearcher/models/hadith_citation.dart';
 import 'package:hadithsearcher/services/database_service.dart';
 import 'package:hadithsearcher/viewmodels/favourites_viewmodel.dart';
@@ -100,6 +101,41 @@ void main() {
         expect(tester.takeException(), isNull);
       },
     );
+  }
+
+  for (final language in ['ar', 'en']) {
+    testWidgets('shared text matches visible basic card content in $language', (
+      tester,
+    ) async {
+      final settings = SettingsViewModel();
+      addTearDown(settings.dispose);
+      await tester.pumpWidget(
+        ChangeNotifierProvider.value(
+          value: settings,
+          child: MaterialApp(
+            locale: Locale(language),
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+            home: Scaffold(
+              body: SingleChildScrollView(
+                child: HadithCard(
+                  hadith: hadith,
+                  isFavourite: false,
+                  onFavouriteToggle: () async {},
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+      final context = tester.element(find.byType(HadithCard));
+      final visible = tester
+          .widgetList<SelectableText>(find.byType(SelectableText))
+          .take(3)
+          .map((text) => text.data ?? text.textSpan!.toPlainText())
+          .join('\n\n');
+      expect(hadith.citation.cardText(hadith.text, context.l10n), visible);
+    });
   }
 
   test('saved citations preserve every field, including multiline grading', () {

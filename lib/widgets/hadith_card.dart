@@ -107,10 +107,7 @@ class HadithCard extends StatelessWidget {
   Future<void> _share(BuildContext context) async {
     TelemetryService.event('share_opened', {'hadith_id': hadith.id});
     await SharePlus.instance.share(
-      ShareParams(
-        text:
-            '${hadith.text}\n\n${hadith.citation.localizedInfo(context.l10n)}\n\nHadith Searcher:\nhttps://bit.ly/hadith-searcher',
-      ),
+      ShareParams(text: hadith.citation.cardText(hadith.text, context.l10n)),
     );
   }
 }

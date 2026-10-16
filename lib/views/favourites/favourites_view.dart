@@ -173,7 +173,8 @@ class _FavouriteHadithCard extends StatelessWidget {
         await SharePlus.instance.share(
           ShareParams(
             text:
-                '${favourite.hadithText}\n\n${citation?.localizedInfo(context.l10n) ?? favourite.hadithInfo}\n\nHadith Searcher:\nhttps://bit.ly/hadith-searcher',
+                citation?.cardText(favourite.hadithText, context.l10n) ??
+                '${favourite.hadithText}\n\n${favourite.hadithInfo}',
           ),
         );
       },
