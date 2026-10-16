@@ -1,3 +1,4 @@
+import 'fixtures/search_catalogs.dart';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui' as ui;
@@ -49,6 +50,7 @@ void main() {
     WidgetTester tester, {
     TelemetryPolicy policy = TelemetryPolicy.optIn,
   }) async {
+    await seedCatalogCache();
     final telemetry = TelemetryService(
       preferences: await SharedPreferences.getInstance(),
       backend: FakeBackend(),
@@ -66,6 +68,13 @@ void main() {
           telemetry: telemetry,
         ),
       ),
+    );
+    await finishCatalogPreload(
+      tester,
+      tester
+          .element(find.byType(MaterialApp))
+          .read<SearchViewModel>()
+          .preloadCatalogs(),
     );
     await tester.pumpAndSettle();
     return telemetry;
@@ -213,7 +222,7 @@ void main() {
       final vm = SearchViewModel();
       addTearDown(vm.dispose);
       final en = AppLocalizationsEn();
-      vm.setSelectedOptions(SearchFilter.grade, [SearchOption.grades[1]]);
+      vm.setSelectedOptions(SearchFilter.grade, [grades[1]]);
       vm.setSelectedOptions(
         SearchFilter.book,
         [],

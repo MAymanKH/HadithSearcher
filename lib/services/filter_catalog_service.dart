@@ -5,30 +5,33 @@ import 'api_service.dart';
 
 class FilterCatalogService {
   static const cacheLifetime = Duration(days: 7);
-  final _options = <SearchFilter, List<SearchOption>>{};
-  final _pending = <SearchFilter, Future<ApiResult<List<SearchOption>>>>{};
+  final _options = <String, List<SearchOption>>{};
+  final _pending = <String, Future<ApiResult<List<SearchOption>>>>{};
 
-  Future<ApiResult<List<SearchOption>>> load(SearchFilter filter) {
-    final options = _options[filter];
+  Future<ApiResult<List<SearchOption>>> load(SearchFilter filter) =>
+      loadCatalog(filter.endpoint);
+
+  Future<ApiResult<List<SearchOption>>> loadCatalog(String endpoint) {
+    final options = _options[endpoint];
     if (options != null) return Future.value(ApiResult.success(options));
     return _pending.putIfAbsent(
-      filter,
-      () => _load(filter).whenComplete(() {
-        _pending.remove(filter);
+      endpoint,
+      () => _load(endpoint).whenComplete(() {
+        _pending.remove(endpoint);
       }),
     );
   }
 
-  Future<ApiResult<List<SearchOption>>> _load(SearchFilter filter) async {
+  Future<ApiResult<List<SearchOption>>> _load(String endpoint) async {
     final prefs = await SharedPreferences.getInstance();
-    final key = 'filterCatalog.${filter.endpoint}';
+    final key = 'filterCatalog.$endpoint';
     List<SearchOption>? cached;
     final body = prefs.getString(key);
     if (body != null) {
       try {
         final decoded = await compute(SearchOption.decodeCatalog, body);
         if (decoded.any((option) => option.apiCode != '0')) {
-          cached = _canonicalize(filter, decoded);
+          cached = decoded;
         }
       } on FormatException {
         cached = null;
@@ -42,16 +45,16 @@ class FilterCatalogService {
     if (cached != null && savedAt != null) {
       final age = DateTime.now().millisecondsSinceEpoch - savedAt;
       if (age >= 0 && age < cacheLifetime.inMilliseconds) {
-        _options[filter] = cached;
+        _options[endpoint] = cached;
         return ApiResult.success(cached);
       }
     }
 
-    final result = await ApiService().getFilterOptions(filter.endpoint);
+    final result = await ApiService().getFilterOptions(endpoint);
     if (result.isSuccess &&
         result.data!.any((option) => option.apiCode != '0')) {
-      final options = _canonicalize(filter, result.data!);
-      _options[filter] = options;
+      final options = result.data!;
+      _options[endpoint] = options;
       await prefs.setString(
         key,
         await compute(SearchOption.encodeCatalog, options),
@@ -65,13 +68,4 @@ class FilterCatalogService {
     }
     return ApiResult.error(result.error ?? ApiError.notFound);
   }
-
-  List<SearchOption> _canonicalize(
-    SearchFilter filter,
-    List<SearchOption> options,
-  ) => {
-    '0': filter.all,
-    for (final option in options)
-      if (option.apiCode != '0') option.apiCode: option,
-  }.values.toList();
 }

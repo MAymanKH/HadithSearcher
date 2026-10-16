@@ -1,3 +1,4 @@
+import 'fixtures/search_catalogs.dart';
 import 'package:hadithsearcher/widgets/app_dropdown.dart';
 import 'package:hadithsearcher/widgets/hadith_card_layout.dart';
 import 'dart:async';
@@ -22,7 +23,12 @@ import 'telemetry/fake_backend.dart';
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  Future<void> mount(WidgetTester tester, {double width = 320}) async {
+  Future<void> mount(
+    WidgetTester tester, {
+    double width = 320,
+    bool includeNarrators = true,
+  }) async {
+    await seedCatalogCache(includeNarrators: includeNarrators);
     tester.view.physicalSize = Size(width, 850);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -41,6 +47,13 @@ void main() {
         initialThemeMode: ThemeMode.light,
         telemetry: telemetry,
       ),
+    );
+    await finishCatalogPreload(
+      tester,
+      tester
+          .element(find.byType(MaterialApp))
+          .read<SearchViewModel>()
+          .preloadCatalogs(),
     );
     await tester.pumpAndSettle();
   }
@@ -256,25 +269,25 @@ void main() {
     );
   }
 
-  testWidgets('narrator picker loads on demand and applies its API code', (
-    tester,
-  ) async {
+  testWidgets('narrator picker reuses startup catalog', (tester) async {
     final requests = <Uri>[];
     await http.runWithClient(
       () async {
-        await mount(tester);
-        expect(requests, isEmpty);
+        await mount(tester, includeNarrators: false);
+        expect(requests.map((url) => url.path), ['/v1/data/rawi']);
         await tester.enterText(find.byType(TextField), 'query');
         await tester.tap(find.widgetWithText(TextButton, 'التصفية'));
         await tester.pumpAndSettle();
-        expect(requests, isEmpty);
+        expect(requests.map((url) => url.path), ['/v1/data/rawi']);
         await tester.ensureVisible(find.text('جميع الرواة'));
         await tester.tap(find.text('جميع الرواة'));
         await tester.pump();
         await tester.runAsync(() async {
           for (var i = 0; i < 200; i++) {
             await tester.pump();
-            if (find.byType(LinearProgressIndicator).evaluate().isEmpty) break;
+            if (find.byType(LinearProgressIndicator).evaluate().isEmpty) {
+              break;
+            }
             await Future<void>.delayed(const Duration(milliseconds: 10));
           }
         });
@@ -335,7 +348,7 @@ void main() {
     await mount(tester);
     expect(find.byType(Badge), findsNothing);
     final vm = tester.element(find.byType(SearchView)).read<SearchViewModel>();
-    vm.setSelectedOptions(SearchFilter.grade, [SearchOption.grades[1]]);
+    vm.setSelectedOptions(SearchFilter.grade, [grades[1]]);
     await tester.pumpAndSettle();
     final activeFilters = List<String>.of(vm.activeFilters);
     expect(find.byType(Chip), findsWidgets);
@@ -401,7 +414,7 @@ void main() {
           final vm = tester
               .element(find.byType(SearchView))
               .read<SearchViewModel>();
-          vm.setSelectedOptions(SearchFilter.grade, [SearchOption.grades[1]]);
+          vm.setSelectedOptions(SearchFilter.grade, [grades[1]]);
           await vm.search('الصلاة');
           await tester.pumpAndSettle();
           final row = find.byKey(const ValueKey('active-filters-row'));

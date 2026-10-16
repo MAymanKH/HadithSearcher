@@ -1,3 +1,4 @@
+import 'fixtures/search_catalogs.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -342,9 +343,9 @@ void main() {
       await openPicker(
         tester,
         filter: SearchFilter.grade,
-        load: () async => fail('Grades must use their four local options'),
+        load: () async => ApiResult.success(grades),
       );
-      await tester.pumpAndSettle();
+      await settle(tester);
       expect(find.byType(TextField), findsNothing);
       expect(find.byType(Checkbox), findsNWidgets(5));
       expect(find.textContaining('تطبيق'), findsNothing);
@@ -587,6 +588,38 @@ void main() {
     },
   );
 
+  testWidgets('grades use API IDs and never offer local fallback options', (
+    tester,
+  ) async {
+    var calls = 0;
+    await openPicker(
+      tester,
+      filter: SearchFilter.grade,
+      load: () async {
+        calls++;
+        return ApiResult.success([
+          const SearchOption('api-grade', 'درجة من الخادم'),
+          const SearchOption('other-grade', 'درجة أخرى'),
+        ]);
+      },
+    );
+    await settle(tester);
+    expect(calls, 1);
+    expect(find.text('أحاديث صحيحة'), findsNothing);
+    await tester.tap(find.text('جميع الدرجات'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('درجة من الخادم'));
+    await tester.pumpAndSettle();
+    expect(latestSelection.single.apiCode, 'api-grade');
+    expect(
+      SearchParams(
+        keyword: 'query',
+        filters: {SearchFilter.grade: latestSelection},
+      ).toQueryParams()['d[]'],
+      ['api-grade'],
+    );
+  });
+
   testWidgets('manually selecting every grade clears the active filter count', (
     tester,
   ) async {
@@ -595,14 +628,14 @@ void main() {
     await openPicker(
       tester,
       filter: SearchFilter.grade,
-      load: () async => fail('Grades use local options'),
+      load: () async => ApiResult.success(grades),
       onChanged: (values) => vm.setSelectedOptions(SearchFilter.grade, values),
     );
-    await tester.pumpAndSettle();
+    await settle(tester);
     expect(vm.activeFilters, isEmpty);
     await tester.tap(find.text('جميع الدرجات'));
     await tester.pumpAndSettle();
-    for (final option in SearchOption.grades.skip(1)) {
+    for (final option in grades.skip(1)) {
       await tester.tap(find.text(option.arabicName));
       await tester.pumpAndSettle();
       if (option.apiCode != '4') expect(vm.activeFilters, hasLength(1));

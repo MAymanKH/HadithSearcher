@@ -15,7 +15,10 @@ void main() {
           keyword: 'الأعمال',
           specialist: true,
           filters: {
-            SearchFilter.book: [SearchOption.books[2], SearchOption.books[3]],
+            SearchFilter.book: [
+              const SearchOption('6216', 'صحيح البخاري'),
+              const SearchOption('3088', 'صحيح مسلم'),
+            ],
           },
         ),
       );

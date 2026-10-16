@@ -24,56 +24,24 @@ class SearchOption {
   static String encodeCatalog(List<SearchOption> options) =>
       jsonEncode(options.map((option) => option.toJson()).toList());
 
-  static const grades = [
-    SearchOption('0', 'جميع الدرجات'),
-    SearchOption('1', 'أحاديث صحيحة'),
-    SearchOption('2', 'أحاديث أسانيدها صحيحة'),
-    SearchOption('3', 'أحاديث ضعيفة'),
-    SearchOption('4', 'أحاديث أسانيدها ضعيفة'),
-  ];
-
+  static const allGrades = SearchOption('0', 'جميع الدرجات');
   static const allScholars = SearchOption('0', 'جميع المحدثين');
   static const allBooks = SearchOption('0', 'جميع الكتب');
   static const allNarrators = SearchOption('0', 'جميع الرواة');
-  static const scholars = [
-    allScholars,
-    SearchOption('179', 'الإمام مالك'),
-    SearchOption('204', 'الإمام الشافعي'),
-    SearchOption('256', 'البخاري'),
-    SearchOption('261', 'مسلم'),
-    SearchOption('385', 'الدارقطني'),
-    SearchOption('852', 'ابن حجر العسقلاني'),
-    SearchOption('232', 'يحيى بن معين'),
-  ];
-  static const books = [
-    allBooks,
-    SearchOption('13457', 'الأربعون النووية'),
-    SearchOption('6216', 'صحيح البخاري'),
-    SearchOption('3088', 'صحيح مسلم'),
-    SearchOption('96', 'الصحيح المسند'),
-  ];
-  static const narrators = [allNarrators];
 }
 
 enum SearchFilter {
-  grade('degree', 'درجة الحديث', SearchOption.grades, 'd[]'),
-  scholar('mohdith', 'المحدث', SearchOption.scholars, 'm[]'),
-  book('book', 'الكتاب', SearchOption.books, 's[]'),
-  narrator('rawi', 'الراوي', SearchOption.narrators, 'rawi[]');
+  grade('degree', 'درجة الحديث', SearchOption.allGrades, 'd[]'),
+  scholar('mohdith', 'المحدث', SearchOption.allScholars, 'm[]'),
+  book('book', 'الكتاب', SearchOption.allBooks, 's[]'),
+  narrator('rawi', 'الراوي', SearchOption.allNarrators, 'rawi[]');
 
   final String endpoint;
   final String queryKey;
   final String arabicName;
-  final List<SearchOption> fallbackOptions;
+  final SearchOption all;
 
-  const SearchFilter(
-    this.endpoint,
-    this.arabicName,
-    this.fallbackOptions,
-    this.queryKey,
-  );
-
-  SearchOption get all => fallbackOptions.first;
+  const SearchFilter(this.endpoint, this.arabicName, this.all, this.queryKey);
 
   String? get exclusionQueryKey => switch (this) {
     SearchFilter.grade => null,

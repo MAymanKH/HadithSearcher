@@ -36,6 +36,7 @@ extension LocalizedSearchWay on SearchWay {
     SearchWay.anyWord => l.anyWord,
     SearchWay.allWords => l.allWords,
     SearchWay.exactMatch => l.exactMatch,
+    _ => arabicName,
   };
 }
 
@@ -46,6 +47,7 @@ extension LocalizedSearchRange on SearchRange {
     SearchRange.qudsi => l.qudsi,
     SearchRange.athar => l.athar,
     SearchRange.sharh => l.sharh,
+    _ => arabicName,
   };
 }
 

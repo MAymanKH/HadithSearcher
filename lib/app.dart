@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -35,7 +36,16 @@ class HadithSearcherApp extends StatelessWidget {
         ChangeNotifierProvider(
           create: (_) => SettingsViewModel()..loadSettings(),
         ),
-        ChangeNotifierProvider(create: (_) => SearchViewModel()),
+        ChangeNotifierProvider(
+          lazy: false,
+          create: (_) {
+            final viewModel = SearchViewModel();
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              unawaited(viewModel.preloadCatalogs());
+            });
+            return viewModel;
+          },
+        ),
         ChangeNotifierProvider(create: (_) => FavouritesViewModel()),
         ChangeNotifierProvider(create: (_) => SimilarHadithViewModel()),
       ],

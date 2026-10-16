@@ -14,6 +14,9 @@ void main() {
       final vm = SearchViewModel();
       addTearDown(vm.dispose);
       await vm.init();
+      await vm.preloadCatalogs();
+      expect(vm.searchWays.length, greaterThan(1));
+      expect(vm.searchRanges.length, greaterThan(1));
       for (final filter in SearchFilter.values) {
         final result = await vm.loadFilterOptions(filter);
         expect(
@@ -22,14 +25,8 @@ void main() {
           reason: '${filter.endpoint}: ${result.error}',
         );
         final options = result.data!;
-        expect(
-          options.length,
-          greaterThanOrEqualTo(filter.fallbackOptions.length),
-        );
-        final codes = options.map((option) => option.apiCode).toSet();
-        for (final fallback in filter.fallbackOptions) {
-          expect(codes, contains(fallback.apiCode));
-        }
+        expect(options.length, greaterThan(1));
+        expect(options.first.apiCode, filter.all.apiCode);
         if (filter == SearchFilter.narrator) {
           vm.setSelectedOptions(SearchFilter.narrator, [
             options.firstWhere((option) => option.apiCode == '8918'),

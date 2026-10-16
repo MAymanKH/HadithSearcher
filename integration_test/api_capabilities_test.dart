@@ -60,7 +60,29 @@ void main() {
     server.listen((request) async {
       final path = request.uri.path;
       Object result;
-      if (path == '/v1/data/book') {
+      if (path == '/v1/data/methodSearch') {
+        result = {
+          'data': [
+            {'key': 'a', 'value': 'أي كلمة'},
+          ],
+        };
+      } else if (path == '/v1/data/zoneSearch') {
+        result = {
+          'data': [
+            {'key': '*', 'value': 'جميع الأحاديث'},
+          ],
+        };
+      } else if (path == '/v1/data/degree') {
+        result = {
+          'data': [
+            {'key': '0', 'value': 'جميع الدرجات'},
+            {'key': '1', 'value': 'أحاديث صحيحة'},
+            {'key': '2', 'value': 'أحاديث أسانيدها صحيحة'},
+            {'key': '3', 'value': 'أحاديث ضعيفة'},
+            {'key': '4', 'value': 'أحاديث أسانيدها ضعيفة'},
+          ],
+        };
+      } else if (path == '/v1/data/book') {
         result = {
           'data': [
             {'key': '6216', 'value': 'صحيح البخاري'},

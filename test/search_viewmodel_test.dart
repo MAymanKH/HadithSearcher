@@ -1,3 +1,4 @@
+import 'fixtures/search_catalogs.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
@@ -159,7 +160,7 @@ void main() {
     () async {
       final vm = SearchViewModel();
       addTearDown(vm.dispose);
-      vm.setSelectedOptions(SearchFilter.grade, [SearchOption.grades[3]]);
+      vm.setSelectedOptions(SearchFilter.grade, [grades[3]]);
       vm.setExcludedWords('old exclusion');
       await vm.saveAdvancedPrefs();
       await vm.setSaveAdvancedSettings(false);

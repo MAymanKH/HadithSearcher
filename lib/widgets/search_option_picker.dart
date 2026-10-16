@@ -78,15 +78,11 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
           in widget.excluded.isNotEmpty ? widget.excluded : widget.selected)
         if (option.apiCode != '0') option.apiCode: option,
     };
-    _options = _indexOptions(widget.filter.fallbackOptions);
+    _options = <_IndexedOption>[];
     _includeSelection();
     _resetVisibleOptions();
     _scrollController.addListener(_loadMoreOptions);
-    if (widget.filter == SearchFilter.grade) {
-      _loading = false;
-    } else {
-      _load();
-    }
+    _load();
   }
 
   void _includeSelection() {

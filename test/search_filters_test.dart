@@ -1,3 +1,4 @@
+import 'fixtures/search_catalogs.dart';
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
@@ -24,10 +25,7 @@ void main() {
       vm.toggleAdvancedSearch();
       expect(vm.hasSettingsChanged(), isFalse);
       vm.setSelectedOptions(SearchFilter.book, books);
-      vm.setSelectedOptions(SearchFilter.grade, [
-        SearchOption.grades[1],
-        SearchOption.grades[2],
-      ]);
+      vm.setSelectedOptions(SearchFilter.grade, [grades[1], grades[2]]);
       vm.setSpecialist(true);
       expect(vm.hasSettingsChanged(), isTrue);
       await vm.saveAdvancedPrefs();

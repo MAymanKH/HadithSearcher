@@ -34,6 +34,63 @@ class SearchViewModel extends ChangeNotifier {
   bool _initialized = false;
   bool _disposed = false;
   final _catalogs = FilterCatalogService();
+  Future<void>? _catalogPreload;
+  bool _catalogPreloadStarted = false;
+  List<SearchWay> _searchWays = [];
+  List<SearchRange> _searchRanges = [];
+
+  List<SearchWay> get searchWays => [
+    if (!_searchWays.contains(_searchWay)) _searchWay,
+    ..._searchWays,
+  ];
+  List<SearchRange> get searchRanges => [
+    if (!_searchRanges.contains(_searchRange)) _searchRange,
+    ..._searchRanges,
+  ];
+
+  Future<void> preloadCatalogs() {
+    if (_disposed) return Future.value();
+    _catalogPreloadStarted = true;
+    return _catalogPreload ??= _preloadCatalogs().whenComplete(() {
+      _catalogPreload = null;
+    });
+  }
+
+  Future<void> _preloadCatalogs() async {
+    // Small catalogs first; the narrator catalog is deliberately last.
+    for (final endpoint in [
+      'methodSearch',
+      'zoneSearch',
+      'degree',
+      'mohdith',
+      'book',
+      'rawi',
+    ]) {
+      if (_disposed) return;
+      final result = await _catalogs.loadCatalog(endpoint);
+      if (_disposed) return;
+      if (result.error == ApiError.noConnection ||
+          result.error == ApiError.timeout) {
+        return;
+      }
+      if (result.isSuccess) {
+        if (endpoint == 'methodSearch') {
+          _searchWays = result.data!
+              .map((option) => SearchWay(option.apiCode, option.arabicName))
+              .toList();
+          notifyListeners();
+        } else if (endpoint == 'zoneSearch') {
+          _searchRanges = result.data!
+              .map((option) => SearchRange(option.apiCode, option.arabicName))
+              .toList();
+          notifyListeners();
+        }
+      }
+      // Yield between catalogs so startup and interactions can keep rendering.
+      await Future<void>.delayed(Duration.zero);
+    }
+  }
+
   List<String> get activeFilters =>
       localizedActiveFilters(AppLocalizationsAr());
 
@@ -191,14 +248,20 @@ class SearchViewModel extends ChangeNotifier {
       return;
     }
 
+    final wayCode = prefs.getString('searchWay.code');
+    final rangeCode = prefs.getString('searchRange.code');
     final wayStr = prefs.getString('searchWay');
     if (wayStr != null) {
-      _searchWay = SearchWay.fromArabic(wayStr);
+      _searchWay = wayCode == null
+          ? SearchWay.fromArabic(wayStr)
+          : SearchWay(wayCode, wayStr);
     }
 
     final rangeStr = prefs.getString('searchRange');
     if (rangeStr != null) {
-      _searchRange = SearchRange.fromArabic(rangeStr);
+      _searchRange = rangeCode == null
+          ? SearchRange.fromArabic(rangeStr)
+          : SearchRange(rangeCode, rangeStr);
     }
 
     _specialist = prefs.getBool('searchSpecialist') ?? false;
@@ -229,11 +292,7 @@ class SearchViewModel extends ChangeNotifier {
         SearchFilter.book: 'searchBook',
         SearchFilter.narrator: 'searchRawi',
       }.entries) {
-        final option = _restoreOption(
-          prefs,
-          entry.value,
-          entry.key.fallbackOptions,
-        );
+        final option = _restoreOption(prefs, entry.value, entry.key);
         setSelectedOptions(entry.key, option.apiCode == '0' ? [] : [option]);
       }
     }
@@ -262,21 +321,48 @@ class SearchViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Only used to migrate label-only preferences from releases before API catalogs.
+  static const _legacyLabels = <SearchFilter, Map<String, String>>{
+    SearchFilter.grade: {
+      'أحاديث صحيحة': '1',
+      'أحاديث أسانيدها صحيحة': '2',
+      'أحاديث ضعيفة': '3',
+      'أحاديث أسانيدها ضعيفة': '4',
+    },
+    SearchFilter.scholar: {
+      'الإمام مالك': '179',
+      'الإمام المالك': '179',
+      'الإمام الشافعي': '204',
+      'البخاري': '256',
+      'مسلم': '261',
+      'الدارقطني': '385',
+      'ابن حجر العسقلاني': '852',
+      'يحيى بن معين': '232',
+    },
+    SearchFilter.book: {
+      'الأربعون النووية': '13457',
+      'صحيح البخاري': '6216',
+      'صحيح مسلم': '3088',
+      'الصحيح المسند': '96',
+    },
+  };
+
   SearchOption _restoreOption(
     SharedPreferences prefs,
     String key,
-    List<SearchOption> options,
+    SearchFilter filter,
   ) {
     final saved = prefs.getString(key);
-    return options.firstWhere(
-      (option) =>
-          option.apiCode == saved ||
-          option.arabicName == saved ||
-          (saved == 'الإمام المالك' && option.apiCode == '179'),
-      orElse: () => prefs.containsKey('$key.label')
-          ? SearchOption(saved!, prefs.getString('$key.label')!)
-          : options.first,
-    );
+    if (saved == null || saved == '0' || saved == filter.all.arabicName) {
+      return filter.all;
+    }
+    final code = _legacyLabels[filter]?[saved];
+    if (code != null) return SearchOption(code, saved);
+    final label = prefs.getString('$key.label');
+    if (label != null) return SearchOption(saved, label);
+    // Older versions also stored catalog IDs without a separate label.
+    if (int.tryParse(saved) != null) return SearchOption(saved, saved);
+    return filter.all;
   }
 
   Future<ApiResult<List<SearchOption>>> loadFilterOptions(
@@ -466,8 +552,8 @@ class SearchViewModel extends ChangeNotifier {
   /// Toggle advanced search panel.
   void toggleAdvancedSearch() {
     if (!_isAdvancedSearchOpen) {
-      // Opening the panel - save initial state
       _saveInitialState();
+      if (_catalogPreloadStarted) unawaited(preloadCatalogs());
     }
     _isAdvancedSearchOpen = !_isAdvancedSearchOpen;
     notifyListeners();
@@ -532,7 +618,9 @@ class SearchViewModel extends ChangeNotifier {
     if (!_saveAdvancedSettings) {
       for (final key in [
         'searchWay',
+        'searchWay.code',
         'searchRange',
+        'searchRange.code',
         'searchFilters',
         'searchFilterExclusions',
         'searchSpecialist',
@@ -542,6 +630,8 @@ class SearchViewModel extends ChangeNotifier {
       }
       return;
     }
+    await prefs.setString('searchWay.code', _searchWay.apiCode);
+    await prefs.setString('searchRange.code', _searchRange.apiCode);
     await prefs.setString('searchWay', _searchWay.arabicName);
     await prefs.setString('searchRange', _searchRange.arabicName);
     await prefs.setBool('searchSpecialist', _specialist);

@@ -25,8 +25,8 @@ class ApiService {
       'query_length': params.keyword.trim().length,
       'has_excluded_words': params.excludedWords.trim().isNotEmpty,
       'page': params.page,
-      'search_way': params.searchWay.name,
-      'search_range': params.searchRange.name,
+      'search_way': params.searchWay.apiCode,
+      'search_range': params.searchRange.apiCode,
       'specialist': params.specialist,
       for (final filter in SearchFilter.values)
         (filter == SearchFilter.grade ? 'grade' : filter.endpoint):
@@ -49,10 +49,7 @@ class ApiService {
           return ApiResult.error(ApiError.unsupportedFilters);
         }
         final result = _parseHadiths(json);
-        return ApiResult.success(
-          result.data!,
-          hasNextPage: result.hasNextPage,
-        );
+        return ApiResult.success(result.data!, hasNextPage: result.hasNextPage);
       },
     );
   }
@@ -61,6 +58,7 @@ class ApiService {
     '/v1/data/$kind',
     operation: 'filter_catalog',
     event: 'filter_catalog_completed',
+    timeout: const Duration(seconds: 15),
     decode: (body) => compute(SearchOption.decodeCatalog, body),
     parse: (options) => ApiResult.success(options as List<SearchOption>),
   );
@@ -166,6 +164,7 @@ class ApiService {
     FutureOr<dynamic> Function(String) decode = jsonDecode,
     Map<String, Object>? query,
     Map<String, Object> properties = const {},
+    Duration timeout = requestTimeout,
   }) async {
     final analytics = TelemetryService.instance?.analyticsEnabled ?? false;
     final diagnostics = TelemetryService.instance?.diagnosticsEnabled ?? false;
@@ -178,7 +177,7 @@ class ApiService {
         final client = http.Client();
         final http.Response response;
         try {
-          response = await client.get(url).timeout(requestTimeout);
+          response = await client.get(url).timeout(timeout);
         } finally {
           client.close();
         }

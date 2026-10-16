@@ -108,7 +108,8 @@ void main() {
         for (final filter in SearchFilter.values) {
           final result = await restored.loadFilterOptions(filter);
           expect(result.data!.last.apiCode, '999');
-          expect(result.data!.first.arabicName, filter.all.arabicName);
+          expect(result.data!.first.apiCode, '0');
+          expect(result.data!.first.arabicName, 'الجميع');
         }
       },
       () =>

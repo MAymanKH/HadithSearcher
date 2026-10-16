@@ -258,7 +258,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
             _buildDropdownRow(
               context.l10n.searchMethod,
               vm.searchWay,
-              SearchWay.values,
+              vm.searchWays,
               (value) {
                 if (value != null) vm.setSearchWay(value);
               },
@@ -269,7 +269,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
             _buildDropdownRow(
               context.l10n.searchRange,
               vm.searchRange,
-              SearchRange.values,
+              vm.searchRanges,
               (value) {
                 if (value != null) vm.setSearchRange(value);
               },

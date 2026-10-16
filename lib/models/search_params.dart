@@ -68,18 +68,25 @@ class SearchParams {
 }
 
 /// Search method (any word, all words, exact match).
-enum SearchWay {
-  anyWord('a', 'أي كلمة'),
-  allWords('w', 'جميع الكلمات'),
-  exactMatch('p', 'بحث مطابق');
+class SearchWay extends SearchOption {
+  const SearchWay(super.apiCode, super.arabicName);
 
-  final String apiCode;
-  final String arabicName;
+  // Known codes support defaults, localization, and old saved preferences.
+  // Picker choices come from the API, including any new codes.
+  static const anyWord = SearchWay('a', 'أي كلمة');
+  static const allWords = SearchWay('w', 'جميع الكلمات');
+  static const exactMatch = SearchWay('p', 'بحث مطابق');
+  static const _legacyValues = [anyWord, allWords, exactMatch];
 
-  const SearchWay(this.apiCode, this.arabicName);
+  @override
+  bool operator ==(Object other) =>
+      other is SearchWay && other.apiCode == apiCode;
+
+  @override
+  int get hashCode => Object.hash(SearchWay, apiCode);
 
   static SearchWay fromArabic(String name) {
-    return SearchWay.values.firstWhere(
+    return _legacyValues.firstWhere(
       (e) => e.arabicName == name,
       orElse: () => SearchWay.anyWord,
     );
@@ -87,20 +94,25 @@ enum SearchWay {
 }
 
 /// Hadith range/type filter.
-enum SearchRange {
-  all('*', 'جميع الأحاديث'),
-  marfoo('0', 'الأحاديث المرفوعة'),
-  qudsi('1', 'الأحاديث القدسية'),
-  athar('2', 'آثار الصحابة'),
-  sharh('3', 'شروح الأحاديث');
+class SearchRange extends SearchOption {
+  const SearchRange(super.apiCode, super.arabicName);
 
-  final String apiCode;
-  final String arabicName;
+  static const all = SearchRange('*', 'جميع الأحاديث');
+  static const marfoo = SearchRange('0', 'الأحاديث المرفوعة');
+  static const qudsi = SearchRange('1', 'الأحاديث القدسية');
+  static const athar = SearchRange('2', 'آثار الصحابة');
+  static const sharh = SearchRange('3', 'شروح الأحاديث');
+  static const _legacyValues = [all, marfoo, qudsi, athar, sharh];
 
-  const SearchRange(this.apiCode, this.arabicName);
+  @override
+  bool operator ==(Object other) =>
+      other is SearchRange && other.apiCode == apiCode;
+
+  @override
+  int get hashCode => Object.hash(SearchRange, apiCode);
 
   static SearchRange fromArabic(String name) {
-    return SearchRange.values.firstWhere(
+    return _legacyValues.firstWhere(
       (e) => e.arabicName == name,
       orElse: () => SearchRange.all,
     );
