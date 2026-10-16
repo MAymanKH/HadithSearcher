@@ -5,6 +5,7 @@ import '../../l10n/localization.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../viewmodels/similar_hadith_viewmodel.dart';
 import '../../widgets/back_to_top_button.dart';
+import '../../widgets/app_loading_indicator.dart';
 import '../../widgets/hadith_card.dart';
 
 class SimilarHadithView extends StatefulWidget {
@@ -47,7 +48,7 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
         top: false,
         child: Center(
           child: vm.isLoading
-              ? const CircularProgressIndicator()
+              ? const AppLoadingIndicator()
               : vm.isEmpty
               ? _buildEmptyState(vm)
               : _buildResults(vm),

@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../l10n/localization.dart';
 import '../services/api_service.dart';
 import '../viewmodels/settings_viewmodel.dart';
+import 'app_loading_indicator.dart';
 import 'details_sheet.dart';
 
 Future<void> showApiDetailsSheet<T extends Object>(
@@ -69,10 +70,7 @@ class _ApiDetailsContentState<T extends Object>
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               if (loading)
-                const Padding(
-                  padding: EdgeInsets.all(24),
-                  child: Center(child: CircularProgressIndicator()),
-                )
+                const AppLoadingIndicator()
               else if (text.isNotEmpty)
                 SelectableText(
                   text,

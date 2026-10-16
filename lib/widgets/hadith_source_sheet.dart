@@ -4,6 +4,7 @@ import '../models/hadith.dart';
 import '../services/api_service.dart';
 import '../services/favourite_details_service.dart';
 import 'source_details_sheet.dart';
+import 'app_loading_indicator.dart';
 import 'details_sheet.dart';
 
 Future<void> showHadithSourceSheet(BuildContext context, Hadith hadith) =>
@@ -51,10 +52,7 @@ class _HadithSourceSheetState extends State<_HadithSourceSheet> {
     future: _hadith,
     builder: (context, snapshot) {
       if (snapshot.connectionState != ConnectionState.done) {
-        return const Padding(
-          padding: EdgeInsets.all(24),
-          child: Center(child: CircularProgressIndicator()),
-        );
+        return const AppLoadingIndicator();
       }
       final result = snapshot.data;
       final hadith = result?.data;

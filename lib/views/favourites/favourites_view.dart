@@ -14,6 +14,7 @@ import '../../widgets/hadith_additional_info.dart';
 import '../../widgets/hadith_card_layout.dart';
 import '../../widgets/back_to_top_button.dart';
 import '../../widgets/hadith_reading_sheet.dart';
+import '../../widgets/app_loading_indicator.dart';
 import '../../widgets/favourite_undo.dart';
 import '../../viewmodels/similar_hadith_viewmodel.dart';
 import '../similar_hadith/similar_hadith_view.dart';
@@ -55,7 +56,7 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
       ),
       body: Center(
         child: vm.isLoading
-            ? const CircularProgressIndicator()
+            ? const AppLoadingIndicator()
             : vm.isEmpty
             ? _buildEmptyState()
             : _buildFavouritesList(vm),

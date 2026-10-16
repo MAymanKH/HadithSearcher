@@ -14,6 +14,7 @@ import 'package:hadithsearcher/models/hadith.dart';
 import 'package:hadithsearcher/models/hadith_details.dart';
 import 'package:hadithsearcher/viewmodels/settings_viewmodel.dart';
 import 'package:hadithsearcher/widgets/hadith_additional_info.dart';
+import 'package:hadithsearcher/widgets/app_loading_indicator.dart';
 import 'package:hadithsearcher/widgets/hadith_card_layout.dart';
 import 'package:hadithsearcher/widgets/hadith_card.dart';
 
@@ -599,10 +600,10 @@ void main() {
         await tester.ensureVisible(find.text('معلومات إضافية'));
         await tester.tap(find.text('معلومات إضافية'));
         await tester.pump(const Duration(milliseconds: 300));
-        expect(find.byType(LinearProgressIndicator), findsOneWidget);
+        expect(find.byType(AppLoadingIndicator), findsOneWidget);
         await tester.tap(find.text('إخفاء المعلومات الإضافية'));
         await tester.pumpAndSettle();
-        expect(find.byType(LinearProgressIndicator), findsNothing);
+        expect(find.byType(AppLoadingIndicator), findsNothing);
         expect(calls, 1);
         await tester.pumpWidget(const SizedBox());
         pending.complete(response({'data': richJson}));

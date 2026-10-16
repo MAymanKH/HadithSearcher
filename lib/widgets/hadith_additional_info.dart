@@ -8,6 +8,7 @@ import '../services/api_service.dart';
 import '../services/favourite_details_service.dart';
 import '../viewmodels/settings_viewmodel.dart';
 import 'api_details_sheet.dart';
+import 'app_loading_indicator.dart';
 import 'hadith_card_layout.dart';
 import 'hadith_detail_button.dart';
 
@@ -175,7 +176,7 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              if (_loading) const LinearProgressIndicator(),
+                              if (_loading) const AppLoadingIndicator(),
                               if (_error != null) ...[
                                 Text(
                                   context.l10n.additionalInfoLoadFailed(

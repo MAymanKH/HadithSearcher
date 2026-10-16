@@ -14,6 +14,7 @@ import 'package:hadithsearcher/models/search_option.dart';
 import 'package:hadithsearcher/models/search_params.dart';
 import 'package:hadithsearcher/services/api_service.dart';
 import 'package:hadithsearcher/widgets/search_option_picker.dart';
+import 'package:hadithsearcher/widgets/app_loading_indicator.dart';
 
 void main() {
   List<SearchOption> latestSelection = [];
@@ -74,7 +75,7 @@ void main() {
       // compute uses a real isolate, so let it finish outside the fake clock.
       for (var i = 0; i < 200; i++) {
         await tester.pump();
-        if (find.byType(LinearProgressIndicator).evaluate().isEmpty) break;
+        if (find.byType(AppLoadingIndicator).evaluate().isEmpty) break;
         await Future<void>.delayed(const Duration(milliseconds: 10));
       }
     });
@@ -332,7 +333,7 @@ void main() {
   ) async {
     final response = Completer<ApiResult<List<SearchOption>>>();
     await openPicker(tester, load: () => response.future);
-    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    expect(find.byType(AppLoadingIndicator), findsOneWidget);
     tester.state<NavigatorState>(find.byType(Navigator)).pop();
     await tester.pumpAndSettle();
     response.complete(ApiResult.success([const SearchOption('2', 'راوٍ آخر')]));

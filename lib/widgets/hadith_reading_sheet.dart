@@ -4,6 +4,7 @@ import '../l10n/localization.dart';
 import '../services/api_service.dart';
 import '../viewmodels/similar_hadith_viewmodel.dart';
 import 'api_details_sheet.dart';
+import 'app_loading_indicator.dart';
 import 'app_snack_bar.dart';
 import 'details_sheet.dart';
 import 'hadith_card.dart';
@@ -44,10 +45,7 @@ class _AlternateHadithContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<SimilarHadithViewModel>();
     if (vm.isLoading) {
-      return const Padding(
-        padding: EdgeInsets.all(24),
-        child: Center(child: CircularProgressIndicator()),
-      );
+      return const AppLoadingIndicator();
     }
     if (vm.isEmpty) {
       final missing = vm.errorMessage == 'noSimilar';

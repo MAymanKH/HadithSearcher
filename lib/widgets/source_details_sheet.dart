@@ -4,6 +4,7 @@ import '../l10n/localization.dart';
 import '../models/hadith_details.dart';
 import '../services/api_service.dart';
 import '../viewmodels/settings_viewmodel.dart';
+import 'app_loading_indicator.dart';
 
 bool hasSourceId(String? id) =>
     id != null && id.trim().isNotEmpty && id.trim() != '0';
@@ -124,7 +125,7 @@ class _SourceDetailsSectionState<T extends Object>
             future: _result,
             builder: (context, snapshot) {
               if (snapshot.connectionState != ConnectionState.done) {
-                return const LinearProgressIndicator();
+                return const AppLoadingIndicator();
               }
               final result = snapshot.data;
               if (result?.isSuccess != true) {

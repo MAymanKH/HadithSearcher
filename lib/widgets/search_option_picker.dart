@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../l10n/localization.dart';
 import '../models/search_option.dart';
 import 'source_details_sheet.dart';
+import 'app_loading_indicator.dart';
 import 'details_sheet.dart';
 import 'selection_sheet.dart';
 import 'app_selection_tile.dart';
@@ -300,7 +301,7 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
       slivers: [
         SliverToBoxAdapter(child: _tile(widget.filter.all)),
         if (_loading)
-          const SliverToBoxAdapter(child: LinearProgressIndicator()),
+          const SliverToBoxAdapter(child: AppLoadingIndicator()),
         if (_error != null)
           SliverToBoxAdapter(
             child: Padding(

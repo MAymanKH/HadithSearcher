@@ -4,6 +4,7 @@ import 'package:hadithsearcher/widgets/api_details_sheet.dart';
 import 'package:hadithsearcher/widgets/hadith_reading_sheet.dart';
 import 'package:hadithsearcher/services/api_service.dart';
 import 'package:hadithsearcher/widgets/hadith_card_layout.dart';
+import 'package:hadithsearcher/widgets/app_loading_indicator.dart';
 import 'dart:async';
 import 'dart:convert';
 import 'dart:ui' as ui;
@@ -413,7 +414,7 @@ void main() {
         await tester.runAsync(() async {
           for (var i = 0; i < 200; i++) {
             await tester.pump();
-            if (find.byType(LinearProgressIndicator).evaluate().isEmpty) {
+            if (find.byType(AppLoadingIndicator).evaluate().isEmpty) {
               break;
             }
             await Future<void>.delayed(const Duration(milliseconds: 10));

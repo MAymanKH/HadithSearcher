@@ -10,6 +10,7 @@ import '../../models/search_option.dart';
 import '../../widgets/search_option_picker.dart';
 import '../../viewmodels/search_viewmodel.dart';
 import '../../widgets/back_to_top_button.dart';
+import '../../widgets/app_loading_indicator.dart';
 import '../../widgets/hadith_card.dart';
 
 class SearchView extends StatefulWidget {
@@ -188,7 +189,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
             if (vm.isAdvancedSearchOpen)
               _buildAdvancedSearch(vm)
             else if (vm.isLoading)
-              const Expanded(child: Center(child: CircularProgressIndicator()))
+              const Expanded(child: AppLoadingIndicator())
             else
               _buildResults(vm),
           ],
@@ -594,7 +595,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
                   return const Center(
                     child: Padding(
                       padding: EdgeInsets.all(16),
-                      child: CircularProgressIndicator(),
+                      child: AppLoadingIndicator(padding: EdgeInsets.zero),
                     ),
                   );
                 }
