@@ -271,7 +271,8 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(find.text(hadith.text), findsOneWidget);
-    expect(find.text('Grading by محدث: صحيح من المصدر'), findsOneWidget);
+    expect(find.text('Grading: صحيح من المصدر'), findsOneWidget);
+    expect(find.text('Scholar: محدث'), findsOneWidget);
     expect(find.text('Explanation'), findsOneWidget);
     expect(find.text('Share'), findsOneWidget);
     expect(

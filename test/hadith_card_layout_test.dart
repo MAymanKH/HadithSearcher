@@ -100,7 +100,8 @@ void main() {
                 body: SingleChildScrollView(
                   child: HadithCardLayout(
                     text: hadith.text,
-                    grading: hadith.citation.grading,
+                    grading: 'خلاصة حكم المحدث: ${hadith.grade}',
+                    scholar: 'المحدث: ${hadith.mohdith}',
                     attribution: hadith.citation.attribution,
                     isFavourite: true,
                     onExplanation: () => pressed.add('explanation'),
@@ -124,7 +125,8 @@ void main() {
         );
         expect(textWidgets.map((text) => text.data), [
           hadith.text,
-          hadith.citation.grading,
+          'خلاصة حكم المحدث: ${hadith.grade}',
+          'المحدث: ${hadith.mohdith}',
           hadith.citation.attribution,
         ]);
         expect(
@@ -133,6 +135,17 @@ void main() {
             matching: find.byType(Tooltip),
           ),
           findsNothing,
+        );
+        expect(
+          tester
+              .widgetList<TextButton>(find.byType(TextButton))
+              .map(
+                (button) => (button.child! as Column).children
+                    .whereType<Text>()
+                    .single
+                    .data,
+              ),
+          ['الشرح', 'مشابهة', 'المفضلة', 'مشاركة'],
         );
         for (final label in [
           'البديل الصحيح',
@@ -195,7 +208,8 @@ void main() {
         ),
       );
       await tester.pumpAndSettle();
-      expect(find.text(hadith.citation.grading), findsOneWidget);
+      expect(find.text('خلاصة حكم المحدث: ${hadith.grade}'), findsOneWidget);
+      expect(find.text('المحدث: ${hadith.mohdith}'), findsOneWidget);
       expect(find.text(hadith.citation.attribution), findsOneWidget);
       expect(
         find.text('Legacy citation\nUnstructured extra details'),
@@ -227,6 +241,7 @@ void main() {
       );
       expect(result.text, saved.text);
       expect(result.grading, saved.grading);
+      expect(result.scholar, saved.scholar);
       expect(result.attribution, saved.attribution);
       await tester.pumpWidget(const SizedBox());
     },

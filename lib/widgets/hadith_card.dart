@@ -38,7 +38,10 @@ class HadithCard extends StatelessWidget {
     return HadithCardLayout(
       margin: margin,
       text: hadith.text,
-      grading: citation.localizedGrading(context.l10n),
+      grading: context.l10n.gradeLabel(citation.grade),
+      scholar: citation.mohdith.trim().isEmpty
+          ? null
+          : '${context.l10n.scholar}: ${citation.mohdith}',
       attribution: citation.localizedAttribution(context.l10n),
       additionalInfo: HadithAdditionalInfo(
         key: ValueKey(hadith.id),

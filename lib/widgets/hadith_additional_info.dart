@@ -119,134 +119,150 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
         .copyWith(color: colors.secondaryContainer);
     return Container(
       margin: const EdgeInsets.only(top: 12),
-      decoration: BoxDecoration(
+      child: Material(
         color: Color.lerp(
           colors.primaryContainer,
           Colors.white,
           Theme.of(context).brightness == Brightness.dark ? 0.07 : 0.45,
         ),
-        border: Border.all(
-          color: colors.secondaryContainer.withValues(alpha: 0.16),
+        shape: RoundedRectangleBorder(
+          side: BorderSide(
+            color: colors.secondaryContainer.withValues(alpha: 0.16),
+          ),
+          borderRadius: HadithCardLayout.panelBorderRadius,
         ),
-        borderRadius: HadithCardLayout.panelBorderRadius,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Align(
-            alignment: AlignmentDirectional.centerStart,
-            child: TextButton.icon(
-              onPressed: _toggle,
-              style: TextButton.styleFrom(
-                foregroundColor: colors.secondaryContainer,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: _toggle,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 14,
                   vertical: 10,
                 ),
-              ),
-              icon: Icon(_expanded ? Icons.expand_less : Icons.expand_more),
-              label: Text(
-                _expanded
-                    ? context.l10n.hideAdditionalInfo
-                    : context.l10n.additionalInfo,
-                style: readingStyle,
-              ),
-            ),
-          ),
-          AnimatedBuilder(
-            animation: _controller,
-            builder: (context, child) => Offstage(
-              offstage: _controller.isDismissed,
-              child: ClipRect(
-                child: Align(
-                  alignment: Alignment.topCenter,
-                  heightFactor: _size.value,
-                  child: FadeTransition(opacity: _size, child: child),
-                ),
-              ),
-            ),
-            child: !_expanded && _controller.isDismissed
-                ? null
-                : TickerMode(
-                    enabled: _expanded,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.stretch,
-                        children: [
-                          if (_loading) const LinearProgressIndicator(),
-                          if (_error != null) ...[
-                            Text(
-                              context.l10n.additionalInfoLoadFailed(
-                                _error!.title(context.l10n),
-                              ),
-                            ),
-                            Align(
-                              alignment: AlignmentDirectional.centerStart,
-                              child: TextButton(
-                                onPressed: _load,
-                                child: Text(context.l10n.retry),
-                              ),
-                            ),
-                          ],
-                          if (_loaded && !_hasContent)
-                            Text(context.l10n.noAdditionalInfo),
-                          if (_hasGradingNote)
-                            _infoLine(
-                              context.l10n.gradeExplanation,
-                              _hadith.explainGrade,
-                              readingStyle,
-                            ),
-                          if (_hadith.takhrij.trim().isNotEmpty)
-                            _infoLine(
-                              context.l10n.takhrij,
-                              _hadith.takhrij,
-                              readingStyle,
-                            ),
-                          if (_hadith.categories.isNotEmpty)
-                            _infoLine(
-                              context.l10n.categories,
-                              _hadith.categories
-                                  .map((category) => category.name)
-                                  .join('، '),
-                              readingStyle,
-                            ),
-                          if (_hadith.hasUsulHadith && _hadith.id.isNotEmpty)
-                            HadithDetailButton(
-                              onPressed: () =>
-                                  showApiDetailsDialog<HadithOrigins>(
-                                    context,
-                                    title: context.l10n.hadithSources,
-                                    load: () => FavouriteDetailsService()
-                                        .getOrigins(_hadith.id),
-                                    format: (origins) => origins.sources
-                                        .map(
-                                          (source) => [
-                                            if (source.source.trim().isNotEmpty)
-                                              context.l10n.sourceLabel(
-                                                source.source,
-                                              ),
-                                            if (source.chain.trim().isNotEmpty)
-                                              context.l10n.chainLabel(
-                                                source.chain,
-                                              ),
-                                            if (source.text.trim().isNotEmpty)
-                                              context.l10n.textLabel(
-                                                source.text,
-                                              ),
-                                          ].join('\n\n'),
-                                        )
-                                        .join('\n\n'),
-                                  ),
-                              icon: Icons.account_tree_outlined,
-                              label: context.l10n.hadithChains,
-                            ),
-                        ],
+                child: Row(
+                  children: [
+                    Icon(
+                      _expanded ? Icons.expand_less : Icons.expand_more,
+                      color: colors.secondaryContainer,
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        _expanded
+                            ? context.l10n.hideAdditionalInfo
+                            : context.l10n.additionalInfo,
+                        style: readingStyle,
                       ),
                     ),
+                  ],
+                ),
+              ),
+              AnimatedBuilder(
+                animation: _controller,
+                builder: (context, child) => Offstage(
+                  offstage: _controller.isDismissed,
+                  child: ClipRect(
+                    child: Align(
+                      alignment: Alignment.topCenter,
+                      heightFactor: _size.value,
+                      child: FadeTransition(opacity: _size, child: child),
+                    ),
                   ),
+                ),
+                child: !_expanded && _controller.isDismissed
+                    ? null
+                    : TickerMode(
+                        enabled: _expanded,
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(14, 0, 14, 12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: [
+                              if (_loading) const LinearProgressIndicator(),
+                              if (_error != null) ...[
+                                Text(
+                                  context.l10n.additionalInfoLoadFailed(
+                                    _error!.title(context.l10n),
+                                  ),
+                                ),
+                                Align(
+                                  alignment: AlignmentDirectional.centerStart,
+                                  child: TextButton(
+                                    onPressed: _load,
+                                    child: Text(context.l10n.retry),
+                                  ),
+                                ),
+                              ],
+                              if (_loaded && !_hasContent)
+                                Text(context.l10n.noAdditionalInfo),
+                              if (_hasGradingNote)
+                                _infoLine(
+                                  context.l10n.gradeExplanation,
+                                  _hadith.explainGrade,
+                                  readingStyle,
+                                ),
+                              if (_hadith.takhrij.trim().isNotEmpty)
+                                _infoLine(
+                                  context.l10n.takhrij,
+                                  _hadith.takhrij,
+                                  readingStyle,
+                                ),
+                              if (_hadith.categories.isNotEmpty)
+                                _infoLine(
+                                  context.l10n.categories,
+                                  _hadith.categories
+                                      .map((category) => category.name)
+                                      .join('، '),
+                                  readingStyle,
+                                ),
+                              if (_hadith.hasUsulHadith &&
+                                  _hadith.id.isNotEmpty)
+                                HadithDetailButton(
+                                  onPressed: () =>
+                                      showApiDetailsDialog<HadithOrigins>(
+                                        context,
+                                        title: context.l10n.hadithSources,
+                                        load: () => FavouriteDetailsService()
+                                            .getOrigins(_hadith.id),
+                                        format: (origins) => origins.sources
+                                            .map(
+                                              (source) => [
+                                                if (source.source
+                                                    .trim()
+                                                    .isNotEmpty)
+                                                  context.l10n.sourceLabel(
+                                                    source.source,
+                                                  ),
+                                                if (source.chain
+                                                    .trim()
+                                                    .isNotEmpty)
+                                                  context.l10n.chainLabel(
+                                                    source.chain,
+                                                  ),
+                                                if (source.text
+                                                    .trim()
+                                                    .isNotEmpty)
+                                                  context.l10n.textLabel(
+                                                    source.text,
+                                                  ),
+                                              ].join('\n\n'),
+                                            )
+                                            .join('\n\n'),
+                                      ),
+                                  icon: Icons.account_tree_outlined,
+                                  label: context.l10n.hadithChains,
+                                ),
+                            ],
+                          ),
+                        ),
+                      ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

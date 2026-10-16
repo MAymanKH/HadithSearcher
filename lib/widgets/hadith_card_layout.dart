@@ -10,6 +10,7 @@ class HadithCardLayout extends StatelessWidget {
   final EdgeInsetsGeometry margin;
   final String text;
   final String? grading;
+  final String? scholar;
   final String attribution;
   final bool isFavourite;
   final VoidCallback onExplanation;
@@ -24,6 +25,7 @@ class HadithCardLayout extends StatelessWidget {
     this.margin = const EdgeInsets.all(10),
     required this.text,
     required this.grading,
+    this.scholar,
     required this.attribution,
     required this.isFavourite,
     required this.onExplanation,
@@ -65,13 +67,14 @@ class HadithCardLayout extends StatelessWidget {
           ),
           if (grading != null) ...[
             SelectableText(grading!, style: textStyle),
+            if (scholar != null) SelectableText(scholar!, style: textStyle),
             if (onAlternate != null) _buildAlternateButton(context),
             const SizedBox(height: 4),
           ],
           SelectableText(attribution, style: textStyle),
           if (grading == null && onAlternate != null)
             _buildAlternateButton(context),
-          if (additionalInfo != null) additionalInfo!,
+          ?additionalInfo,
           const SizedBox(height: 14),
           Material(
             color: colors.secondaryContainer,
@@ -96,15 +99,15 @@ class HadithCardLayout extends StatelessWidget {
                     foregroundColor: colors.surface,
                   ),
                 _CardAction(
-                  icon: Icons.share_outlined,
-                  label: context.l10n.share,
-                  onPressed: onShare,
-                  foregroundColor: colors.surface,
-                ),
-                _CardAction(
                   icon: isFavourite ? Icons.star : Icons.star_border,
                   label: context.l10n.favourites,
                   onPressed: onFavourite,
+                  foregroundColor: colors.surface,
+                ),
+                _CardAction(
+                  icon: Icons.share_outlined,
+                  label: context.l10n.share,
+                  onPressed: onShare,
                   foregroundColor: colors.surface,
                 ),
               ],

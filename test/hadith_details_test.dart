@@ -127,7 +127,8 @@ void main() {
                 .getSize(find.byType(HadithCardLayout))
                 .height;
             await tester.ensureVisible(find.text('معلومات إضافية'));
-            await tester.tap(find.text('معلومات إضافية'));
+            final panel = tester.getRect(find.byType(HadithAdditionalInfo));
+            await tester.tapAt(panel.topLeft + const Offset(4, 20));
             await tester.pump();
             await tester.pump(const Duration(milliseconds: 100));
             final during = tester.getSize(find.byType(HadithCardLayout)).height;
@@ -138,7 +139,11 @@ void main() {
             expect(during, inExclusiveRange(collapsed, expanded));
             expect(find.byType(Scaffold), findsOneWidget);
             expect(find.text(hadith.text), findsOneWidget);
-            expect(find.text(hadith.citation.grading), findsOneWidget);
+            expect(
+              find.text('خلاصة حكم المحدث: ${hadith.grade}'),
+              findsOneWidget,
+            );
+            expect(find.text('المحدث: ${hadith.mohdith}'), findsOneWidget);
             expect(find.text(hadith.citation.attribution), findsOneWidget);
             expect(
               find.text('توضيح الحكم: ${hadith.explainGrade}'),
@@ -170,7 +175,10 @@ void main() {
             await tester.tap(find.text('إغلاق'));
             await tester.pumpAndSettle();
             await tester.ensureVisible(find.text('إخفاء المعلومات الإضافية'));
-            await tester.tap(find.text('إخفاء المعلومات الإضافية'));
+            final expandedPanel = tester.getRect(
+              find.byType(HadithAdditionalInfo),
+            );
+            await tester.tapAt(expandedPanel.topLeft + const Offset(4, 20));
             await tester.pumpAndSettle();
             expect(
               find.text('توضيح الحكم: ${hadith.explainGrade}'),
@@ -400,7 +408,7 @@ void main() {
       await tester.pump();
       final cards = find.byType(HadithCard).evaluate().length;
       expect(cards, lessThan(12));
-      expect(find.byType(SelectableText).evaluate().length, cards * 3);
+      expect(find.byType(SelectableText).evaluate().length, cards * 4);
       expect(tester.takeException(), isNull);
     }
   });

@@ -181,7 +181,12 @@ class _FavouriteHadithCard extends StatelessWidget {
     final citation = HadithCitation.tryParse(favourite.hadithInfo);
     return HadithCardLayout(
       text: favourite.hadithText,
-      grading: citation?.localizedGrading(context.l10n),
+      grading: citation == null
+          ? null
+          : context.l10n.gradeLabel(citation.grade),
+      scholar: citation == null || citation.mohdith.trim().isEmpty
+          ? null
+          : '${context.l10n.scholar}: ${citation.mohdith}',
       attribution:
           citation?.localizedAttribution(context.l10n) ?? favourite.hadithInfo,
       additionalInfo: HadithAdditionalInfo(
