@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../l10n/localization.dart';
+import '../core/constants/app_config.dart';
 import '../services/telemetry/telemetry_service.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
@@ -107,7 +108,10 @@ class HadithCard extends StatelessWidget {
   Future<void> _share(BuildContext context) async {
     TelemetryService.event('share_opened', {'hadith_id': hadith.id});
     await SharePlus.instance.share(
-      ShareParams(text: hadith.citation.cardText(hadith.text, context.l10n)),
+      ShareParams(
+        text:
+            '${hadith.citation.cardText(hadith.text, context.l10n)}\n\nHadith Searcher:\n$appShareUrl',
+      ),
     );
   }
 }

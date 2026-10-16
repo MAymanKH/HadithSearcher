@@ -4,3 +4,5 @@ const hadithApiBaseUrl = String.fromEnvironment(
 );
 
 const privacyPolicyUrl = 'https://hadith-searcher-privacy-policy.pages.dev';
+
+const appShareUrl = 'https://bit.ly/hadith-searcher';

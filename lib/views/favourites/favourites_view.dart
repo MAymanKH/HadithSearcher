@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../widgets/hadith_source_sheet.dart';
 import '../../l10n/localization.dart';
+import '../../core/constants/app_config.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../services/telemetry/telemetry_service.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -170,12 +171,11 @@ class _FavouriteHadithCard extends StatelessWidget {
         TelemetryService.event('share_opened', {
           'hadith_id': favourite.hadithId,
         });
+        final text =
+            citation?.cardText(favourite.hadithText, context.l10n) ??
+            '${favourite.hadithText}\n\n${favourite.hadithInfo}';
         await SharePlus.instance.share(
-          ShareParams(
-            text:
-                citation?.cardText(favourite.hadithText, context.l10n) ??
-                '${favourite.hadithText}\n\n${favourite.hadithInfo}',
-          ),
+          ShareParams(text: '$text\n\nHadith Searcher:\n$appShareUrl'),
         );
       },
       onFavourite: onRemove,

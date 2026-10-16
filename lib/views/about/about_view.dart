@@ -116,9 +116,7 @@ class AboutView extends StatelessWidget {
           icon: Icons.share_rounded,
           label: context.l10n.share,
           onTap: () async {
-            await SharePlus.instance.share(
-              ShareParams(text: 'https://bit.ly/hadith-searcher'),
-            );
+            await SharePlus.instance.share(ShareParams(text: appShareUrl));
           },
         ),
         const SizedBox(width: 24),
