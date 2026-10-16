@@ -65,8 +65,6 @@ class _MainShellState extends State<MainShell> {
       const SettingsView(),
       const AboutView(),
     ];
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final activeColor = isDark ? Colors.black : Colors.white;
 
     return Scaffold(
       body: AnimatedSwitcher(
@@ -94,25 +92,25 @@ class _MainShellState extends State<MainShell> {
           NavigationDestination(
             tooltip: '',
             icon: const Icon(Icons.search_outlined),
-            selectedIcon: Icon(Icons.search, color: activeColor),
+            selectedIcon: const Icon(Icons.search),
             label: context.l10n.search,
           ),
           NavigationDestination(
             tooltip: '',
             icon: const Icon(Icons.star_outline),
-            selectedIcon: Icon(Icons.star, color: activeColor),
+            selectedIcon: const Icon(Icons.star),
             label: context.l10n.favourites,
           ),
           NavigationDestination(
             tooltip: '',
             icon: const Icon(Icons.settings_outlined),
-            selectedIcon: Icon(Icons.settings, color: activeColor),
+            selectedIcon: const Icon(Icons.settings),
             label: context.l10n.settings,
           ),
           NavigationDestination(
             tooltip: '',
             icon: const Icon(Icons.info_outline),
-            selectedIcon: Icon(Icons.info, color: activeColor),
+            selectedIcon: const Icon(Icons.info),
             label: context.l10n.about,
           ),
         ],

@@ -263,5 +263,11 @@
     }
   },
   "arabicLanguage": "العربية",
-  "englishLanguage": "English"
+  "englishLanguage": "English",
+  "colorScheme": "Color scheme",
+  "classicColorScheme": "Classic",
+  "sepiaColorScheme": "Sepia",
+  "slateColorScheme": "Slate",
+  "forestColorScheme": "Forest",
+  "highContrastColorScheme": "High contrast"
 }

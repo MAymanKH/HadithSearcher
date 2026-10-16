@@ -93,6 +93,16 @@ class SettingsViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> setColorScheme(ColorSchemePreference scheme) async {
+    if (!await _settingsService.updateColorScheme(scheme)) return;
+    _settings = _settings.copyWith(colorScheme: scheme);
+    TelemetryService.event('appearance_changed', {
+      'setting': 'color_scheme',
+      'value': scheme.name,
+    });
+    notifyListeners();
+  }
+
   /// Update font family.
   Future<void> setFontFamily(String fontFamily) async {
     if (await _settingsService.updateFontFamily(fontFamily)) {

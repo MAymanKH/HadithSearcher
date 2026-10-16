@@ -24,15 +24,9 @@ class HadithDetailButton extends StatelessWidget {
           icon: Icon(icon, size: 22),
           label: Text(label),
           style: OutlinedButton.styleFrom(
-            foregroundColor: colors.secondaryContainer,
-            backgroundColor: Color.lerp(
-              colors.primaryContainer,
-              colors.surface,
-              0.45,
-            ),
-            side: BorderSide(
-              color: colors.secondaryContainer.withValues(alpha: 0.38),
-            ),
+            foregroundColor: colors.onSurface,
+            backgroundColor: colors.surfaceContainerHigh,
+            side: BorderSide(color: colors.outline),
             minimumSize: const Size(0, 44),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             tapTargetSize: MaterialTapTargetSize.padded,

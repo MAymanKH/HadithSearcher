@@ -514,4 +514,22 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get englishLanguage => 'English';
+
+  @override
+  String get colorScheme => 'لوحة الألوان';
+
+  @override
+  String get classicColorScheme => 'كلاسيكي';
+
+  @override
+  String get sepiaColorScheme => 'بني دافئ';
+
+  @override
+  String get slateColorScheme => 'أزرق رمادي';
+
+  @override
+  String get forestColorScheme => 'أخضر هادئ';
+
+  @override
+  String get highContrastColorScheme => 'تباين عالٍ';
 }

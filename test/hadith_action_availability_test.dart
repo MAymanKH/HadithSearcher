@@ -6,6 +6,7 @@ import 'package:http/testing.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hadithsearcher/models/hadith.dart';
+import 'package:hadithsearcher/core/theme/app_theme.dart';
 import 'package:hadithsearcher/services/database_service.dart';
 import 'package:hadithsearcher/viewmodels/favourites_viewmodel.dart';
 import 'package:hadithsearcher/viewmodels/settings_viewmodel.dart';
@@ -118,7 +119,14 @@ void main() {
               final button = tester.widget<TextButton>(finder);
               expect(button.enabled, isTrue);
               final color = button.style!.foregroundColor!.resolve({})!;
-              expect(color.a, closeTo(available ? 1 : 0.38, 0.01));
+              final colors = Theme.of(tester.element(finder)).colorScheme;
+              expect(
+                color,
+                available
+                    ? colors.onInverseSurface
+                    : AppTheme.unavailableActionForeground(colors),
+              );
+              if (!available) expect(color, isNot(colors.onInverseSurface));
             }
             expect(
               tester

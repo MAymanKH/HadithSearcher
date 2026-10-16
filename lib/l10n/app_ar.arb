@@ -155,5 +155,11 @@
   "gradeLabel": "خلاصة حكم المحدث: {grade}",
   "scholarGradeLabel": "حكم {scholar}: {grade}",
   "arabicLanguage": "العربية",
-  "englishLanguage": "English"
+  "englishLanguage": "English",
+  "colorScheme": "لوحة الألوان",
+  "classicColorScheme": "كلاسيكي",
+  "sepiaColorScheme": "بني دافئ",
+  "slateColorScheme": "أزرق رمادي",
+  "forestColorScheme": "أخضر هادئ",
+  "highContrastColorScheme": "تباين عالٍ"
 }

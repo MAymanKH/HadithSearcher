@@ -1033,6 +1033,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'English'**
   String get englishLanguage;
+
+  /// No description provided for @colorScheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Color scheme'**
+  String get colorScheme;
+
+  /// No description provided for @classicColorScheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Classic'**
+  String get classicColorScheme;
+
+  /// No description provided for @sepiaColorScheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Sepia'**
+  String get sepiaColorScheme;
+
+  /// No description provided for @slateColorScheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Slate'**
+  String get slateColorScheme;
+
+  /// No description provided for @forestColorScheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Forest'**
+  String get forestColorScheme;
+
+  /// No description provided for @highContrastColorScheme.
+  ///
+  /// In en, this message translates to:
+  /// **'High contrast'**
+  String get highContrastColorScheme;
 }
 
 class _AppLocalizationsDelegate

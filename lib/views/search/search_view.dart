@@ -127,7 +127,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
               onPressed: () => vm.setShowActiveFilters(!vm.showActiveFilters),
               icon: Badge(
                 label: Text('${vm.activeFilters.length}'),
-                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
                 textColor: Theme.of(context).colorScheme.onSurface,
                 child: Icon(
                   vm.showActiveFilters ? Icons.expand_less : Icons.expand_more,
@@ -437,9 +437,9 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
           contentPadding: const EdgeInsets.symmetric(horizontal: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
-            side: BorderSide(color: colors.onSurface.withValues(alpha: 0.28)),
+            side: BorderSide(color: colors.outline),
           ),
-          tileColor: colors.primaryContainer.withValues(alpha: 0.45),
+          tileColor: colors.surfaceContainer,
           title: Text(
             title,
             style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
@@ -449,16 +449,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
             style: TextStyle(
               fontSize: 13,
               height: 1.3,
-              color: colors.onSurface.withValues(alpha: 0.72),
-            ),
-          ),
-          activeTrackColor: colors.onSurface,
-          activeThumbColor: colors.surface,
-          inactiveTrackColor: colors.surface,
-          inactiveThumbColor: colors.onSurface.withValues(alpha: 0.65),
-          trackOutlineColor: WidgetStateProperty.resolveWith(
-            (states) => colors.onSurface.withValues(
-              alpha: states.contains(WidgetState.selected) ? 1 : 0.45,
+              color: colors.onSurfaceVariant,
             ),
           ),
         ),
@@ -498,21 +489,28 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(icon, size: 100, color: Colors.grey),
+                Icon(
+                  icon,
+                  size: 100,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
                 const SizedBox(height: 20),
                 Text(
                   title,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.bold,
-                    color: Colors.grey,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 10),
                 Text(
                   description,
-                  style: const TextStyle(fontSize: 16, color: Colors.grey),
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 20),
@@ -558,13 +556,17 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
                     mainAxisAlignment: MainAxisAlignment.center,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.search, size: 100, color: Colors.grey),
+                      Icon(
+                        Icons.search,
+                        size: 100,
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                       Text(
                         context.l10n.searchEmpty,
                         textAlign: TextAlign.center,
-                        style: const TextStyle(
+                        style: TextStyle(
                           fontSize: 20,
-                          color: Colors.grey,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ],

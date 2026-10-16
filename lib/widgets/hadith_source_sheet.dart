@@ -183,7 +183,7 @@ class _SourceSectionState<T extends Object> extends State<_SourceSection<T>> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: colors.primaryContainer,
+        color: colors.surfaceContainer,
         borderRadius: BorderRadius.circular(20),
       ),
       child: Column(
@@ -191,7 +191,7 @@ class _SourceSectionState<T extends Object> extends State<_SourceSection<T>> {
         children: [
           Row(
             children: [
-              Icon(widget.icon, color: colors.secondaryContainer),
+              Icon(widget.icon, color: colors.onSurface),
               const SizedBox(width: 8),
               Expanded(
                 child: Text(

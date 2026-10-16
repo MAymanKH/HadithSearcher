@@ -70,13 +70,20 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
       return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.content_paste_off, size: 100, color: Colors.grey),
+          Icon(
+            Icons.content_paste_off,
+            size: 100,
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
           const SizedBox(height: 20),
           Text(
             widget.alternate
                 ? context.l10n.noAlternate
                 : context.l10n.noSimilar,
-            style: const TextStyle(fontSize: 20, color: Colors.grey),
+            style: TextStyle(
+              fontSize: 20,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
           ),
         ],
       );
@@ -106,21 +113,28 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 100, color: Colors.grey),
+            Icon(
+              icon,
+              size: 100,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+            ),
             const SizedBox(height: 20),
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.bold,
-                color: Colors.grey,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 10),
             Text(
               description,
-              style: const TextStyle(fontSize: 16, color: Colors.grey),
+              style: TextStyle(
+                fontSize: 16,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 20),

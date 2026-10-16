@@ -63,7 +63,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     final arrows = find.byIcon(Icons.expand_more_rounded);
-    expect(arrows, findsNWidgets(6));
+    expect(arrows, findsNWidgets(7));
     final arrowPositions = tester.getTopLeft(arrows.first).dx;
     for (final arrow in arrows.evaluate()) {
       expect(tester.getTopLeft(find.byWidget(arrow.widget)).dx, arrowPositions);
@@ -74,7 +74,11 @@ void main() {
     await tester.pumpAndSettle();
     expect(settings.fontFamily, 'Noto Naskh Arabic');
     final privacy = find.text('الخصوصية والقياس الاختياري');
-    await tester.ensureVisible(privacy);
+    await tester.scrollUntilVisible(
+      privacy,
+      250,
+      scrollable: find.byType(Scrollable).first,
+    );
     await tester.pumpAndSettle();
     expect(
       tester.getTopLeft(privacy).dy,

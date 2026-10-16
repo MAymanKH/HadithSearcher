@@ -6,6 +6,7 @@ import 'l10n/localization.dart';
 import 'views/startup_flow.dart';
 import 'core/constants/routes.dart';
 import 'core/theme/app_theme.dart';
+import 'models/settings.dart';
 import 'viewmodels/favourites_viewmodel.dart';
 import 'viewmodels/search_viewmodel.dart';
 import 'viewmodels/settings_viewmodel.dart';
@@ -19,11 +20,13 @@ import 'widgets/app_snack_bar.dart';
 /// Main app widget with Provider setup.
 class HadithSearcherApp extends StatelessWidget {
   final ThemeMode initialThemeMode;
+  final ColorSchemePreference initialColorScheme;
   final TelemetryService telemetry;
 
   const HadithSearcherApp({
     super.key,
     required this.initialThemeMode,
+    this.initialColorScheme = ColorSchemePreference.classic,
     required this.telemetry,
   });
 
@@ -56,13 +59,17 @@ class HadithSearcherApp extends StatelessWidget {
               ? initialThemeMode
               : settingsVm.themeMode;
 
+          final scheme = settingsVm.isLoading
+              ? initialColorScheme
+              : settingsVm.settings.colorScheme;
+
           return MaterialApp(
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
             locale: settingsVm.locale,
             title: 'Hadith Searcher',
-            theme: AppTheme.lightTheme,
-            darkTheme: AppTheme.darkTheme,
+            theme: AppTheme.build(scheme, Brightness.light),
+            darkTheme: AppTheme.build(scheme, Brightness.dark),
             themeMode: themeMode,
             debugShowCheckedModeBanner: false,
             builder: (context, child) {

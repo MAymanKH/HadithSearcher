@@ -8,6 +8,7 @@ class SettingsService {
   SettingsService._internal();
 
   static const String _themeKey = 'theme';
+  static const String _colorSchemeKey = 'colorScheme';
   static const String _fontFamilyKey = 'fontFamily';
   static const String _fontWeightKey = 'fontWeight';
   static const String _fontSizeKey = 'fontSize';
@@ -26,6 +27,9 @@ class SettingsService {
       final p = await prefs;
       return AppSettings(
         theme: ThemePreference.fromString(p.getString(_themeKey) ?? 'system'),
+        colorScheme: ColorSchemePreference.fromString(
+          p.getString(_colorSchemeKey),
+        ),
         language: p.getString(_languageKey) == 'en' ? 'en' : 'ar',
         fontFamily: p.getString(_fontFamilyKey) ?? 'Roboto',
         fontWeight: FontWeightPreference.fromString(
@@ -55,16 +59,6 @@ class SettingsService {
   Future<bool> updateLanguage(String language) async =>
       (await prefs).setString(_languageKey, language);
 
-  /// Get theme string (for initial app load before full settings).
-  Future<String> getTheme() async {
-    try {
-      final p = await prefs;
-      return p.getString(_themeKey) ?? 'system';
-    } catch (e) {
-      return 'system';
-    }
-  }
-
   /// Update theme setting.
   Future<bool> updateTheme(ThemePreference theme) async {
     try {
@@ -72,6 +66,14 @@ class SettingsService {
       await p.setString(_themeKey, theme.toDbString());
       return true;
     } catch (e) {
+      return false;
+    }
+  }
+
+  Future<bool> updateColorScheme(ColorSchemePreference scheme) async {
+    try {
+      return await (await prefs).setString(_colorSchemeKey, scheme.name);
+    } catch (_) {
       return false;
     }
   }
@@ -125,6 +127,7 @@ class SettingsService {
     try {
       final p = await prefs;
       await p.setString(_themeKey, 'system');
+      await p.setString(_colorSchemeKey, ColorSchemePreference.classic.name);
       await p.setString(_languageKey, 'ar');
       await p.setString(_fontFamilyKey, 'Roboto');
       await p.setString(_fontWeightKey, 'bold');

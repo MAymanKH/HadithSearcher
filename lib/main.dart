@@ -51,24 +51,15 @@ void main() async {
   final db = DatabaseService();
   await TelemetryService.trace('database.initialize', () => db.database);
 
-  // Get initial theme for fast startup
+  // Load appearance before the first Flutter frame.
   final settingsService = SettingsService();
-  final themeString = await settingsService.getTheme();
-  final initialThemeMode = _getThemeMode(themeString);
+  final initialSettings = await settingsService.getSettings();
 
-  runApp(HadithSearcherApp(
-    initialThemeMode: initialThemeMode,
-    telemetry: telemetry,
-  ));
-}
-
-ThemeMode _getThemeMode(String theme) {
-  switch (theme) {
-    case 'dark':
-      return ThemeMode.dark;
-    case 'light':
-      return ThemeMode.light;
-    default:
-      return ThemeMode.system;
-  }
+  runApp(
+    HadithSearcherApp(
+      initialThemeMode: initialSettings.themeMode,
+      initialColorScheme: initialSettings.colorScheme,
+      telemetry: telemetry,
+    ),
+  );
 }

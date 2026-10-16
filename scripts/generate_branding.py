@@ -2,10 +2,14 @@
 """Render branding from logo.svg. Requires librsvg's rsvg-convert and ImageMagick.
 
 Run: python scripts/generate_branding.py
+Check: python scripts/generate_branding.py --check
 Then: dart run flutter_launcher_icons && dart run flutter_native_splash:create
 """
 
 from pathlib import Path
+import argparse
+import json
+import shutil
 import subprocess
 import tempfile
 import xml.etree.ElementTree as ET
@@ -30,27 +34,49 @@ def padded(source, target, size, mark_size, background='none', *, rgba=False):
     ], check=True)
 
 
-def main():
-    svg = (ICONS / 'logo.svg').read_text()
-    white_svg = svg.replace('#000000', '#ffffff')
+def generate(icons):
+    colors = json.loads((ROOT / 'lib/core/theme/colors.json').read_text())['shared']
+    black_color, white_color = colors['black'].lower(), colors['white'].lower()
+    svg = (icons / 'logo.svg').read_text()
+    white_mark = ET.fromstring(svg)
+    white_mark.find('{http://www.w3.org/2000/svg}g').set('fill', white_color)
+    white_svg = ET.tostring(white_mark, encoding='unicode')
     ET.register_namespace('', 'http://www.w3.org/2000/svg')
     light_logo = ET.fromstring(white_svg)
     mark = light_logo.find('{http://www.w3.org/2000/svg}g')
-    mark.set('stroke', '#000000')
+    mark.set('stroke', black_color)
     mark.set('stroke-width', '4')
     mark.set('stroke-linejoin', 'round')
     outlined_svg = ET.tostring(light_logo, encoding='unicode')
-    (ICONS / 'logo_light.svg').write_text(outlined_svg + '\n')
-    render(outlined_svg, ICONS / 'logo.png', 512)
+    (icons / 'logo_light.svg').write_text(outlined_svg + '\n')
+    render(outlined_svg, icons / 'logo.png', 512)
     with tempfile.TemporaryDirectory() as directory:
         white = Path(directory) / 'white.png'
         render(white_svg, white, 1024)
-        padded(white, ICONS / 'launcher.png', 1024, 800, '#000000')
+        padded(white, icons / 'launcher.png', 1024, 800, black_color)
         # Keep the whole mark within Android's circular adaptive safe zone.
-        padded(white, ICONS / 'launcher_foreground.png', 1024, 552)
-        padded(white, ICONS / 'logo_dark.png', 512, 512)
-        padded(ICONS / 'logo.png', ICONS / 'splash_android12.png', 1152, 640, rgba=True)
-        padded(white, ICONS / 'splash_android12_dark.png', 1152, 640)
+        padded(white, icons / 'launcher_foreground.png', 1024, 552)
+        padded(white, icons / 'logo_dark.png', 512, 512)
+        padded(icons / 'logo.png', icons / 'splash_android12.png', 1152, 640, rgba=True)
+        padded(white, icons / 'splash_android12_dark.png', 1152, 640)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('--check', action='store_true')
+    args = parser.parse_args()
+    if not args.check:
+        generate(ICONS)
+        return
+    with tempfile.TemporaryDirectory() as directory:
+        icons = Path(directory)
+        shutil.copyfile(ICONS / 'logo.svg', icons / 'logo.svg')
+        generate(icons)
+        stale = [file.name for file in icons.iterdir()
+                 if not (ICONS / file.name).exists()
+                 or file.read_bytes() != (ICONS / file.name).read_bytes()]
+        if stale:
+            raise SystemExit('Stale branding: ' + ', '.join(sorted(stale)))
 
 
 if __name__ == '__main__':

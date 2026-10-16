@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 /// App settings for theme and hadith display preferences.
 class AppSettings {
   final ThemePreference theme;
+  final ColorSchemePreference colorScheme;
   final String language;
   final String fontFamily;
   final FontWeightPreference fontWeight;
@@ -11,6 +12,7 @@ class AppSettings {
 
   const AppSettings({
     this.theme = ThemePreference.system,
+    this.colorScheme = ColorSchemePreference.classic,
     this.language = 'ar',
     this.fontFamily = 'Roboto',
     this.fontWeight = FontWeightPreference.bold,
@@ -22,6 +24,7 @@ class AppSettings {
   factory AppSettings.fromDatabase(Map<String, dynamic> row) {
     return AppSettings(
       theme: ThemePreference.fromString(row['theme'] ?? 'system'),
+      colorScheme: ColorSchemePreference.fromString(row['colorScheme']),
       language: row['language'] == 'en' ? 'en' : 'ar',
       fontFamily: row['fontfamily'] ?? 'Roboto',
       fontWeight: FontWeightPreference.fromString(row['fontweight'] ?? 'bold'),
@@ -45,6 +48,7 @@ class AppSettings {
   /// Creates a copy with updated values.
   AppSettings copyWith({
     ThemePreference? theme,
+    ColorSchemePreference? colorScheme,
     String? language,
     String? fontFamily,
     FontWeightPreference? fontWeight,
@@ -53,6 +57,7 @@ class AppSettings {
   }) {
     return AppSettings(
       theme: theme ?? this.theme,
+      colorScheme: colorScheme ?? this.colorScheme,
       language: language ?? this.language,
       fontFamily: fontFamily ?? this.fontFamily,
       fontWeight: fontWeight ?? this.fontWeight,
@@ -139,4 +144,18 @@ enum FontWeightPreference {
         return FontWeight.bold;
     }
   }
+}
+
+/// Palette choice is independent of the system/light/dark preference.
+enum ColorSchemePreference {
+  classic,
+  sepia,
+  slate,
+  forest,
+  highContrast;
+
+  static ColorSchemePreference fromString(String? value) => values.firstWhere(
+    (scheme) => scheme.name == value,
+    orElse: () => classic,
+  );
 }

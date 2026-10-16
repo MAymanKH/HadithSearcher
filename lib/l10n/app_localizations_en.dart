@@ -522,4 +522,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get englishLanguage => 'English';
+
+  @override
+  String get colorScheme => 'Color scheme';
+
+  @override
+  String get classicColorScheme => 'Classic';
+
+  @override
+  String get sepiaColorScheme => 'Sepia';
+
+  @override
+  String get slateColorScheme => 'Slate';
+
+  @override
+  String get forestColorScheme => 'Forest';
+
+  @override
+  String get highContrastColorScheme => 'High contrast';
 }

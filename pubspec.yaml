@@ -54,6 +54,7 @@ dependencies:
   posthog_flutter: 5.55.0
   package_info_plus: 9.0.1
 
+# Colors in these build-time sections are synchronized by scripts/generate_colors.py.
 flutter_native_splash:
   color: "#ffffff"
   color_dark: "#000000"
@@ -111,7 +112,6 @@ flutter:
       flavors:
         - play
     - assets/icons/logo.svg
-    - assets/icons/logo_light.svg
     - assets/fonts/NOTICE.txt
     - assets/fonts/LICENSE-OFL.txt
     - assets/fonts/LICENSE-Apache-2.0.txt

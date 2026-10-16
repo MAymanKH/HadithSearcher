@@ -53,7 +53,7 @@ class AboutView extends StatelessWidget {
       margin: const EdgeInsets.all(10),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer,
+        color: Theme.of(context).colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(30),
       ),
       child: Text(text, style: const TextStyle(fontSize: 18)),
@@ -65,7 +65,7 @@ class AboutView extends StatelessWidget {
       margin: const EdgeInsets.all(10),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Theme.of(context).colorScheme.primaryContainer,
+        color: Theme.of(context).colorScheme.surfaceContainer,
         borderRadius: BorderRadius.circular(30),
       ),
       child: RichText(
@@ -79,10 +79,10 @@ class AboutView extends StatelessWidget {
             TextSpan(text: context.l10n.sourceCredit),
             TextSpan(
               text: 'dorar.net',
-              style: const TextStyle(
-                decoration: TextDecoration.none,
-                decorationColor: Colors.blue,
-                color: Colors.blue,
+              style: TextStyle(
+                decoration: TextDecoration.underline,
+                decorationColor: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.primary,
               ),
               recognizer: TapGestureRecognizer()
                 ..onTap = () => _launchUrl(Uri.parse('https://dorar.net/')),
@@ -90,10 +90,10 @@ class AboutView extends StatelessWidget {
             TextSpan(text: context.l10n.usingApi),
             TextSpan(
               text: 'Dorar Hadith API',
-              style: const TextStyle(
-                decoration: TextDecoration.none,
-                decorationColor: Colors.blue,
-                color: Colors.blue,
+              style: TextStyle(
+                decoration: TextDecoration.underline,
+                decorationColor: Theme.of(context).colorScheme.primary,
+                color: Theme.of(context).colorScheme.primary,
               ),
               recognizer: TapGestureRecognizer()
                 ..onTap = () => _launchUrl(
@@ -186,9 +186,9 @@ class AboutView extends StatelessWidget {
           child: Text(
             context.l10n.privacyPolicy,
             style: TextStyle(
-              decoration: TextDecoration.none,
-              decorationColor: Colors.blue,
-              color: Colors.blue,
+              decoration: TextDecoration.underline,
+              decorationColor: Theme.of(context).colorScheme.primary,
+              color: Theme.of(context).colorScheme.primary,
               fontSize: 16,
             ),
           ),
@@ -216,7 +216,7 @@ class _ActionIconButton extends StatelessWidget {
         Container(
           padding: const EdgeInsets.all(2),
           decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primaryContainer,
+            color: Theme.of(context).colorScheme.surfaceContainer,
             borderRadius: BorderRadius.circular(30),
           ),
           child: IconButton(

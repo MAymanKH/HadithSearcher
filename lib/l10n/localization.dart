@@ -24,6 +24,16 @@ extension LocalizedTheme on ThemePreference {
   };
 }
 
+extension LocalizedColorScheme on ColorSchemePreference {
+  String label(AppLocalizations l) => switch (this) {
+    ColorSchemePreference.classic => l.classicColorScheme,
+    ColorSchemePreference.sepia => l.sepiaColorScheme,
+    ColorSchemePreference.slate => l.slateColorScheme,
+    ColorSchemePreference.forest => l.forestColorScheme,
+    ColorSchemePreference.highContrast => l.highContrastColorScheme,
+  };
+}
+
 extension LocalizedFontWeight on FontWeightPreference {
   String label(AppLocalizations l) => switch (this) {
     FontWeightPreference.normal => l.normalWeight,

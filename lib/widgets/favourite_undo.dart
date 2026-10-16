@@ -30,7 +30,7 @@ void showFavouriteUndo(BuildContext context, FavouriteHadith favourite) {
       behavior: SnackBarBehavior.floating,
       action: SnackBarAction(
         label: context.l10n.undo,
-        textColor: Theme.of(context).colorScheme.surface,
+        textColor: Theme.of(context).colorScheme.onInverseSurface,
         onPressed: () async {
           final restored = await DatabaseService().restoreFavourite(favourite);
           if (!restored && context.mounted) {

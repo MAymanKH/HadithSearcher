@@ -116,19 +116,13 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
     final readingStyle = context
         .watch<SettingsViewModel>()
         .readingTextStyle
-        .copyWith(color: colors.secondaryContainer);
+        .copyWith(color: colors.onSurface);
     return Container(
       margin: const EdgeInsets.only(top: 12),
       child: Material(
-        color: Color.lerp(
-          colors.primaryContainer,
-          Colors.white,
-          Theme.of(context).brightness == Brightness.dark ? 0.07 : 0.45,
-        ),
+        color: colors.surfaceContainerHigh,
         shape: RoundedRectangleBorder(
-          side: BorderSide(
-            color: colors.secondaryContainer.withValues(alpha: 0.16),
-          ),
+          side: BorderSide(color: colors.outlineVariant),
           borderRadius: HadithCardLayout.panelBorderRadius,
         ),
         clipBehavior: Clip.antiAlias,
@@ -146,7 +140,7 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
                   children: [
                     Icon(
                       _expanded ? Icons.expand_less : Icons.expand_more,
-                      color: colors.secondaryContainer,
+                      color: colors.onSurface,
                     ),
                     const SizedBox(width: 8),
                     Expanded(

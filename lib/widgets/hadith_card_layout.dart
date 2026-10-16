@@ -4,6 +4,7 @@ import '../l10n/localization.dart';
 import '../viewmodels/settings_viewmodel.dart';
 import 'app_snack_bar.dart';
 import 'hadith_detail_button.dart';
+import '../core/theme/app_theme.dart';
 
 class HadithCardLayout extends StatelessWidget {
   static const borderRadius = BorderRadius.all(Radius.circular(30));
@@ -46,14 +47,15 @@ class HadithCardLayout extends StatelessWidget {
     final settings = context.watch<SettingsViewModel>();
     final colors = Theme.of(context).colorScheme;
     final textStyle = settings.readingTextStyle.copyWith(
-      color: colors.secondaryContainer,
+      color: colors.onSurface,
     );
     return Container(
       margin: margin,
       padding: settings.padding,
       decoration: BoxDecoration(
-        color: colors.primaryContainer,
+        color: colors.surfaceContainer,
         borderRadius: borderRadius,
+        border: Border.all(color: colors.outlineVariant),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -64,12 +66,7 @@ class HadithCardLayout extends StatelessWidget {
                 children: [
                   TextSpan(
                     text: 'عن ${narrator!.trim()}: ',
-                    style: TextStyle(
-                      color: Color.alphaBlend(
-                        colors.secondaryContainer.withValues(alpha: 0.65),
-                        colors.primaryContainer,
-                      ),
-                    ),
+                    style: TextStyle(color: colors.onSurfaceVariant),
                   ),
                   TextSpan(text: text),
                 ],
@@ -85,10 +82,7 @@ class HadithCardLayout extends StatelessWidget {
             ),
           Padding(
             padding: const EdgeInsets.only(top: 14, bottom: 12),
-            child: Divider(
-              height: 1,
-              color: colors.secondaryContainer.withValues(alpha: 0.22),
-            ),
+            child: Divider(height: 1, color: colors.outlineVariant),
           ),
           if (grading != null) ...[
             SelectableText(grading!, style: textStyle),
@@ -104,7 +98,7 @@ class HadithCardLayout extends StatelessWidget {
                   tooltip: context.l10n.sourceDetails,
                   onPressed: onSourceInfo,
                   icon: const Icon(Icons.error_outline_rounded),
-                  color: colors.secondaryContainer,
+                  color: colors.onSurface,
                 ),
             ],
           ),
@@ -113,7 +107,7 @@ class HadithCardLayout extends StatelessWidget {
           ?additionalInfo,
           const SizedBox(height: 14),
           Material(
-            color: colors.secondaryContainer,
+            color: colors.inverseSurface,
             shape: const RoundedRectangleBorder(
               borderRadius: panelBorderRadius,
             ),
@@ -126,7 +120,7 @@ class HadithCardLayout extends StatelessWidget {
                   label: context.l10n.explanation,
                   onPressed: onExplanation,
                   unavailableMessage: context.l10n.noExplanation,
-                  foregroundColor: colors.surface,
+                  foregroundColor: colors.onInverseSurface,
                 ),
                 if (showSimilarButton)
                   _CardAction(
@@ -134,19 +128,19 @@ class HadithCardLayout extends StatelessWidget {
                     label: context.l10n.similar,
                     onPressed: onSimilar,
                     unavailableMessage: context.l10n.noSimilarForHadith,
-                    foregroundColor: colors.surface,
+                    foregroundColor: colors.onInverseSurface,
                   ),
                 _CardAction(
                   icon: isFavourite ? Icons.star : Icons.star_border,
                   label: context.l10n.favourites,
                   onPressed: onFavourite,
-                  foregroundColor: colors.surface,
+                  foregroundColor: colors.onInverseSurface,
                 ),
                 _CardAction(
                   icon: Icons.share_outlined,
                   label: context.l10n.share,
                   onPressed: onShare,
-                  foregroundColor: colors.surface,
+                  foregroundColor: colors.onInverseSurface,
                 ),
               ],
             ),
@@ -198,9 +192,13 @@ class _CardAction extends StatelessWidget {
                 }),
       style: TextButton.styleFrom(
         foregroundColor: onPressed == null
-            ? foregroundColor.withValues(alpha: 0.38)
+            ? AppTheme.unavailableActionForeground(
+                Theme.of(context).colorScheme,
+              )
             : foregroundColor,
-        disabledForegroundColor: foregroundColor.withValues(alpha: 0.38),
+        disabledForegroundColor: AppTheme.unavailableActionForeground(
+          Theme.of(context).colorScheme,
+        ),
         padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 8),
         minimumSize: const Size(0, 62),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,

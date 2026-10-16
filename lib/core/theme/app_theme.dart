@@ -1,22 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../models/settings.dart';
+import 'app_palettes.g.dart';
 
-/// App theme configuration.
+/// Component color policy. Raw palette values live in colors.json.
 class AppTheme {
   AppTheme._();
 
-  static CheckboxThemeData _checkboxTheme(Color foreground, Color background) =>
-      CheckboxThemeData(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-        side: WidgetStateBorderSide.resolveWith(
-          (_) => BorderSide(color: foreground, width: 1.5),
-        ),
-        fillColor: WidgetStateProperty.resolveWith(
-          (states) => states.contains(WidgetState.selected)
-              ? foreground
-              : Colors.transparent,
-        ),
-        checkColor: WidgetStatePropertyAll(background),
+  static ThemeData get lightTheme =>
+      build(ColorSchemePreference.classic, Brightness.light);
+  static ThemeData get darkTheme =>
+      build(ColorSchemePreference.classic, Brightness.dark);
+
+  /// Unavailable card actions still open an explanation, so keep their labels
+  /// readable rather than using Material's low-contrast disabled opacity.
+  static Color unavailableActionForeground(ColorScheme colors) =>
+      Color.alphaBlend(
+        colors.onInverseSurface.withValues(alpha: .72),
+        colors.inverseSurface,
       );
 
   static SystemUiOverlayStyle systemUiOverlayStyle(Brightness brightness) {
@@ -32,112 +33,145 @@ class AppTheme {
     );
   }
 
-  /// Light theme.
-  static ThemeData get lightTheme {
-    return ThemeData(
-      fontFamily: 'Cairo',
-      brightness: Brightness.light,
-      checkboxTheme: _checkboxTheme(Colors.black, Colors.white),
-      inputDecorationTheme: InputDecorationTheme(
-        hintStyle: const TextStyle(color: Color(0xFF757575)),
-        labelStyle: const TextStyle(color: Colors.black),
-        floatingLabelStyle: const TextStyle(color: Colors.black),
-        enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(width: 1.5, color: Colors.black),
-          borderRadius: BorderRadius.circular(50),
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(width: 1.5, color: Colors.black),
-          borderRadius: BorderRadius.circular(50),
-        ),
-      ),
-      scaffoldBackgroundColor: Colors.white,
-      appBarTheme: AppBarTheme(
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
-        systemOverlayStyle: systemUiOverlayStyle(Brightness.light),
-      ),
-      elevatedButtonTheme: ElevatedButtonThemeData(
-        style: TextButton.styleFrom(
-          backgroundColor: Colors.black,
-          foregroundColor: Colors.white,
-        ),
-      ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
-        elevation: 2,
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
-      ),
-      colorScheme: const ColorScheme(
-        brightness: Brightness.light,
-        primary: Colors.blue,
-        onPrimary: Colors.white,
-        primaryContainer: Color.fromARGB(255, 225, 226, 230),
-        secondaryContainer: Colors.black,
-        secondary: Colors.blue,
-        onSecondary: Colors.blue,
-        error: Colors.red,
-        onError: Colors.red,
-        surface: Colors.white,
-        onSurface: Colors.black,
-      ),
+  static ThemeData build(ColorSchemePreference palette, Brightness brightness) {
+    final colors = AppPalettes.resolve(palette, brightness);
+    final transparent = AppPalettes.transparent;
+    final border = OutlineInputBorder(
+      borderSide: BorderSide(width: 1.5, color: colors.outline),
+      borderRadius: BorderRadius.circular(50),
     );
-  }
-
-  /// Dark theme.
-  static ThemeData get darkTheme {
     return ThemeData(
+      useMaterial3: true,
       fontFamily: 'Cairo',
-      brightness: Brightness.dark,
-      checkboxTheme: _checkboxTheme(Colors.white, Colors.black),
-      inputDecorationTheme: InputDecorationTheme(
-        hintStyle: const TextStyle(color: Color(0xFFAAAAAA)),
-        labelStyle: const TextStyle(color: Colors.white),
-        floatingLabelStyle: const TextStyle(color: Colors.white),
-        enabledBorder: OutlineInputBorder(
-          borderSide: const BorderSide(width: 1.5, color: Colors.white),
-          borderRadius: BorderRadius.circular(50),
+      colorScheme: colors,
+      scaffoldBackgroundColor: colors.surface,
+      canvasColor: colors.surface,
+      cardColor: colors.surfaceContainer,
+      dividerColor: colors.outlineVariant,
+      disabledColor: colors.onSurfaceVariant,
+      hintColor: colors.onSurfaceVariant,
+      shadowColor: colors.shadow,
+      focusColor: colors.primary.withValues(alpha: .18),
+      hoverColor: colors.primary.withValues(alpha: .08),
+      highlightColor: colors.primary.withValues(alpha: .10),
+      splashColor: colors.primary.withValues(alpha: .12),
+      iconTheme: IconThemeData(color: colors.onSurface),
+      checkboxTheme: CheckboxThemeData(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+        side: WidgetStateBorderSide.resolveWith(
+          (_) => BorderSide(color: colors.outline, width: 1.5),
         ),
-        focusedBorder: OutlineInputBorder(
-          borderSide: const BorderSide(width: 1.5, color: Colors.white),
-          borderRadius: BorderRadius.circular(50),
+        fillColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? colors.primary
+              : transparent,
+        ),
+        checkColor: WidgetStatePropertyAll(colors.onPrimary),
+      ),
+      switchTheme: SwitchThemeData(
+        trackColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? colors.primary
+              : colors.surface,
+        ),
+        thumbColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? colors.onPrimary
+              : colors.onSurfaceVariant,
+        ),
+        trackOutlineColor: WidgetStatePropertyAll(colors.outline),
+      ),
+      inputDecorationTheme: InputDecorationTheme(
+        hintStyle: TextStyle(color: colors.onSurfaceVariant),
+        labelStyle: TextStyle(color: colors.onSurface),
+        floatingLabelStyle: TextStyle(color: colors.primary),
+        enabledBorder: border,
+        focusedBorder: border.copyWith(
+          borderSide: BorderSide(width: 2, color: colors.primary),
+        ),
+        errorBorder: border.copyWith(
+          borderSide: BorderSide(width: 1.5, color: colors.error),
+        ),
+        focusedErrorBorder: border.copyWith(
+          borderSide: BorderSide(width: 2, color: colors.error),
         ),
       ),
-      scaffoldBackgroundColor: Colors.black,
       appBarTheme: AppBarTheme(
-        backgroundColor: Colors.black,
-        foregroundColor: Colors.white,
+        backgroundColor: colors.surface,
+        foregroundColor: colors.onSurface,
         elevation: 0,
         scrolledUnderElevation: 0,
-        surfaceTintColor: Colors.transparent,
-        systemOverlayStyle: systemUiOverlayStyle(Brightness.dark),
+        surfaceTintColor: transparent,
+        systemOverlayStyle: systemUiOverlayStyle(brightness),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
-        style: TextButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: Colors.black,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: colors.secondary,
+          foregroundColor: colors.onSecondary,
+          disabledBackgroundColor: colors.surfaceContainer,
+          disabledForegroundColor: colors.onSurfaceVariant,
         ),
       ),
-      floatingActionButtonTheme: const FloatingActionButtonThemeData(
+      floatingActionButtonTheme: FloatingActionButtonThemeData(
         elevation: 2,
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black,
+        backgroundColor: colors.secondary,
+        foregroundColor: colors.onSecondary,
       ),
-      colorScheme: const ColorScheme(
-        brightness: Brightness.dark,
-        primary: Colors.blue,
-        onPrimary: Colors.white,
-        primaryContainer: Color.fromARGB(255, 40, 38, 41),
-        secondaryContainer: Colors.white,
-        secondary: Colors.blue,
-        onSecondary: Colors.blue,
-        error: Colors.red,
-        onError: Colors.red,
-        surface: Colors.black,
-        onSurface: Colors.white,
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: colors.surface,
+        surfaceTintColor: transparent,
+        indicatorColor: colors.secondaryContainer,
+        iconTheme: WidgetStateProperty.resolveWith(
+          (states) => IconThemeData(
+            color: states.contains(WidgetState.selected)
+                ? colors.onSecondaryContainer
+                : colors.onSurfaceVariant,
+          ),
+        ),
+        labelTextStyle: WidgetStateProperty.resolveWith(
+          (states) => TextStyle(
+            fontFamily: 'Cairo',
+            fontSize: 12,
+            fontWeight: states.contains(WidgetState.selected)
+                ? FontWeight.bold
+                : FontWeight.normal,
+            color: colors.onSurface,
+          ),
+        ),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        backgroundColor: colors.inverseSurface,
+        contentTextStyle: TextStyle(
+          fontFamily: 'Cairo',
+          color: colors.onInverseSurface,
+        ),
+        actionTextColor: colors.onInverseSurface,
+      ),
+      bottomSheetTheme: BottomSheetThemeData(
+        backgroundColor: colors.surface,
+        modalBackgroundColor: colors.surface,
+        surfaceTintColor: transparent,
+        modalBarrierColor: colors.scrim.withValues(alpha: .54),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: colors.surface,
+        surfaceTintColor: transparent,
+        barrierColor: colors.scrim.withValues(alpha: .54),
+      ),
+      tooltipTheme: TooltipThemeData(
+        decoration: BoxDecoration(
+          color: colors.inverseSurface,
+          borderRadius: BorderRadius.circular(4),
+        ),
+        textStyle: TextStyle(
+          fontFamily: 'Cairo',
+          color: colors.onInverseSurface,
+        ),
+      ),
+      textSelectionTheme: TextSelectionThemeData(
+        cursorColor: colors.primary,
+        selectionColor: colors.primary.withValues(alpha: .25),
+        selectionHandleColor: colors.primary,
       ),
     );
   }

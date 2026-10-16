@@ -68,7 +68,7 @@ class AppDropdown<T> extends StatelessWidget {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
         child: Material(
-          color: colors.primaryContainer,
+          color: colors.surfaceContainer,
           borderRadius: BorderRadius.circular(16),
           clipBehavior: Clip.antiAlias,
           child: InkWell(
@@ -87,9 +87,7 @@ class AppDropdown<T> extends StatelessWidget {
                       child: DefaultTextStyle.merge(
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: colors.onSurface.withValues(alpha: .7),
-                        ),
+                        style: TextStyle(color: colors.onSurfaceVariant),
                         child: selected.child,
                       ),
                     ),
@@ -98,7 +96,7 @@ class AppDropdown<T> extends StatelessWidget {
                   Icon(
                     Icons.expand_more_rounded,
                     size: 22,
-                    color: colors.onSurface.withValues(alpha: .7),
+                    color: colors.onSurfaceVariant,
                   ),
                 ],
               ),

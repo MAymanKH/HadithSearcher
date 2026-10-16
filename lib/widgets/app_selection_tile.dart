@@ -25,7 +25,7 @@ class AppSelectionTile extends StatelessWidget {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         selected: selected == true,
         selectedTileColor: colors.primaryContainer,
-        selectedColor: colors.onSurface,
+        selectedColor: colors.onPrimaryContainer,
         title: title,
         leading: leading,
         trailing: multiple
