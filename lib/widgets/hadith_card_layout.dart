@@ -213,6 +213,7 @@ class _CardAction extends StatelessWidget {
             label,
             textAlign: TextAlign.center,
             style: context.watch<SettingsViewModel>().readingTextStyle.copyWith(
+              fontFamily: 'Cairo',
               fontSize: context.watch<SettingsViewModel>().fontSize * .6,
             ),
           ),

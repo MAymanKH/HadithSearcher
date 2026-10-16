@@ -115,7 +115,7 @@ void main() {
                 matching: find.text(language == 'ar' ? 'الشرح' : 'Explanation'),
               ),
             );
-            expect(cardLabel.style!.fontFamily, font);
+            expect(cardLabel.style!.fontFamily, 'Cairo');
             expect(cardLabel.style!.fontWeight, settings.fontWeight);
             expect(cardLabel.style!.fontSize, settings.fontSize * .6);
             for (final action in ['explanation', 'source']) {
