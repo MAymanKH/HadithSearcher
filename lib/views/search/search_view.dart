@@ -260,6 +260,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
               subtitle: context.l10n.specialistSearchHelp,
               value: vm.specialist,
               onChanged: vm.setSpecialist,
+              customized: vm.specialist,
             ),
             _buildDropdownRow(
               context.l10n.searchMethod,
@@ -325,57 +326,83 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
   TextStyle? _filterLabelStyle(bool active) =>
       active ? TextStyle(color: Theme.of(context).colorScheme.primary) : null;
 
-  Widget _buildCatalogField(SearchFilter filter, SearchViewModel vm) => Padding(
-    padding: const EdgeInsets.all(10),
-    child: InkWell(
-      borderRadius: BorderRadius.circular(30),
-      onTap: () async {
-        FocusScope.of(context).unfocus();
-        await showSearchOptionPicker(
-          context,
-          filter: filter,
-          loadOptions: () => vm.loadFilterOptions(filter),
-          selected: vm.selectedOptions(filter),
-          excluded: vm.excludedOptions(filter),
-          onChanged: (value, excluded) {
-            vm.setSelectedOptions(filter, value, excluded: excluded);
-            unawaited(vm.saveAdvancedPrefs());
-          },
-        );
-        if (!mounted) return;
-        // Prevent focus restoration to the search bar when the sheet pops.
-        FocusScope.of(context).unfocus();
-        await vm.saveAdvancedPrefs();
-      },
-      child: InputDecorator(
-        decoration: InputDecoration(
-          labelText: filter.label(context.l10n),
-          labelStyle: _filterLabelStyle(
-            vm.excludedOptions(filter).isNotEmpty ||
-                vm
-                    .selectedOptions(filter)
-                    .any((option) => option.apiCode != '0'),
-          ),
-          floatingLabelStyle: _filterLabelStyle(
-            vm.excludedOptions(filter).isNotEmpty ||
-                vm
-                    .selectedOptions(filter)
-                    .any((option) => option.apiCode != '0'),
-          ),
-          suffixIcon: Icon(
-            filter == SearchFilter.grade
-                ? Icons.expand_more_rounded
-                : Icons.search,
-          ),
-        ),
-        child: Text(
-          vm.selectionLabel(filter, context.l10n),
-          maxLines: 2,
-          overflow: TextOverflow.ellipsis,
-        ),
+  bool _isCatalogCustomized(SearchFilter filter, SearchViewModel vm) =>
+      vm.excludedOptions(filter).isNotEmpty ||
+      vm.selectedOptions(filter).any((option) => option.apiCode != '0');
+
+  Widget _customizedDot() => ExcludeSemantics(
+    child: Container(
+      key: const Key('filter-customized-dot'),
+      width: 8,
+      height: 8,
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primary,
+        shape: BoxShape.circle,
       ),
     ),
   );
+
+  Widget _filterLabel(String text, bool customized) => Text.rich(
+    TextSpan(
+      children: [
+        TextSpan(text: text),
+        if (customized)
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Padding(
+              padding: const EdgeInsetsDirectional.only(start: 6),
+              child: _customizedDot(),
+            ),
+          ),
+      ],
+    ),
+    overflow: TextOverflow.ellipsis,
+  );
+
+  Widget _buildCatalogField(SearchFilter filter, SearchViewModel vm) {
+    final customized = _isCatalogCustomized(filter, vm);
+    return Padding(
+      padding: const EdgeInsets.all(10),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(30),
+        onTap: () async {
+          FocusScope.of(context).unfocus();
+          await showSearchOptionPicker(
+            context,
+            filter: filter,
+            loadOptions: () => vm.loadFilterOptions(filter),
+            selected: vm.selectedOptions(filter),
+            excluded: vm.excludedOptions(filter),
+            onChanged: (value, excluded) {
+              vm.setSelectedOptions(filter, value, excluded: excluded);
+              unawaited(vm.saveAdvancedPrefs());
+            },
+          );
+          if (!mounted) return;
+          // Prevent focus restoration to the search bar when the sheet pops.
+          FocusScope.of(context).unfocus();
+          await vm.saveAdvancedPrefs();
+        },
+        child: InputDecorator(
+          decoration: InputDecoration(
+            label: _filterLabel(filter.label(context.l10n), customized),
+            labelStyle: _filterLabelStyle(customized),
+            floatingLabelStyle: _filterLabelStyle(customized),
+            suffixIcon: Icon(
+              filter == SearchFilter.grade
+                  ? Icons.expand_more_rounded
+                  : Icons.search,
+            ),
+          ),
+          child: Text(
+            vm.selectionLabel(filter, context.l10n),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ),
+    );
+  }
 
   Widget _buildDropdownRow<T>(
     String label,
@@ -385,6 +412,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     required String Function(T) itemLabel,
     required bool isDefault,
   }) {
+    final customized = !isDefault;
     return Padding(
       padding: const EdgeInsets.all(10),
       child: AppDropdown<T>(
@@ -392,9 +420,9 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
         key: ValueKey('$label:$value'),
         value: value,
         decoration: InputDecoration(
-          labelText: label,
-          labelStyle: _filterLabelStyle(!isDefault),
-          floatingLabelStyle: _filterLabelStyle(!isDefault),
+          label: _filterLabel(label, customized),
+          labelStyle: _filterLabelStyle(customized),
+          floatingLabelStyle: _filterLabelStyle(customized),
         ),
         onChanged: onChanged,
         items: items
@@ -410,11 +438,16 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
   }
 
   Widget _buildExcludedWordsField(SearchViewModel vm) {
+    final customized = vm.excludedWords.trim().isNotEmpty;
     return Padding(
       padding: const EdgeInsets.all(10),
       child: TextField(
         controller: _excludedWordsController,
-        decoration: InputDecoration(hintText: context.l10n.excludeWordsHint),
+        decoration: InputDecoration(
+          label: _filterLabel(context.l10n.excludeWordsHint, customized),
+          labelStyle: _filterLabelStyle(customized),
+          floatingLabelStyle: _filterLabelStyle(customized),
+        ),
         onChanged: vm.setExcludedWords,
       ),
     );
@@ -425,6 +458,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     required String subtitle,
     required bool value,
     required ValueChanged<bool> onChanged,
+    bool customized = false,
   }) {
     final colors = Theme.of(context).colorScheme;
     return Padding(
@@ -438,12 +472,29 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
           contentPadding: const EdgeInsets.symmetric(horizontal: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
-            side: BorderSide(color: colors.outline),
+            side: BorderSide(
+              color: customized ? colors.primary : colors.outline,
+            ),
           ),
           tileColor: colors.surfaceContainer,
-          title: Text(
-            title,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: customized ? colors.primary : null,
+                  ),
+                ),
+              ),
+              if (customized) ...[
+                const SizedBox(width: 8),
+                _customizedDot(),
+              ],
+            ],
           ),
           subtitle: Text(
             subtitle,
