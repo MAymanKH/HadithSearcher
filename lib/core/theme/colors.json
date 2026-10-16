@@ -17,7 +17,7 @@
           "onSurfaceVariant": "#50535A"
         },
         "accent": {
-          "primary": "#0057A3",
+          "primary": "#000000",
           "onPrimary": "#FFFFFF"
         },
         "boundaries": {
@@ -42,8 +42,8 @@
           "onSurfaceVariant": "#BDBAC3"
         },
         "accent": {
-          "primary": "#93C5FD",
-          "onPrimary": "#002C52"
+          "primary": "#FFFFFF",
+          "onPrimary": "#000000"
         },
         "boundaries": {
           "outline": "#9B97A1",
