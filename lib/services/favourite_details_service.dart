@@ -22,6 +22,12 @@ class FavouriteDetailsService {
         final details = await getDetails(hadith.id);
         final full = details.data ?? hadith;
         if (!await DatabaseService().isFavourite(hadith.id)) return;
+        await Future.wait([
+          if (_hasSourceId(full.bookId ?? hadith.bookId))
+            getBookDetails((full.bookId ?? hadith.bookId)!.trim()),
+          if (_hasSourceId(full.mohdithId ?? hadith.mohdithId))
+            getScholarDetails((full.mohdithId ?? hadith.mohdithId)!.trim()),
+        ]);
         if (full.hasUsulHadith) await getOrigins(full.id);
         final sharhId = full.sharhId ?? hadith.sharhId;
         if (full.hasExplanation || hadith.hasExplanation) {
@@ -40,6 +46,54 @@ class FavouriteDetailsService {
       _saving.remove(hadith.id);
     });
   });
+
+  bool _hasSourceId(String? id) =>
+      id != null && id.trim().isNotEmpty && id.trim() != '0';
+
+  Future<ApiResult<BookDetails>> getBookDetails(String id) => _sourceDetails(
+    'book',
+    id,
+    BookDetails.fromJson,
+    () => ApiService().getBookDetails(id),
+    (book) => book.toJson(),
+  );
+
+  Future<ApiResult<ScholarDetails>> getScholarDetails(String id) =>
+      _sourceDetails(
+        'scholar',
+        id,
+        ScholarDetails.fromJson,
+        () => ApiService().getScholarDetails(id),
+        (scholar) => scholar.toJson(),
+      );
+
+  Future<ApiResult<T>> _sourceDetails<T extends Object>(
+    String kind,
+    String id,
+    T Function(Map<String, dynamic>) parse,
+    Future<ApiResult<T>> Function() load,
+    Map<String, dynamic> Function(T) serialize,
+  ) async {
+    try {
+      final saved = await DatabaseService().getSourceDetails(kind, id);
+      if (saved != null) return ApiResult.success(parse(saved));
+    } catch (_) {
+      // Reading source information still works if local storage is unavailable.
+    }
+    final result = await load();
+    if (result.isSuccess) {
+      try {
+        await DatabaseService().saveSourceDetails(
+          kind,
+          id,
+          serialize(result.data!),
+        );
+      } catch (error, stack) {
+        TelemetryService.report(error, stack, 'favourites.saveSourceDetails');
+      }
+    }
+    return result;
+  }
 
   Future<ApiResult<Hadith>> getDetails(String id) => _details.putIfAbsent(
     id,

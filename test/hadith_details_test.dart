@@ -55,7 +55,10 @@ void main() {
       await directory.delete(recursive: true);
     });
   });
-  setUp(() => SharedPreferences.setMockInitialValues({}));
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    await (await DatabaseService().database).delete('source_details');
+  });
 
   Future<void> mount(
     WidgetTester tester,
@@ -283,7 +286,10 @@ void main() {
             expect(find.text('نبذة عن المحدث'), findsOneWidget);
             expect(scholarCalls, 2);
             expect(bookCalls, 1);
-            expect(find.widgetWithText(ElevatedButton, 'نسخ'), findsNWidgets(2));
+            expect(
+              find.widgetWithText(ElevatedButton, 'نسخ'),
+              findsNWidgets(2),
+            );
             await tester.ensureVisible(find.byTooltip('إغلاق'));
             await tester.tap(find.byTooltip('إغلاق'));
             await tester.pumpAndSettle();

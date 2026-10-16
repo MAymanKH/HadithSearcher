@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../l10n/localization.dart';
 import '../models/hadith_details.dart';
 import '../services/api_service.dart';
+import '../services/favourite_details_service.dart';
 import '../viewmodels/settings_viewmodel.dart';
 import 'app_loading_indicator.dart';
 
@@ -21,7 +22,7 @@ class ScholarSourceDetails extends StatelessWidget {
     name: name,
     icon: Icons.person_outline,
     load: () => hasSourceId(id)
-        ? ApiService().getScholarDetails(id!.trim())
+        ? FavouriteDetailsService().getScholarDetails(id!.trim())
         : Future.value(ApiResult.error(ApiError.notFound)),
     format: (scholar) => [
       if (scholar.name.trim() != name.trim()) scholar.name,
@@ -41,7 +42,7 @@ class BookSourceDetails extends StatelessWidget {
     name: name,
     icon: Icons.menu_book_outlined,
     load: () => hasSourceId(id)
-        ? ApiService().getBookDetails(id!.trim())
+        ? FavouriteDetailsService().getBookDetails(id!.trim())
         : Future.value(ApiResult.error(ApiError.notFound)),
     format: (book) =>
         [
@@ -125,8 +126,7 @@ class _SourceDetailsSectionState<T extends Object>
           FutureBuilder<ApiResult<T>>(
             future: _result,
             builder: (context, snapshot) {
-              final loading =
-                  snapshot.connectionState != ConnectionState.done;
+              final loading = snapshot.connectionState != ConnectionState.done;
               final result = snapshot.data;
               final Widget content;
               if (loading) {

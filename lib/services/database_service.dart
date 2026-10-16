@@ -33,13 +33,14 @@ class DatabaseService extends ChangeNotifier {
 
     return openDatabase(
       path,
-      version: 4,
+      version: 5,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
   }
 
   Future<void> _onCreate(Database db, int version) async {
+    await _createSourceDetails(db);
     await db.execute('''
       CREATE TABLE favourites (
         id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
@@ -56,6 +57,7 @@ class DatabaseService extends ChangeNotifier {
   }
 
   Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 5) await _createSourceDetails(db);
     // Drop settings table if upgrading from version 1
     if (oldVersion < 2) {
       await db.execute('DROP TABLE IF EXISTS settings');
@@ -71,6 +73,38 @@ class DatabaseService extends ChangeNotifier {
         'ALTER TABLE favourites ADD COLUMN hasalternate INTEGER NOT NULL DEFAULT 0',
       );
     }
+  }
+
+  Future<void> _createSourceDetails(Database db) => db.execute(
+    'CREATE TABLE source_details ('
+    'kind TEXT NOT NULL, source_id TEXT NOT NULL, details TEXT NOT NULL, '
+    'PRIMARY KEY (kind, source_id))',
+  );
+
+  Future<Map<String, dynamic>?> getSourceDetails(String kind, String id) async {
+    final db = await database;
+    final rows = await db.query(
+      'source_details',
+      where: 'kind = ? AND source_id = ?',
+      whereArgs: [kind, id],
+      limit: 1,
+    );
+    return rows.isEmpty
+        ? null
+        : jsonDecode(rows.single['details'] as String) as Map<String, dynamic>;
+  }
+
+  Future<void> saveSourceDetails(
+    String kind,
+    String id,
+    Map<String, dynamic> details,
+  ) async {
+    final db = await database;
+    await db.insert('source_details', {
+      'kind': kind,
+      'source_id': id,
+      'details': jsonEncode(details),
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
   }
 
   // ==================== FAVOURITES ====================

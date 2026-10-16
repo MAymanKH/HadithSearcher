@@ -225,6 +225,67 @@ void main() {
   }
 
   test(
+    'book and scholar details are downloaded and read without network',
+    () async {
+      final item = Hadith.fromJson({
+        ...hadith.toJson(),
+        'hadithId': 'with-sources',
+        'bookId': 'book-1',
+        'mohdithId': 'scholar-1',
+        'hasUsulHadith': false,
+        'hasSharhMetadata': false,
+        'sharhMetadata': null,
+      });
+      await db.addFavourite(
+        hadithId: item.id,
+        hadithText: item.text,
+        hadithInfo: item.formattedInfo,
+        hadith: item,
+      );
+      final paths = <String>[];
+      await http.runWithClient(
+        () => FavouriteDetailsService().saveOffline(item),
+        () => MockClient((request) async {
+          paths.add(request.url.path);
+          if (request.url.path.contains('/book/')) {
+            return response({
+              'data': {'name': 'كتاب', 'author': 'مؤلف', 'editionYear': '1400'},
+            });
+          }
+          if (request.url.path.contains('/mohdith/')) {
+            return response({
+              'data': {'name': 'محدث', 'info': 'ترجمة محفوظة'},
+            });
+          }
+          return response({'data': item.toJson()});
+        }),
+      );
+      expect(
+        paths,
+        containsAll(['/v1/site/book/book-1', '/v1/site/mohdith/scholar-1']),
+      );
+      expect(
+        await db.getSourceDetails('book', 'book-1'),
+        containsPair('author', 'مؤلف'),
+      );
+      await http.runWithClient(
+        () async {
+          final book = await FavouriteDetailsService().getBookDetails('book-1');
+          final scholar = await FavouriteDetailsService().getScholarDetails(
+            'scholar-1',
+          );
+          expect(book.data!.author, 'مؤلف');
+          expect(book.data!.editionYear, '1400');
+          expect(scholar.data!.info, 'ترجمة محفوظة');
+        },
+        () => MockClient(
+          (_) async => throw StateError('Offline read used network'),
+        ),
+      );
+    },
+  );
+
+  test(
     'snapshot explanation opens offline before background downloads finish',
     () async {
       final item = Hadith.fromJson({

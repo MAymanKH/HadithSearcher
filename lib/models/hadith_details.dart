@@ -73,6 +73,15 @@ class BookDetails {
     required this.editionYear,
   });
 
+  Map<String, dynamic> toJson() => {
+    'name': name,
+    'author': author,
+    'reviewer': reviewer,
+    'publisher': publisher,
+    'edition': edition,
+    'editionYear': editionYear,
+  };
+
   factory BookDetails.fromJson(Map<String, dynamic> json) => BookDetails(
     name: json['name'] ?? '',
     author: json['author'] ?? '',
@@ -88,6 +97,8 @@ class ScholarDetails {
   final String info;
 
   const ScholarDetails({required this.name, required this.info});
+
+  Map<String, dynamic> toJson() => {'name': name, 'info': info};
 
   factory ScholarDetails.fromJson(Map<String, dynamic> json) =>
       ScholarDetails(name: json['name'] ?? '', info: json['info'] ?? '');
