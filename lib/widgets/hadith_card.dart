@@ -77,7 +77,7 @@ class HadithCard extends StatelessWidget {
       context,
       SnackBar(
         content: Text(context.l10n.loadingExplanation),
-        duration: Duration(seconds: 30),
+        duration: ApiService.requestTimeout + const Duration(seconds: 5),
       ),
     );
 

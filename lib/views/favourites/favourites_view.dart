@@ -116,7 +116,7 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
       context,
       SnackBar(
         content: Text(context.l10n.loadingExplanation),
-        duration: Duration(seconds: 30),
+        duration: ApiService.requestTimeout * 2 + const Duration(seconds: 5),
       ),
     );
 

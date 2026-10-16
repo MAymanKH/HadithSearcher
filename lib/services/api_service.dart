@@ -15,8 +15,8 @@ class ApiService {
   ApiService._internal();
 
   String get _baseUrl => hadithApiBaseUrl;
-  static const _timeout = Duration(seconds: 24);
-  static const _shortTimeout = Duration(seconds: 8);
+  // The deployed API has a 60-second request deadline. Allow transit time too.
+  static const requestTimeout = Duration(seconds: 65);
 
   Future<ApiResult<List<Hadith>>> searchHadith(SearchParams params) {
     final properties = <String, Object>{
@@ -118,7 +118,6 @@ class ApiService {
       '/v1/site/sharh/$sharhId',
       operation: 'explanation',
       event: 'explanation_completed',
-      timeout: _shortTimeout,
       properties: {'sharh_id': sharhId},
       parse: (json) {
         final sharh = json['data']?['sharhMetadata']?['sharh'] as String?;
@@ -133,7 +132,6 @@ class ApiService {
     '/v1/site/hadith/$hadithId',
     operation: 'hadith_metadata',
     event: 'hadith_metadata_completed',
-    timeout: _shortTimeout,
     properties: {'hadith_id': hadithId},
     parse: (json) => json['data'] == null
         ? ApiResult.error(ApiError.notFound)
@@ -164,7 +162,6 @@ class ApiService {
     FutureOr<dynamic> Function(String) decode = jsonDecode,
     Map<String, Object>? query,
     Map<String, Object> properties = const {},
-    Duration timeout = _timeout,
   }) async {
     final analytics = TelemetryService.instance?.analyticsEnabled ?? false;
     final diagnostics = TelemetryService.instance?.diagnosticsEnabled ?? false;
@@ -174,8 +171,17 @@ class ApiService {
     try {
       result = await TelemetryService.trace('api.$operation', () async {
         final url = Uri.parse('$_baseUrl$path').replace(queryParameters: query);
-        final response = await http.get(url).timeout(timeout);
+        final client = http.Client();
+        final http.Response response;
+        try {
+          response = await client.get(url).timeout(requestTimeout);
+        } finally {
+          client.close();
+        }
         statusCode = response.statusCode;
+        if (response.statusCode == 408 || response.statusCode == 504) {
+          return ApiResult<T>.error(ApiError.timeout);
+        }
         if (response.statusCode == 404) {
           return ApiResult<T>.error(ApiError.notFound);
         }
