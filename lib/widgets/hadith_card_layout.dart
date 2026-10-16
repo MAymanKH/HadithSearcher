@@ -8,6 +8,11 @@ import 'hadith_detail_button.dart';
 class HadithCardLayout extends StatelessWidget {
   static const borderRadius = BorderRadius.all(Radius.circular(30));
   static const panelBorderRadius = BorderRadius.all(Radius.circular(20));
+  static Color infoColor(ColorScheme colors) => Color.alphaBlend(
+    colors.secondaryContainer.withValues(alpha: 0.65),
+    colors.primaryContainer,
+  );
+
   final EdgeInsetsGeometry margin;
   final String text;
   final String? narrator;
@@ -46,6 +51,7 @@ class HadithCardLayout extends StatelessWidget {
     final textStyle = settings.readingTextStyle.copyWith(
       color: colors.secondaryContainer,
     );
+    final infoStyle = textStyle.copyWith(color: infoColor(colors));
     return Container(
       margin: margin,
       padding: settings.padding,
@@ -60,15 +66,7 @@ class HadithCardLayout extends StatelessWidget {
             SelectableText.rich(
               TextSpan(
                 children: [
-                  TextSpan(
-                    text: 'عن ${narrator!.trim()}: ',
-                    style: TextStyle(
-                      color: Color.alphaBlend(
-                        colors.secondaryContainer.withValues(alpha: 0.65),
-                        colors.primaryContainer,
-                      ),
-                    ),
-                  ),
+                  TextSpan(text: 'عن ${narrator!.trim()}: ', style: infoStyle),
                   TextSpan(text: text),
                 ],
               ),
@@ -89,11 +87,11 @@ class HadithCardLayout extends StatelessWidget {
             ),
           ),
           if (grading != null) ...[
-            SelectableText(grading!, style: textStyle),
+            SelectableText(grading!, style: infoStyle),
             if (onAlternate != null) _buildAlternateButton(context),
             const SizedBox(height: 4),
           ],
-          SelectableText(attribution, style: textStyle),
+          SelectableText(attribution, style: infoStyle),
           if (grading == null && onAlternate != null)
             _buildAlternateButton(context),
           ?additionalInfo,

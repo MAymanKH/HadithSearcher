@@ -116,7 +116,7 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
     final readingStyle = context
         .watch<SettingsViewModel>()
         .readingTextStyle
-        .copyWith(color: colors.secondaryContainer);
+        .copyWith(color: HadithCardLayout.infoColor(colors));
     return Container(
       margin: const EdgeInsets.only(top: 12),
       child: Material(
@@ -146,7 +146,7 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
                   children: [
                     Icon(
                       _expanded ? Icons.expand_less : Icons.expand_more,
-                      color: colors.secondaryContainer,
+                      color: readingStyle.color,
                     ),
                     const SizedBox(width: 8),
                     Expanded(
@@ -187,6 +187,7 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
                                   context.l10n.additionalInfoLoadFailed(
                                     _error!.title(context.l10n),
                                   ),
+                                  style: readingStyle,
                                 ),
                                 Align(
                                   alignment: AlignmentDirectional.centerStart,
@@ -197,7 +198,10 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
                                 ),
                               ],
                               if (_loaded && !_hasContent)
-                                Text(context.l10n.noAdditionalInfo),
+                                Text(
+                                  context.l10n.noAdditionalInfo,
+                                  style: readingStyle,
+                                ),
                               if (_hasGradingNote)
                                 _infoLine(
                                   context.l10n.gradeExplanation,

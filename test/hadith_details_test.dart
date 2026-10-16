@@ -165,7 +165,12 @@ void main() {
                 .firstWhere(
                   (text) => text.data == 'التخريج: ${hadith.takhrij}',
                 );
-            expect(infoText.style!.color, dark ? Colors.white : Colors.black);
+            final body = tester.widget<SelectableText>(
+              find.byType(SelectableText).first,
+            );
+            final narrator = body.textSpan!.children!.first as TextSpan;
+            expect(infoText.style!.color, narrator.style!.color);
+            expect(infoText.style!.color, isNot(body.style!.color));
             expect(
               find.text('التصنيف الموضوعي: رقائق وزهد - النية'),
               findsOneWidget,
