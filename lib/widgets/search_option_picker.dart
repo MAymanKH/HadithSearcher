@@ -302,6 +302,14 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
       controller: _scrollController,
       slivers: [
         SliverToBoxAdapter(child: _tile(widget.filter.all)),
+        SliverToBoxAdapter(
+          child: Divider(
+            height: 16,
+            indent: 24,
+            endIndent: 24,
+            color: Theme.of(context).colorScheme.outlineVariant,
+          ),
+        ),
         if (_loading) const SliverToBoxAdapter(child: AppLoadingIndicator()),
         if (_error != null)
           SliverToBoxAdapter(
