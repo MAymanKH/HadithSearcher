@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:posthog_flutter/posthog_flutter.dart';
@@ -20,8 +21,8 @@ class SdkTelemetryBackend implements TelemetryBackend {
     this.sentryDsn = config.sentryDsn,
     this.posthogToken = config.posthogProjectToken,
     this.posthogHost = config.posthogHost,
-    this.environment = 'production',
-    this.distribution = appFlavor ?? 'fdroid',
+    this.environment = kReleaseMode ? 'production' : 'development',
+    this.distribution = config.telemetryDistribution,
   });
 
   @override
@@ -35,7 +36,8 @@ class SdkTelemetryBackend implements TelemetryBackend {
       await _native.invokeMethod<void>('clearDiagnosticsCache');
       return;
     }
-    if (_diagnostics || sentryDsn.isEmpty) return;
+    if (_diagnostics) return;
+    if (sentryDsn.isEmpty) throw StateError('SENTRY_DSN is empty');
     final package = await PackageInfo.fromPlatform();
     try {
       await SentryFlutter.init((options) {
@@ -51,16 +53,17 @@ class SdkTelemetryBackend implements TelemetryBackend {
           ..enablePrintBreadcrumbs = false
           ..attachScreenshot = false
           ..enableLogs = false;
-        options.beforeSend =
-            (event, hint) => _diagnostics ? scrubError(event) : null;
-        options.beforeSendTransaction =
-            (event, hint) => _diagnostics ? event : null;
+        options.beforeSend = (event, hint) =>
+            _diagnostics ? scrubError(event) : null;
+        options.beforeSendTransaction = (event, hint) =>
+            _diagnostics ? event : null;
         options.replay.sessionSampleRate = 0;
         options.replay.onErrorSampleRate = 0;
       });
       await _native.invokeMethod<void>('configureDiagnosticsPrivacy');
       await Sentry.configureScope(
-          (scope) => scope.setTag('distribution', distribution));
+        (scope) => scope.setTag('distribution', distribution),
+      );
       _diagnostics = true;
     } catch (_) {
       _diagnostics = false;
@@ -96,7 +99,9 @@ class SdkTelemetryBackend implements TelemetryBackend {
       return;
     }
     if (_analytics) return;
-    if (posthogToken.isEmpty || posthogHost.isEmpty) return;
+    if (posthogToken.isEmpty || posthogHost.isEmpty) {
+      throw StateError('PostHog project token or host is empty');
+    }
     final config = PostHogConfig(posthogToken)
       ..host = posthogHost
       ..captureApplicationLifecycleEvents = false
@@ -136,12 +141,15 @@ class SdkTelemetryBackend implements TelemetryBackend {
   @override
   Future<void> capture(String event, Map<String, Object> properties) async {
     if (!_analytics) return;
-    await Posthog().capture(eventName: event, properties: {
-      ...properties,
-      'app_environment': environment,
-      'app_distribution': distribution,
-      '\$geoip_disable': true,
-    });
+    await Posthog().capture(
+      eventName: event,
+      properties: {
+        ...properties,
+        'app_environment': environment,
+        'app_distribution': distribution,
+        '\$geoip_disable': true,
+      },
+    );
   }
 
   @override
@@ -153,10 +161,14 @@ class SdkTelemetryBackend implements TelemetryBackend {
   @override
   Future<void> report(Object error, StackTrace stack, String operation) async {
     if (!_diagnostics) return;
-    await Sentry.captureException(error, stackTrace: stack, withScope: (scope) {
-      scope.setTag('operation', operation);
-      scope.fingerprint = [operation, error.runtimeType.toString()];
-    });
+    await Sentry.captureException(
+      error,
+      stackTrace: stack,
+      withScope: (scope) {
+        scope.setTag('operation', operation);
+        scope.fingerprint = [operation, error.runtimeType.toString()];
+      },
+    );
   }
 
   @override

@@ -9,17 +9,21 @@ class FakeBackend implements TelemetryBackend {
   final reports = <String>[];
   final transitions = <String>[];
   Completer<void>? stoppingAnalytics;
+  bool failDiagnostics = false;
+  bool failAnalytics = false;
 
   @override
   Future<void> setDiagnosticsEnabled(bool enabled) async {
     diagnostics = enabled;
     transitions.add('diagnostics:$enabled');
+    if (failDiagnostics) throw StateError('Diagnostics unavailable');
   }
 
   @override
   Future<void> setAnalyticsEnabled(bool enabled) async {
     analytics = enabled;
     transitions.add('analytics:$enabled');
+    if (failAnalytics) throw StateError('Analytics unavailable');
     if (!enabled) await stoppingAnalytics?.future;
   }
 

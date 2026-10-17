@@ -103,8 +103,22 @@ class TelemetryService extends ChangeNotifier {
     );
     notifyListeners();
     try {
-      if (!diagnostics) await backend.setDiagnosticsEnabled(false);
-      if (!analytics) await backend.setAnalyticsEnabled(false);
+      // A failing SDK must not prevent the other SDK from stopping or leave
+      // consent enabled on the next launch.
+      if (!diagnostics) {
+        try {
+          await backend.setDiagnosticsEnabled(false);
+        } catch (_) {
+          _error = 'تعذر تشغيل تقارير الأعطال حالياً.';
+        }
+      }
+      if (!analytics) {
+        try {
+          await backend.setAnalyticsEnabled(false);
+        } catch (_) {
+          _error = 'تعذر تشغيل إحصاءات الاستخدام حالياً.';
+        }
+      }
       final next = TelemetryConsent(
         decided: true,
         diagnostics: diagnostics,
@@ -115,7 +129,7 @@ class TelemetryService extends ChangeNotifier {
       }
       _consent = next;
       await _configure();
-      return true;
+      return _error == null;
     } catch (_) {
       _error = 'تعذر حفظ الاختيار أو تشغيل الخدمة. حاول مرة أخرى.';
       return false;
