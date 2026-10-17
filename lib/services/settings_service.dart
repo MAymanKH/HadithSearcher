@@ -1,5 +1,6 @@
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/settings.dart';
+import 'telemetry/telemetry_service.dart';
 
 /// Service for managing app settings using SharedPreferences.
 class SettingsService {
@@ -38,7 +39,8 @@ class SettingsService {
         fontSize: p.getInt(_fontSizeKey) ?? 20,
         padding: p.getInt(_paddingKey) ?? 10,
       );
-    } catch (e) {
+    } catch (error, stack) {
+      TelemetryService.report(error, stack, 'settings.getSettings');
       // Return default settings on error
       return AppSettings(
         theme: ThemePreference.system,
@@ -65,7 +67,8 @@ class SettingsService {
       final p = await prefs;
       await p.setString(_themeKey, theme.toDbString());
       return true;
-    } catch (e) {
+    } catch (error, stack) {
+      TelemetryService.report(error, stack, 'settings.updateTheme');
       return false;
     }
   }
@@ -73,7 +76,8 @@ class SettingsService {
   Future<bool> updateColorScheme(ColorSchemePreference scheme) async {
     try {
       return await (await prefs).setString(_colorSchemeKey, scheme.name);
-    } catch (_) {
+    } catch (error, stack) {
+      TelemetryService.report(error, stack, 'settings.updateColorScheme');
       return false;
     }
   }
@@ -84,7 +88,8 @@ class SettingsService {
       final p = await prefs;
       await p.setString(_fontFamilyKey, fontFamily);
       return true;
-    } catch (e) {
+    } catch (error, stack) {
+      TelemetryService.report(error, stack, 'settings.updateFontFamily');
       return false;
     }
   }
@@ -95,7 +100,8 @@ class SettingsService {
       final p = await prefs;
       await p.setString(_fontWeightKey, fontWeight.toDbString());
       return true;
-    } catch (e) {
+    } catch (error, stack) {
+      TelemetryService.report(error, stack, 'settings.updateFontWeight');
       return false;
     }
   }
@@ -106,7 +112,8 @@ class SettingsService {
       final p = await prefs;
       await p.setInt(_fontSizeKey, fontSize);
       return true;
-    } catch (e) {
+    } catch (error, stack) {
+      TelemetryService.report(error, stack, 'settings.updateFontSize');
       return false;
     }
   }
@@ -117,7 +124,8 @@ class SettingsService {
       final p = await prefs;
       await p.setInt(_paddingKey, padding);
       return true;
-    } catch (e) {
+    } catch (error, stack) {
+      TelemetryService.report(error, stack, 'settings.updatePadding');
       return false;
     }
   }
@@ -134,7 +142,8 @@ class SettingsService {
       await p.setInt(_fontSizeKey, 20);
       await p.setInt(_paddingKey, 10);
       return true;
-    } catch (e) {
+    } catch (error, stack) {
+      TelemetryService.report(error, stack, 'settings.resetSettings');
       return false;
     }
   }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../l10n/localization.dart';
 import '../services/api_service.dart';
+import '../services/telemetry/telemetry_service.dart';
 import '../viewmodels/similar_hadith_viewmodel.dart';
 import 'api_details_sheet.dart';
 import 'app_loading_indicator.dart';
@@ -13,6 +14,7 @@ Future<void> showExplanationSheet(
   BuildContext context, {
   required Future<ApiResult<String>> Function() load,
 }) {
+  TelemetryService.event('explanation_opened');
   final messenger = ScaffoldMessenger.of(context);
   messenger.clearSnackBars();
   messenger.removeCurrentSnackBar();
@@ -25,17 +27,19 @@ Future<void> showExplanationSheet(
   );
 }
 
-Future<void> showAlternateHadithSheet(BuildContext context, String hadithId) =>
-    showDetailsSheet(
-      context,
-      title: context.l10n.alternate,
-      child: ChangeNotifierProvider(
-        create: (_) =>
-            SimilarHadithViewModel()
-              ..loadSimilarHadith(hadithId, alternate: true),
-        child: _AlternateHadithContent(hadithId: hadithId),
-      ),
-    );
+Future<void> showAlternateHadithSheet(BuildContext context, String hadithId) {
+  TelemetryService.event('alternate_hadith_opened', {'hadith_id': hadithId});
+  return showDetailsSheet(
+    context,
+    title: context.l10n.alternate,
+    child: ChangeNotifierProvider(
+      create: (_) =>
+          SimilarHadithViewModel()
+            ..loadSimilarHadith(hadithId, alternate: true),
+      child: _AlternateHadithContent(hadithId: hadithId),
+    ),
+  );
+}
 
 class _AlternateHadithContent extends StatelessWidget {
   final String hadithId;

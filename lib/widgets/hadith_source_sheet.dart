@@ -2,17 +2,20 @@ import 'package:flutter/material.dart';
 import '../l10n/localization.dart';
 import '../models/hadith.dart';
 import '../services/api_service.dart';
+import '../services/telemetry/telemetry_service.dart';
 import '../services/favourite_details_service.dart';
 import 'source_details_sheet.dart';
 import 'app_loading_indicator.dart';
 import 'details_sheet.dart';
 
-Future<void> showHadithSourceSheet(BuildContext context, Hadith hadith) =>
-    showDetailsSheet(
-      context,
-      title: context.l10n.sourceDetails,
-      child: _HadithSourceSheet(hadith: hadith),
-    );
+Future<void> showHadithSourceSheet(BuildContext context, Hadith hadith) {
+  TelemetryService.event('source_details_opened', {'hadith_id': hadith.id});
+  return showDetailsSheet(
+    context,
+    title: context.l10n.sourceDetails,
+    child: _HadithSourceSheet(hadith: hadith),
+  );
+}
 
 class _HadithSourceSheet extends StatefulWidget {
   final Hadith hadith;
@@ -68,10 +71,7 @@ class _HadithSourceSheetState extends State<_HadithSourceSheet> {
         content = Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            ScholarSourceDetails(
-              name: hadith.mohdith,
-              id: hadith.mohdithId,
-            ),
+            ScholarSourceDetails(name: hadith.mohdith, id: hadith.mohdithId),
             const SizedBox(height: 16),
             BookSourceDetails(name: hadith.book, id: hadith.bookId),
           ],

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/localization.dart';
+import '../../services/telemetry/telemetry_service.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../viewmodels/similar_hadith_viewmodel.dart';
 import '../../widgets/back_to_top_button.dart';
@@ -22,6 +23,7 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
   @override
   void initState() {
     super.initState();
+    TelemetryService.event('screen_viewed', {'screen': 'similar_hadith'});
     initScrollController();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (widget.hadithId != null) {

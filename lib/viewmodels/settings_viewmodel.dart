@@ -69,6 +69,7 @@ class SettingsViewModel extends ChangeNotifier {
   Future<void> setLanguage(String language) async {
     if (language != 'ar' && language != 'en') return;
     if (await _settingsService.updateLanguage(language)) {
+      TelemetryService.event('language_changed', {'language': language});
       _settings = _settings.copyWith(language: language);
       notifyListeners();
     }

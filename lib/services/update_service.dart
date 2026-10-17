@@ -6,6 +6,7 @@ import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'telemetry/telemetry_service.dart';
 
 enum UpdateChannel { play, fdroid, github }
 
@@ -142,7 +143,8 @@ class UpdateService extends ChangeNotifier {
             url: Uri.https('github.com', '/$repository/releases/tag/$tag'),
           );
       }
-    } catch (_) {
+    } catch (error, stack) {
+      TelemetryService.report(error, stack, 'updates.${channel.name}.check');
       // Checking for updates must never prevent use of the app while offline.
       failed = true;
       return null;

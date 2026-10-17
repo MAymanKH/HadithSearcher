@@ -21,10 +21,14 @@ void main() {
         SharedPreferences.setMockInitialValues({'language': 'en'});
         final settings = SettingsViewModel();
         await settings.loadSettings();
+        final backend = FakeBackend();
         final telemetry = TelemetryService(
           preferences: await SharedPreferences.getInstance(),
-          backend: FakeBackend(),
+          backend: backend,
         );
+        await telemetry.save(diagnostics: false, analytics: true);
+        TelemetryService.instance = telemetry;
+        addTearDown(() => TelemetryService.instance = null);
         final similar = SimilarHadithViewModel();
         addTearDown(settings.dispose);
         addTearDown(telemetry.dispose);
@@ -81,6 +85,11 @@ void main() {
         expect(route.animation!.value, inExclusiveRange(0, 1));
         await tester.pumpAndSettle();
         expect(tester.getTopLeft(page).dx, 0);
+        expect(backend.events, ['screen_viewed']);
+        expect(
+          backend.properties.single['screen'],
+          consent ? 'privacy' : 'similar_hadith',
+        );
         Navigator.pop(tester.element(page));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 120));

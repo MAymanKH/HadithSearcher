@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/localization.dart';
 import '../../viewmodels/settings_viewmodel.dart';
+import '../../services/telemetry/telemetry_service.dart';
 import '../../widgets/app_logo.dart';
 import '../../widgets/appearance_preferences.dart';
 
@@ -15,6 +16,12 @@ class WelcomeView extends StatefulWidget {
 class _WelcomeViewState extends State<WelcomeView> {
   bool _saving = false;
   bool _failed = false;
+
+  @override
+  void initState() {
+    super.initState();
+    TelemetryService.event('screen_viewed', {'screen': 'welcome'});
+  }
 
   Future<void> _continue() async {
     setState(() {

@@ -24,6 +24,7 @@ class _TelemetryConsentViewState extends State<TelemetryConsentView> {
   @override
   void initState() {
     super.initState();
+    TelemetryService.event('screen_viewed', {'screen': 'privacy'});
     final consent = context.read<TelemetryService>().consent;
     _diagnostics = consent.diagnostics;
     _analytics = consent.analytics;

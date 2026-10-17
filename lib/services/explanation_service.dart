@@ -1,5 +1,6 @@
 import 'api_service.dart';
 import 'database_service.dart';
+import 'telemetry/telemetry_service.dart';
 
 class ExplanationService {
   static final _instance = ExplanationService._();
@@ -27,7 +28,8 @@ class ExplanationService {
     FavouriteHadith? favourite;
     try {
       favourite = await DatabaseService().getFavourite(hadithId);
-    } catch (_) {
+    } catch (error, stack) {
+      TelemetryService.report(error, stack, 'explanation.readFavourite');
       // Online explanations remain available if local storage is unavailable.
     }
     explanation = [

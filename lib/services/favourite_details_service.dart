@@ -77,7 +77,8 @@ class FavouriteDetailsService {
     try {
       final saved = await DatabaseService().getSourceDetails(kind, id);
       if (saved != null) return ApiResult.success(parse(saved));
-    } catch (_) {
+    } catch (error, stack) {
+      TelemetryService.report(error, stack, 'favourites.readSourceDetails');
       // Reading source information still works if local storage is unavailable.
     }
     final result = await load();
@@ -108,7 +109,8 @@ class FavouriteDetailsService {
     if (result.isSuccess) {
       try {
         await DatabaseService().saveDetails(result.data!);
-      } catch (_) {
+      } catch (error, stack) {
+        TelemetryService.report(error, stack, 'favourites.saveDetails');
         // Details can still be read when local storage is unavailable.
       }
     }
@@ -119,7 +121,8 @@ class FavouriteDetailsService {
     try {
       final saved = await DatabaseService().getFavourite(id);
       if (saved?.details != null) return ApiResult.success(saved!.details!);
-    } catch (_) {
+    } catch (error, stack) {
+      TelemetryService.report(error, stack, 'favourites.readDetails');
       // Fall back to the source for unsaved hadiths.
     }
     return getDetails(id);
@@ -137,14 +140,16 @@ class FavouriteDetailsService {
     try {
       final saved = await DatabaseService().getFavourite(id);
       if (saved?.origins != null) return ApiResult.success(saved!.origins!);
-    } catch (_) {
+    } catch (error, stack) {
+      TelemetryService.report(error, stack, 'favourites.readOrigins');
       // Continue online when local storage is unavailable.
     }
     final result = await ApiService().getHadithOrigins(id);
     if (result.isSuccess) {
       try {
         await DatabaseService().saveOrigins(id, result.data!);
-      } catch (_) {
+      } catch (error, stack) {
+        TelemetryService.report(error, stack, 'favourites.saveOrigins');
         // Reading online does not depend on a successful local write.
       }
     }
