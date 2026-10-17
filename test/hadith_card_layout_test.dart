@@ -49,7 +49,7 @@ void main() {
 
   for (final width in [320.0, 450.0]) {
     testWidgets(
-      'source info icon aligns with Arabic reference at width $width',
+      'card icons align with Arabic grade and reference at width $width',
       (tester) async {
         tester.view.physicalSize = Size(width, 850);
         tester.view.devicePixelRatio = 1;
@@ -77,7 +77,7 @@ void main() {
                       onSimilar: null,
                       onShare: () {},
                       onFavourite: () {},
-                      onAlternate: null,
+                      onAlternate: () {},
                     ),
                   ),
                 ),
@@ -90,6 +90,17 @@ void main() {
         );
         final icon = tester.getRect(find.byIcon(Icons.error_outline_rounded));
         expect(icon.center.dy, closeTo(reference.center.dy, 1));
+        final alternate = find.byTooltip('البديل الصحيح');
+        final grade = tester.getRect(find.text('صحيح'));
+        expect(
+          tester.getRect(alternate).center.dy,
+          closeTo(grade.center.dy, 1),
+        );
+        expect(tester.getRect(alternate).right, lessThan(grade.left));
+        expect(
+          tester.getSize(alternate).shortestSide,
+          greaterThanOrEqualTo(48),
+        );
         expect(
           tester
               .getSize(
@@ -244,7 +255,7 @@ void main() {
             of: find.byType(HadithCardLayout),
             matching: find.byType(Tooltip),
           ),
-          findsNothing,
+          findsOneWidget,
         );
         expect(
           tester
@@ -265,7 +276,7 @@ void main() {
           'محفوظ',
         ]) {
           final action = label == 'البديل الصحيح'
-              ? find.widgetWithText(OutlinedButton, label)
+              ? find.byTooltip(label)
               : find.widgetWithText(TextButton, label);
           await tester.ensureVisible(action);
           await tester.pumpAndSettle();
@@ -324,10 +335,7 @@ void main() {
         find.text('Legacy citation\nUnstructured extra details'),
         findsOneWidget,
       );
-      expect(
-        find.widgetWithText(OutlinedButton, 'البديل الصحيح'),
-        findsOneWidget,
-      );
+      expect(find.byTooltip('البديل الصحيح'), findsOneWidget);
       final saved = tester.widget<HadithCardLayout>(
         find.byType(HadithCardLayout).first,
       );

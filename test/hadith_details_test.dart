@@ -153,7 +153,7 @@ void main() {
               tester,
               Hadith.fromJson({...richJson, 'hasAlternateHadithSahih': true}),
             );
-            final action = find.widgetWithText(OutlinedButton, 'البديل الصحيح');
+            final action = find.byTooltip('البديل الصحيح');
             await tester.ensureVisible(action);
             await tester.runAsync(() async {
               await tester.tap(action);

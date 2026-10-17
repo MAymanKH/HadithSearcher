@@ -96,7 +96,7 @@ void main() {
         (widget) =>
             widget is SelectableText && widget.data == 'حكم البخاري: [صحيح]',
       );
-      final alternate = find.widgetWithText(OutlinedButton, 'البديل الصحيح');
+      final alternate = find.byTooltip('البديل الصحيح');
       final attribution = find.byWidgetPredicate(
         (widget) =>
             widget is SelectableText &&
@@ -106,8 +106,8 @@ void main() {
       expect(tester.widget<SelectableText>(grading).style!.fontSize, 20);
       expect(tester.widget<SelectableText>(attribution).style!.fontSize, 20);
       expect(
-        tester.getRect(alternate).top,
-        greaterThan(tester.getRect(grading).bottom),
+        tester.getRect(alternate).center.dy,
+        closeTo(tester.getRect(grading).center.dy, 1),
       );
       expect(
         tester.getRect(alternate).bottom,
@@ -129,7 +129,7 @@ void main() {
         ).writeAsBytes(bytes);
       }
     }
-    await tester.tap(find.widgetWithText(OutlinedButton, 'البديل الصحيح'));
+    await tester.tap(find.byTooltip('البديل الصحيح'));
     await tester.pumpAndSettle();
     expect(find.byType(BottomSheet), findsOneWidget);
     await tester.runAsync(() async {

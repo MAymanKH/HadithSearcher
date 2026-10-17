@@ -84,8 +84,25 @@ class HadithCardLayout extends StatelessWidget {
             child: Divider(height: 1, color: colors.outlineVariant),
           ),
           if (grading != null) ...[
-            SelectableText(grading!, style: textStyle),
-            if (onAlternate != null) _buildAlternateButton(context),
+            if (onAlternate != null)
+              Row(
+                children: [
+                  Expanded(child: SelectableText(grading!, style: textStyle)),
+                  const SizedBox(width: 12),
+                  IconButton(
+                    tooltip: context.l10n.alternate,
+                    onPressed: onAlternate,
+                    icon: const Icon(Icons.find_replace_rounded, size: 23),
+                    color: colors.onInverseSurface,
+                    style: IconButton.styleFrom(
+                      minimumSize: const Size(48, 48),
+                      backgroundColor: colors.inverseSurface,
+                    ),
+                  ),
+                ],
+              )
+            else
+              SelectableText(grading!, style: textStyle),
             const SizedBox(height: 4),
           ],
           Row(

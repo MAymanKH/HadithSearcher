@@ -66,7 +66,7 @@ void main() {
         ),
       );
       expect(
-        find.text('البديل الصحيح'),
+        find.byTooltip('البديل الصحيح'),
         available ? findsOneWidget : findsNothing,
       );
     }
