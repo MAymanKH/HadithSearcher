@@ -253,18 +253,6 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
               onChanged: vm.setSaveAdvancedSettings,
               customized: !vm.saveAdvancedSettings,
             ),
-            _buildDropdownRow<bool>(
-              context.l10n.specialistSearch,
-              vm.specialist,
-              const [false, true],
-              (value) {
-                if (value != null) vm.setSpecialist(value);
-              },
-              itemLabel: (value) =>
-                  value ? context.l10n.enabled : context.l10n.disabled,
-              isDefault: !vm.specialist,
-              help: context.l10n.specialistSearchHelp,
-            ),
             _buildDropdownRow(
               context.l10n.searchMethod,
               vm.searchWay,
@@ -288,6 +276,17 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
             ),
             for (final filter in SearchFilter.values)
               if (filter != SearchFilter.grade) _buildCatalogField(filter, vm),
+            _buildDropdownRow<bool>(
+              context.l10n.specialistSearch,
+              vm.specialist,
+              const [false, true],
+              (value) {
+                if (value != null) vm.setSpecialist(value);
+              },
+              itemLabel: (value) =>
+                  value ? context.l10n.enabled : context.l10n.disabled,
+              isDefault: !vm.specialist,
+            ),
             _buildExcludedWordsField(vm),
             const SizedBox(height: 20),
           ],
@@ -409,7 +408,6 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     void Function(T?) onChanged, {
     required String Function(T) itemLabel,
     required bool isDefault,
-    String? help,
   }) {
     final customized = !isDefault;
     return Padding(
@@ -422,8 +420,6 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
           label: _filterLabel(label, customized),
           labelStyle: _filterLabelStyle(customized),
           floatingLabelStyle: _filterLabelStyle(customized),
-          helperText: help,
-          helperMaxLines: 3,
         ),
         onChanged: onChanged,
         items: items
@@ -446,6 +442,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
         controller: _excludedWordsController,
         decoration: InputDecoration(
           label: _filterLabel(context.l10n.excludeWordsHint, customized),
+          hintText: context.l10n.excludeWordsPlaceholder,
           labelStyle: _filterLabelStyle(customized),
           floatingLabelStyle: _filterLabelStyle(customized),
         ),

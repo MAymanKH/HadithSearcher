@@ -578,12 +578,6 @@ abstract class AppLocalizations {
   /// **'Disabled'**
   String get disabled;
 
-  /// No description provided for @specialistSearchHelp.
-  ///
-  /// In en, this message translates to:
-  /// **'Include differences in scholarly grading and chain details'**
-  String get specialistSearchHelp;
-
   /// No description provided for @searchMethod.
   ///
   /// In en, this message translates to:
@@ -601,6 +595,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear filters'**
   String get clearFilters;
+
+  /// No description provided for @excludeWordsPlaceholder.
+  ///
+  /// In en, this message translates to:
+  /// **'For example: السفر'**
+  String get excludeWordsPlaceholder;
 
   /// No description provided for @excludeWordsHint.
   ///

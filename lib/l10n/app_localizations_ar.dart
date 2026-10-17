@@ -251,10 +251,6 @@ class AppLocalizationsAr extends AppLocalizations {
   String get disabled => 'غير مفعّل';
 
   @override
-  String get specialistSearchHelp =>
-      'يشمل اختلاف أحكام المحدثين وتفاصيل الأسانيد';
-
-  @override
   String get searchMethod => 'طريقة البحث';
 
   @override
@@ -262,6 +258,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get clearFilters => 'مسح عوامل التصفية';
+
+  @override
+  String get excludeWordsPlaceholder => 'مثال: السفر';
 
   @override
   String get excludeWordsHint => 'كلمات أو جملة تريد استبعادها';

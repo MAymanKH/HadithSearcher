@@ -256,10 +256,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get disabled => 'Disabled';
 
   @override
-  String get specialistSearchHelp =>
-      'Include differences in scholarly grading and chain details';
-
-  @override
   String get searchMethod => 'Search method';
 
   @override
@@ -267,6 +263,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get clearFilters => 'Clear filters';
+
+  @override
+  String get excludeWordsPlaceholder => 'For example: السفر';
 
   @override
   String get excludeWordsHint => 'Words or a phrase to exclude';

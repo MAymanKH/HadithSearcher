@@ -14,11 +14,8 @@ class SelectionSheet extends StatelessWidget {
     required this.child,
   });
 
-  static ShapeBorder shape(BuildContext context) => _TopOutlinedSheetBorder(
-    side: BorderSide(
-      color: Theme.of(context).colorScheme.outlineVariant,
-      width: .75,
-    ),
+  static const shape = RoundedRectangleBorder(
+    borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
   );
 
   @override
@@ -68,20 +65,5 @@ class SelectionSheet extends StatelessWidget {
         ),
       ),
     );
-  }
-}
-
-class _TopOutlinedSheetBorder extends RoundedRectangleBorder {
-  const _TopOutlinedSheetBorder({required super.side})
-    : super(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-      );
-
-  @override
-  void paint(Canvas canvas, Rect rect, {TextDirection? textDirection}) {
-    canvas.save();
-    canvas.clipRect(Rect.fromLTWH(rect.left, rect.top, rect.width, 24));
-    super.paint(canvas, rect, textDirection: textDirection);
-    canvas.restore();
   }
 }

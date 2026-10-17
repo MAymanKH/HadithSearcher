@@ -318,6 +318,7 @@ void main() {
     await tester.pumpAndSettle();
     final dropdown = find.byType(AppDropdown<bool>);
     expect(tester.widget<AppDropdown<bool>>(dropdown).value, isFalse);
+    await tester.ensureVisible(dropdown);
     await tester.tap(dropdown);
     await tester.pumpAndSettle();
     await tester.tap(find.text('مفعّل'));
@@ -331,6 +332,7 @@ void main() {
     );
     await tester.tap(find.byIcon(Icons.tune));
     await tester.pumpAndSettle();
+    await tester.ensureVisible(dropdown);
     await tester.tap(dropdown);
     await tester.pumpAndSettle();
     await tester.tap(find.text('غير مفعّل').last);
@@ -341,6 +343,51 @@ void main() {
     expect(
       (await SharedPreferences.getInstance()).getBool('searchSpecialist'),
       isFalse,
+    );
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('filter icons align and specialist follows the narrator field', (
+    tester,
+  ) async {
+    await mount(tester);
+    await tester.tap(find.byIcon(Icons.tune));
+    await tester.pumpAndSettle();
+    final icons = find.descendant(
+      of: find.byType(InputDecorator),
+      matching: find.byWidgetPredicate(
+        (widget) =>
+            widget is Icon &&
+            [Icons.expand_more_rounded, Icons.search].contains(widget.icon),
+      ),
+    );
+    expect(icons, findsNWidgets(7));
+    final positions = icons
+        .evaluate()
+        .map((element) => tester.getCenter(find.byWidget(element.widget)).dx)
+        .toList();
+    for (final position in positions) {
+      expect(position, closeTo(positions.first, .01));
+    }
+    final narrator = find.ancestor(
+      of: find.text('الراوي'),
+      matching: find.byType(InputDecorator),
+    );
+    expect(
+      tester.getTopLeft(find.byType(AppDropdown<bool>)).dy,
+      greaterThan(tester.getBottomLeft(narrator).dy),
+    );
+    expect(
+      find.text('يشمل اختلاف أحكام المحدثين وتفاصيل الأسانيد'),
+      findsNothing,
+    );
+    expect(
+      tester
+          .widgetList<TextField>(find.byType(TextField))
+          .last
+          .decoration!
+          .hintText,
+      'مثال: السفر',
     );
     await tester.pumpWidget(const SizedBox());
   });

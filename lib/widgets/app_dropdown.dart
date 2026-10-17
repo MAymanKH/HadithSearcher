@@ -37,7 +37,8 @@ class AppDropdown<T> extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
-      shape: SelectionSheet.shape(context),
+      shape: SelectionSheet.shape,
+      showDragHandle: true,
       builder: (context) => SelectionSheet(
         title: title,
         child: ListView.builder(
@@ -73,24 +74,18 @@ class AppDropdown<T> extends StatelessWidget {
         borderRadius: BorderRadius.circular(16),
         onTap: () => _select(context),
         child: InputDecorator(
-          decoration: _settingsRow
-              ? InputDecoration(labelText: title)
-              : decoration,
-          child: Row(
-            children: [
-              Expanded(
-                child: DefaultTextStyle.merge(
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  child: selected.child,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Icon(
-                Icons.expand_more_rounded,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-            ],
+          decoration:
+              (_settingsRow ? InputDecoration(labelText: title) : decoration)
+                  .copyWith(
+                    suffixIcon: Icon(
+                      Icons.expand_more_rounded,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
+                  ),
+          child: DefaultTextStyle.merge(
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            child: selected.child,
           ),
         ),
       ),

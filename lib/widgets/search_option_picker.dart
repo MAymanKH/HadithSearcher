@@ -25,7 +25,8 @@ Future<void> showSearchOptionPicker(
   context: context,
   isScrollControlled: true,
   useSafeArea: true,
-  shape: SelectionSheet.shape(context),
+  shape: SelectionSheet.shape,
+  showDragHandle: true,
   builder: (_) => _SearchOptionPicker(
     filter: filter,
     loadOptions: loadOptions,

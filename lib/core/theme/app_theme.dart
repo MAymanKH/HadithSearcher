@@ -105,6 +105,10 @@ class AppTheme {
         filled: true,
         fillColor: colors.surfaceContainerHigh,
         floatingLabelBehavior: FloatingLabelBehavior.always,
+        suffixIconConstraints: const BoxConstraints(
+          minWidth: 56,
+          minHeight: 48,
+        ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 16,
           vertical: 18,
