@@ -10,6 +10,19 @@ import 'package:hadithsearcher/widgets/api_details_sheet.dart';
 import 'package:hadithsearcher/widgets/hadith_card_layout.dart';
 import 'package:hadithsearcher/widgets/hadith_reading_sheet.dart';
 
+import 'package:hadithsearcher/models/hadith.dart';
+import 'package:hadithsearcher/services/telemetry/telemetry_service.dart';
+import 'package:hadithsearcher/services/update_service.dart';
+import 'package:hadithsearcher/views/about/about_view.dart';
+import 'package:hadithsearcher/views/settings/settings_view.dart';
+import 'package:hadithsearcher/views/welcome/welcome_view.dart';
+import 'package:hadithsearcher/views/privacy/telemetry_consent_view.dart';
+import 'package:hadithsearcher/widgets/app_dropdown.dart';
+import 'package:hadithsearcher/widgets/hadith_additional_info.dart';
+import 'package:hadithsearcher/widgets/hadith_detail_button.dart';
+
+import 'telemetry/fake_backend.dart';
+
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
@@ -18,21 +31,128 @@ void main() {
       testWidgets('interface uses Cairo in $language ${theme.brightness}', (
         tester,
       ) async {
-        await tester.pumpWidget(
-          MaterialApp(
-            theme: theme,
-            locale: Locale(language),
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-            home: Scaffold(
-              body: Builder(builder: (context) => Text(context.l10n.settings)),
-            ),
-          ),
+        tester.view.physicalSize = const Size(800, 1600);
+        tester.view.devicePixelRatio = 1;
+        addTearDown(tester.view.reset);
+        final settings = SettingsViewModel();
+        await settings.loadSettings();
+        addTearDown(settings.dispose);
+        final updates = UpdateService();
+        addTearDown(updates.dispose);
+        final telemetry = TelemetryService(
+          preferences: await SharedPreferences.getInstance(),
+          backend: FakeBackend(),
         );
-        await tester.pumpAndSettle();
-        final rendered = tester.widget<RichText>(find.byType(RichText).first);
-        expect(rendered.text.style!.fontFamily, 'Cairo');
+        addTearDown(telemetry.dispose);
+
+        void expectInterfaceFont() {
+          final texts = tester.widgetList<RichText>(find.byType(RichText));
+          expect(texts, isNotEmpty);
+          for (final text in texts) {
+            if (text.text.style?.fontFamily == 'MaterialIcons') continue;
+            expect(
+              text.text.style?.fontFamily,
+              'Cairo',
+              reason: text.text.toPlainText(),
+            );
+          }
+        }
+
+        for (final page in const [
+          WelcomeView(),
+          SettingsView(),
+          AboutView(),
+          TelemetryConsentView(),
+        ]) {
+          await tester.pumpWidget(
+            MultiProvider(
+              providers: [
+                ChangeNotifierProvider.value(value: settings),
+                ChangeNotifierProvider.value(value: updates),
+                ChangeNotifierProvider.value(value: telemetry),
+              ],
+              child: MaterialApp(
+                theme: theme,
+                locale: Locale(language),
+                localizationsDelegates: AppLocalizations.localizationsDelegates,
+                supportedLocales: AppLocalizations.supportedLocales,
+                home: page,
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+          expectInterfaceFont();
+          if (page is SettingsView) {
+            await tester.tap(find.byType(AppDropdown<String>).last);
+            await tester.pumpAndSettle();
+            expectInterfaceFont();
+          }
+          expect(tester.takeException(), isNull);
+          await tester.pumpWidget(const SizedBox());
+        }
       });
+
+      testWidgets(
+        'metadata controls use Cairo in $language ${theme.brightness}',
+        (tester) async {
+          final settings = SettingsViewModel();
+          addTearDown(settings.dispose);
+          final hadith = Hadith.fromJson({
+            'hadith': 'نص الحديث',
+            'grade': 'صحيح',
+            'explainGrade': 'تفصيل من المصدر',
+          });
+          await tester.pumpWidget(
+            ChangeNotifierProvider.value(
+              value: settings,
+              child: MaterialApp(
+                theme: theme,
+                locale: Locale(language),
+                localizationsDelegates: AppLocalizations.localizationsDelegates,
+                supportedLocales: AppLocalizations.supportedLocales,
+                home: Scaffold(
+                  body: SingleChildScrollView(
+                    child: Column(
+                      children: [
+                        HadithAdditionalInfo(hadith: hadith),
+                        HadithDetailButton(
+                          icon: Icons.article,
+                          label: 'Details',
+                          onPressed: () {},
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+          await tester.pumpAndSettle();
+          final context = tester.element(find.byType(HadithAdditionalInfo));
+          await tester.tap(find.text(context.l10n.additionalInfo));
+          await tester.pumpAndSettle();
+          for (final font in ['Roboto', 'Tajawal', 'Cairo']) {
+            await settings.setFontFamily(font);
+            await tester.pumpAndSettle();
+            final header = tester.widget<Text>(
+              find.text(context.l10n.hideAdditionalInfo),
+            );
+            expect(header.style!.fontFamily, 'Cairo');
+            final button = tester.widget<OutlinedButton>(
+              find.byType(OutlinedButton),
+            );
+            expect(button.style!.textStyle!.resolve({})!.fontFamily, 'Cairo');
+            final line = tester.widget<SelectableText>(
+              find.byType(SelectableText).first,
+            );
+            expect(line.style!.fontFamily, font);
+            final label = line.textSpan!.children!.first as TextSpan;
+            expect(label.style!.fontFamily, 'Cairo');
+          }
+          expect(tester.takeException(), isNull);
+          await tester.pumpWidget(const SizedBox());
+        },
+      );
 
       testWidgets(
         'reading fonts stay independent in $language ${theme.brightness}',
@@ -55,6 +175,7 @@ void main() {
                           HadithCardLayout(
                             text: 'نص الحديث',
                             grading: 'صحيح',
+                            gradingLabel: context.l10n.gradeLabel(''),
                             attribution: 'المصدر',
                             isFavourite: false,
                             onExplanation: () {},
@@ -109,6 +230,18 @@ void main() {
             await settings.setFontFamily(font);
             await tester.pumpAndSettle();
             expectReadingFont(font);
+            final grade = tester
+                .widgetList<SelectableText>(find.byType(SelectableText))
+                .firstWhere(
+                  (text) =>
+                      text.textSpan?.toPlainText() ==
+                      tester
+                          .element(find.byType(HadithCardLayout))
+                          .l10n
+                          .gradeLabel('صحيح'),
+                );
+            final gradeLabel = grade.textSpan!.children!.first as TextSpan;
+            expect(gradeLabel.style!.fontFamily, 'Cairo');
             final cardLabel = tester.widget<Text>(
               find.descendant(
                 of: find.byType(HadithCardLayout),

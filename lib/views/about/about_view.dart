@@ -71,7 +71,7 @@ class AboutView extends StatelessWidget {
       child: RichText(
         textAlign: TextAlign.center,
         text: TextSpan(
-          style: TextStyle(
+          style: Theme.of(context).textTheme.bodyMedium!.copyWith(
             fontSize: 18,
             color: Theme.of(context).colorScheme.onSurface,
           ),

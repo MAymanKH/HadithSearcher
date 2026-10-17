@@ -148,9 +148,8 @@ class _FavouriteHadithCard extends StatelessWidget {
     return HadithCardLayout(
       text: favourite.hadithText,
       narrator: citation?.rawi,
-      grading: citation == null
-          ? null
-          : context.l10n.gradeLabel(citation.grade),
+      grading: citation?.grade,
+      gradingLabel: citation == null ? null : context.l10n.gradeLabel(''),
       attribution: citation?.compactSource ?? favourite.hadithInfo,
       onSourceInfo: citation == null && favourite.details == null
           ? null

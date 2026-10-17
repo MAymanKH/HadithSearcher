@@ -112,7 +112,7 @@ class SettingsView extends StatelessWidget {
               child: Text(
                 _localizedFontName(f, isArabic),
                 overflow: TextOverflow.ellipsis,
-                style: TextStyle(fontSize: 18, fontFamily: f),
+                style: const TextStyle(fontSize: 18),
               ),
             ),
           )

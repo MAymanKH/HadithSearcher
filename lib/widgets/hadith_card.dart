@@ -40,7 +40,8 @@ class HadithCard extends StatelessWidget {
       margin: margin,
       text: hadith.text,
       narrator: citation.rawi,
-      grading: context.l10n.gradeLabel(citation.grade),
+      grading: citation.grade,
+      gradingLabel: context.l10n.gradeLabel(''),
       attribution: citation.compactSource,
       onSourceInfo: () => showHadithSourceSheet(context, hadith),
       additionalInfo: HadithAdditionalInfo(

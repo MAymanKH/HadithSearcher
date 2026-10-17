@@ -149,7 +149,7 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
                         _expanded
                             ? context.l10n.hideAdditionalInfo
                             : context.l10n.additionalInfo,
-                        style: readingStyle,
+                        style: readingStyle.copyWith(fontFamily: 'Cairo'),
                       ),
                     ),
                   ],
@@ -267,6 +267,17 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
 
   Widget _infoLine(String title, String value, TextStyle style) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 4),
-    child: SelectableText('$title: $value', style: style),
+    child: SelectableText.rich(
+      TextSpan(
+        children: [
+          TextSpan(
+            text: '$title: ',
+            style: style.copyWith(fontFamily: 'Cairo'),
+          ),
+          TextSpan(text: value),
+        ],
+      ),
+      style: style,
+    ),
   );
 }
