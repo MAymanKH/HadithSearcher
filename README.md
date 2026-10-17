@@ -104,6 +104,8 @@ cd HadithSearcher
 
 رابط API الافتراضي موجود في `lib/core/constants/app_config.dart`، ومفاتيح إرسال Sentry وPostHog العامة موجودة في `lib/core/constants/telemetry_config.dart`. لا يحتاج البناء إلى ملف `.env`. لا تضع رموز إدارة الحسابات أو مفاتيح التوقيع الخاصة في ملفات المصدر.
 
+تفاصيل القياس والخصوصية: [Telemetry](docs/telemetry.md). خطوات الاختبار المحلي والتحقق من وصول الأحداث: [Verify telemetry](docs/verify-telemetry.md).
+
 ### 3. تثبيت الاعتماديات
 
 ```bash
