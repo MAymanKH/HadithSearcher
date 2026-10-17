@@ -45,7 +45,7 @@ class _WelcomeViewState extends State<WelcomeView> {
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) => SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            padding: const EdgeInsets.symmetric(vertical: 32),
             child: ConstrainedBox(
               constraints: BoxConstraints(
                 minHeight: (constraints.maxHeight - 64).clamp(
@@ -54,60 +54,70 @@ class _WelcomeViewState extends State<WelcomeView> {
                 ),
               ),
               child: Center(
-                child: ConstrainedBox(
-                  constraints: const BoxConstraints(maxWidth: 440),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const Center(child: AppLogo(size: 100)),
-                      const SizedBox(height: 24),
-                      Text(
-                        l.welcomeTitle,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        l.welcomeDescription,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(fontSize: 16, height: 1.5),
-                      ),
-                      const SizedBox(height: 24),
-                      AbsorbPointer(
-                        absorbing: _saving,
-                        child: const AppearancePreferences(),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        l.apiLanguageNotice,
-                        textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyMedium,
-                      ),
-                      const SizedBox(height: 24),
-                      if (_failed) ...[
-                        Text(
-                          l.preferencesSaveFailed,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Theme.of(context).colorScheme.error,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    _content(
+                      Column(
+                        children: [
+                          const Center(child: AppLogo(size: 100)),
+                          const SizedBox(height: 24),
+                          Text(
+                            l.welcomeTitle,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 28,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                      ElevatedButton(
-                        key: const Key('complete-welcome'),
-                        style: ElevatedButton.styleFrom(
-                          minimumSize: const Size.fromHeight(52),
-                        ),
-                        onPressed: _saving ? null : _continue,
-                        child: Text(l.continueAction),
+                          const SizedBox(height: 12),
+                          Text(
+                            l.welcomeDescription,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(fontSize: 16, height: 1.5),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 24),
+                    AbsorbPointer(
+                      absorbing: _saving,
+                      child: const AppearancePreferences(),
+                    ),
+                    const SizedBox(height: 16),
+                    _content(
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            l.apiLanguageNotice,
+                            textAlign: TextAlign.center,
+                            style: Theme.of(context).textTheme.bodyMedium,
+                          ),
+                          const SizedBox(height: 24),
+                          if (_failed) ...[
+                            Text(
+                              l.preferencesSaveFailed,
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                color: Theme.of(context).colorScheme.error,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                          ],
+                          ElevatedButton(
+                            key: const Key('complete-welcome'),
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size.fromHeight(52),
+                            ),
+                            onPressed: _saving ? null : _continue,
+                            child: Text(l.continueAction),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
@@ -116,4 +126,14 @@ class _WelcomeViewState extends State<WelcomeView> {
       ),
     );
   }
+
+  Widget _content(Widget child) => Padding(
+    padding: const EdgeInsets.symmetric(horizontal: 24),
+    child: Center(
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 440),
+        child: child,
+      ),
+    ),
+  );
 }
