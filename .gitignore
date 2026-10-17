@@ -70,3 +70,7 @@ doc/api/
 
 .flutter-plugins
 .flutter-plugins-dependencies
+
+# Local UI experiments and their test entry points
+/tool/*_lab/
+/test/*_lab_test.dart
