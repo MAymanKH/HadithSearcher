@@ -15,7 +15,16 @@ class AppLocalizationsAr extends AppLocalizations {
   String get search => 'البحث';
 
   @override
-  String get favourites => 'المفضلة';
+  String get saveHadith => 'حفظ';
+
+  @override
+  String get savedHadith => 'محفوظ';
+
+  @override
+  String get removeFromSaved => 'إزالة من المحفوظات';
+
+  @override
+  String get favourites => 'المحفوظات';
 
   @override
   String get settings => 'الإعدادات';
@@ -146,16 +155,16 @@ class AppLocalizationsAr extends AppLocalizations {
       'حدّث الخادم أو اختر عددًا أقل من الخيارات للبحث';
 
   @override
-  String get favouriteAddFailed => 'فشل إضافة الحديث للمفضلة';
+  String get favouriteAddFailed => 'تعذّر حفظ الحديث';
 
   @override
-  String get favouriteRemoveFailed => 'فشل إزالة الحديث من المفضلة';
+  String get favouriteRemoveFailed => 'تعذّرت إزالة الحديث من المحفوظات';
 
   @override
-  String get favouriteAdded => 'تمت إضافة الحديث إلى المفضلة';
+  String get favouriteAdded => 'تم حفظ الحديث';
 
   @override
-  String get favouriteRemoved => 'تمت إزالة الحديث من المفضلة';
+  String get favouriteRemoved => 'تمت إزالة الحديث من المحفوظات';
 
   @override
   String get undo => 'تراجع';
@@ -164,7 +173,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get restoreFailed => 'تعذر استعادة الحديث';
 
   @override
-  String get emptyFavourites => 'لم يتم إضافة أحاديث للمفضلة';
+  String get emptyFavourites => 'لا توجد أحاديث محفوظة بعد';
 
   @override
   String get additionalInfo => 'معلومات إضافية';

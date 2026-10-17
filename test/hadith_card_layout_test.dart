@@ -255,14 +255,14 @@ void main() {
                     .single
                     .data,
               ),
-          ['الشرح', 'مشابهة', 'المفضلة', 'مشاركة'],
+          ['الشرح', 'مشابهة', 'محفوظ', 'مشاركة'],
         );
         for (final label in [
           'البديل الصحيح',
           'الشرح',
           'مشابهة',
           'مشاركة',
-          'المفضلة',
+          'محفوظ',
         ]) {
           final action = label == 'البديل الصحيح'
               ? find.widgetWithText(OutlinedButton, label)

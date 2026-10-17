@@ -137,7 +137,10 @@ void main() {
             expect(
               tester
                   .widget<TextButton>(
-                    find.widgetWithText(TextButton, 'المفضلة'),
+                    find.widgetWithText(
+                      TextButton,
+                      view is FavouritesView ? 'محفوظ' : 'حفظ',
+                    ),
                   )
                   .enabled,
               isTrue,

@@ -39,11 +39,11 @@ void main() {
     await tester.pump();
     vm.finishLoading();
     await tester.pump();
-    final initial = tester.getCenter(find.byIcon(Icons.star_border));
+    final initial = tester.getCenter(find.byIcon(Icons.bookmark_border));
     await tester.pump(const Duration(milliseconds: 150));
-    expect(tester.getCenter(find.byIcon(Icons.star_border)), initial);
+    expect(tester.getCenter(find.byIcon(Icons.bookmark_border)), initial);
     await tester.pumpAndSettle();
-    expect(tester.getCenter(find.byIcon(Icons.star_border)), initial);
+    expect(tester.getCenter(find.byIcon(Icons.bookmark_border)), initial);
     expect(initial.dy, greaterThan(200));
     expect(tester.takeException(), isNull);
   });

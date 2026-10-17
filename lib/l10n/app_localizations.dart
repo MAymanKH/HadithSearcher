@@ -110,10 +110,28 @@ abstract class AppLocalizations {
   /// **'Search'**
   String get search;
 
+  /// No description provided for @saveHadith.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get saveHadith;
+
+  /// No description provided for @savedHadith.
+  ///
+  /// In en, this message translates to:
+  /// **'Saved'**
+  String get savedHadith;
+
+  /// No description provided for @removeFromSaved.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove from saved'**
+  String get removeFromSaved;
+
   /// No description provided for @favourites.
   ///
   /// In en, this message translates to:
-  /// **'Favourites'**
+  /// **'Saved'**
   String get favourites;
 
   /// No description provided for @settings.
@@ -371,25 +389,25 @@ abstract class AppLocalizations {
   /// No description provided for @favouriteAddFailed.
   ///
   /// In en, this message translates to:
-  /// **'Could not add the hadith to favourites'**
+  /// **'Could not save the hadith'**
   String get favouriteAddFailed;
 
   /// No description provided for @favouriteRemoveFailed.
   ///
   /// In en, this message translates to:
-  /// **'Could not remove the hadith from favourites'**
+  /// **'Could not remove the hadith from saved'**
   String get favouriteRemoveFailed;
 
   /// No description provided for @favouriteAdded.
   ///
   /// In en, this message translates to:
-  /// **'Hadith added to favourites'**
+  /// **'Hadith saved'**
   String get favouriteAdded;
 
   /// No description provided for @favouriteRemoved.
   ///
   /// In en, this message translates to:
-  /// **'Hadith removed from favourites'**
+  /// **'Hadith removed from saved'**
   String get favouriteRemoved;
 
   /// No description provided for @undo.
@@ -407,7 +425,7 @@ abstract class AppLocalizations {
   /// No description provided for @emptyFavourites.
   ///
   /// In en, this message translates to:
-  /// **'No hadiths added to favourites'**
+  /// **'No saved hadiths yet'**
   String get emptyFavourites;
 
   /// No description provided for @additionalInfo.

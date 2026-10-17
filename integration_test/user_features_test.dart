@@ -114,9 +114,9 @@ void main() {
             ),
           );
           await tester.pumpAndSettle();
-          await tester.tap(find.text('المفضلة').last);
+          await tester.tap(find.text('المحفوظات').last);
           await tester.pumpAndSettle();
-          final remove = find.widgetWithText(TextButton, 'المفضلة').first;
+          final remove = find.widgetWithText(TextButton, 'محفوظ').first;
           await tester.tap(remove);
           await tester.pumpAndSettle();
           expect(await db.getFavourite(hadith.id), isNull);

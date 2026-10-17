@@ -181,7 +181,7 @@ void main() {
                 findsNWidgets(2),
               );
               expect(
-                find.widgetWithText(TextButton, 'المفضلة'),
+                find.widgetWithText(TextButton, 'حفظ'),
                 findsNWidgets(2),
               );
               expect(calls, 2);

@@ -85,7 +85,7 @@ void main() {
           expect(SystemChrome.latestStyle!.statusBarColor, isNull);
           expect(SystemChrome.latestStyle!.systemNavigationBarColor, isNull);
 
-          for (final label in ['البحث', 'المفضلة', 'الإعدادات', 'حول']) {
+          for (final label in ['البحث', 'المحفوظات', 'الإعدادات', 'حول']) {
             await tester.tap(find.text(label).last);
             await tester.pumpAndSettle();
             final navigation = tester.getRect(find.byType(NavigationBar));

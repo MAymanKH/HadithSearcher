@@ -15,7 +15,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get search => 'Search';
 
   @override
-  String get favourites => 'Favourites';
+  String get saveHadith => 'Save';
+
+  @override
+  String get savedHadith => 'Saved';
+
+  @override
+  String get removeFromSaved => 'Remove from saved';
+
+  @override
+  String get favourites => 'Saved';
 
   @override
   String get settings => 'Settings';
@@ -149,17 +158,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'Update the server or select fewer search options';
 
   @override
-  String get favouriteAddFailed => 'Could not add the hadith to favourites';
+  String get favouriteAddFailed => 'Could not save the hadith';
 
   @override
-  String get favouriteRemoveFailed =>
-      'Could not remove the hadith from favourites';
+  String get favouriteRemoveFailed => 'Could not remove the hadith from saved';
 
   @override
-  String get favouriteAdded => 'Hadith added to favourites';
+  String get favouriteAdded => 'Hadith saved';
 
   @override
-  String get favouriteRemoved => 'Hadith removed from favourites';
+  String get favouriteRemoved => 'Hadith removed from saved';
 
   @override
   String get undo => 'Undo';
@@ -168,7 +176,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get restoreFailed => 'Could not restore the hadith';
 
   @override
-  String get emptyFavourites => 'No hadiths added to favourites';
+  String get emptyFavourites => 'No saved hadiths yet';
 
   @override
   String get additionalInfo => 'Additional information';

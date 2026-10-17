@@ -97,8 +97,8 @@ class _MainShellState extends State<MainShell> {
           ),
           NavigationDestination(
             tooltip: '',
-            icon: const Icon(Icons.star_outline),
-            selectedIcon: const Icon(Icons.star),
+            icon: const Icon(Icons.bookmark_outline),
+            selectedIcon: const Icon(Icons.bookmark),
             label: context.l10n.favourites,
           ),
           NavigationDestination(

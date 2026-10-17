@@ -130,8 +130,13 @@ class HadithCardLayout extends StatelessWidget {
                     foregroundColor: colors.onInverseSurface,
                   ),
                 _CardAction(
-                  icon: isFavourite ? Icons.star : Icons.star_border,
-                  label: context.l10n.favourites,
+                  icon: isFavourite ? Icons.bookmark : Icons.bookmark_border,
+                  label: isFavourite
+                      ? context.l10n.savedHadith
+                      : context.l10n.saveHadith,
+                  semanticLabel: isFavourite
+                      ? context.l10n.removeFromSaved
+                      : context.l10n.saveHadith,
                   onPressed: onFavourite,
                   foregroundColor: colors.onInverseSurface,
                 ),
@@ -162,6 +167,7 @@ class _CardAction extends StatelessWidget {
   final VoidCallback? onPressed;
   final Color foregroundColor;
   final String? unavailableMessage;
+  final String? semanticLabel;
 
   const _CardAction({
     required this.icon,
@@ -169,6 +175,7 @@ class _CardAction extends StatelessWidget {
     required this.onPressed,
     required this.foregroundColor,
     this.unavailableMessage,
+    this.semanticLabel,
   });
 
   @override
@@ -210,6 +217,7 @@ class _CardAction extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             label,
+            semanticsLabel: semanticLabel,
             textAlign: TextAlign.center,
             style: context.watch<SettingsViewModel>().readingTextStyle.copyWith(
               fontFamily: 'Cairo',

@@ -53,12 +53,12 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 250));
     expect(
-      slideOffset(tester, 'تمت إزالة الحديث من المفضلة'),
+      slideOffset(tester, 'تمت إزالة الحديث من المحفوظات'),
       inExclusiveRange(0, 1),
     );
     await tester.pumpAndSettle();
     expect(find.text('تراجع'), findsNothing);
-    expect(find.text('تمت إضافة الحديث إلى المفضلة'), findsOneWidget);
+    expect(find.text('تم حفظ الحديث'), findsOneWidget);
     await tester.pump(const Duration(milliseconds: 1500));
     await tester.pumpAndSettle();
     expect(find.byType(SnackBar), findsNothing);
@@ -91,7 +91,7 @@ void main() {
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 250));
       expect(
-        slideOffset(tester, 'تمت إزالة الحديث من المفضلة'),
+        slideOffset(tester, 'تمت إزالة الحديث من المحفوظات'),
         inExclusiveRange(0, 1),
       );
       await tester.pumpAndSettle();
@@ -110,7 +110,7 @@ void main() {
       await tester.pump(const Duration(seconds: 1));
       await tester.pump(const Duration(milliseconds: 250));
       expect(
-        slideOffset(tester, 'تمت إزالة الحديث من المفضلة'),
+        slideOffset(tester, 'تمت إزالة الحديث من المحفوظات'),
         inExclusiveRange(0, 1),
       );
       await tester.pumpAndSettle();
@@ -136,7 +136,7 @@ void main() {
         await tester.tap(find.text('Add'));
         await tester.pump();
         await tester.pump(const Duration(milliseconds: 250));
-        const message = 'تمت إضافة الحديث إلى المفضلة';
+        const message = 'تم حفظ الحديث';
         expect(slideOffset(tester, message), inExclusiveRange(0, 1));
         await tester.pumpAndSettle();
         expect(find.text(message), findsOneWidget);
