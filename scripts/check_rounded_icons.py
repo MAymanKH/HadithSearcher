@@ -1,8 +1,22 @@
 #!/usr/bin/env python3
-"""Check that app-owned Material icons use the rounded family."""
+"""Prefer rounded icons while preserving outlines without rounded variants."""
 
 import re
 from pathlib import Path
+
+
+OUTLINED_EXCEPTIONS = {
+    "account_tree_outlined",
+    "article_outlined",
+    "copy_outlined",
+    "fact_check_outlined",
+    "library_books_outlined",
+    "menu_book_outlined",
+    "restore_outlined",
+    "search_outlined",
+    "settings_outlined",
+    "share_outlined",
+}
 
 
 def main():
@@ -13,14 +27,14 @@ def main():
         for line_number, line in enumerate(path.read_text().splitlines(), 1):
             for name in re.findall(r"\bIcons\.(\w+)", line):
                 count += 1
-                if not name.endswith("_rounded"):
+                if not name.endswith("_rounded") and name not in OUTLINED_EXCEPTIONS:
                     violations.append(
                         f"{path.relative_to(root)}:{line_number}: Icons.{name}"
                     )
     if violations:
-        print("Use rounded Material icons:\n" + "\n".join(violations))
+        print("Use rounded icons or approved outlined exceptions:\n" + "\n".join(violations))
         return 1
-    print(f"All {count} app Material icon references use rounded variants.")
+    print(f"All {count} app Material icon references follow the icon style.")
     return 0
 
 

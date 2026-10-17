@@ -109,7 +109,7 @@ class _ApiDetailsContentState<T extends Object>
                     child: ElevatedButton.icon(
                       onPressed: () =>
                           Clipboard.setData(ClipboardData(text: text)),
-                      icon: const Icon(Icons.copy_rounded),
+                      icon: const Icon(Icons.copy_outlined),
                       label: Text(context.l10n.copy),
                     ),
                   ),

@@ -118,7 +118,7 @@ void main() {
             theme: AppTheme.build(palette, brightness),
             home: const Scaffold(
               body: HadithDetailButton(
-                icon: Icons.fact_check_rounded,
+                icon: Icons.fact_check_outlined,
                 label: 'x',
                 onPressed: null,
               ),

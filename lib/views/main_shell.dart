@@ -91,7 +91,7 @@ class _MainShellState extends State<MainShell> {
         destinations: [
           NavigationDestination(
             tooltip: '',
-            icon: const Icon(Icons.search_rounded),
+            icon: const Icon(Icons.search_outlined),
             selectedIcon: const Icon(Icons.search_rounded),
             label: context.l10n.search,
           ),
@@ -103,7 +103,7 @@ class _MainShellState extends State<MainShell> {
           ),
           NavigationDestination(
             tooltip: '',
-            icon: const Icon(Icons.settings_rounded),
+            icon: const Icon(Icons.settings_outlined),
             selectedIcon: const Icon(Icons.settings_rounded),
             label: context.l10n.settings,
           ),

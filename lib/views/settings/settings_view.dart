@@ -198,7 +198,7 @@ class SettingsView extends StatelessWidget {
       height: 45,
       child: ElevatedButton.icon(
         onPressed: () => vm.resetToDefaults(),
-        icon: const Icon(Icons.restore_rounded, size: 25),
+        icon: const Icon(Icons.restore_outlined, size: 25),
         label: Text(
           context.l10n.resetSettings,
           style: TextStyle(fontWeight: FontWeight.bold),

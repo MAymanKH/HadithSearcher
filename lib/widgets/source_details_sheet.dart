@@ -40,7 +40,7 @@ class BookSourceDetails extends StatelessWidget {
   Widget build(BuildContext context) => _SourceDetailsSection<BookDetails>(
     title: context.l10n.book,
     name: name,
-    icon: Icons.menu_book_rounded,
+    icon: Icons.menu_book_outlined,
     load: () => hasSourceId(id)
         ? FavouriteDetailsService().getBookDetails(id!.trim())
         : Future.value(ApiResult.error(ApiError.notFound)),
@@ -158,7 +158,7 @@ class _SourceDetailsSectionState<T extends Object>
                           child: ElevatedButton.icon(
                             onPressed: () =>
                                 Clipboard.setData(ClipboardData(text: text)),
-                            icon: const Icon(Icons.copy_rounded),
+                            icon: const Icon(Icons.copy_outlined),
                             label: Text(context.l10n.copy),
                           ),
                         ),

@@ -259,7 +259,7 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
                                             )
                                             .join('\n\n'),
                                       ),
-                                  icon: Icons.account_tree_rounded,
+                                  icon: Icons.account_tree_outlined,
                                   label: context.l10n.hadithChains,
                                 ),
                             ],

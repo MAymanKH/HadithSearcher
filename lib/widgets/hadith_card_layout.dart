@@ -115,7 +115,7 @@ class HadithCardLayout extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _CardAction(
-                  icon: Icons.article_rounded,
+                  icon: Icons.article_outlined,
                   label: context.l10n.explanation,
                   onPressed: onExplanation,
                   unavailableMessage: context.l10n.noExplanation,
@@ -123,7 +123,7 @@ class HadithCardLayout extends StatelessWidget {
                 ),
                 if (showSimilarButton)
                   _CardAction(
-                    icon: Icons.library_books_rounded,
+                    icon: Icons.library_books_outlined,
                     label: context.l10n.similar,
                     onPressed: onSimilar,
                     unavailableMessage: context.l10n.noSimilarForHadith,
@@ -143,7 +143,7 @@ class HadithCardLayout extends StatelessWidget {
                   foregroundColor: colors.onInverseSurface,
                 ),
                 _CardAction(
-                  icon: Icons.share_rounded,
+                  icon: Icons.share_outlined,
                   label: context.l10n.share,
                   onPressed: onShare,
                   foregroundColor: colors.onInverseSurface,
@@ -157,7 +157,7 @@ class HadithCardLayout extends StatelessWidget {
   }
 
   Widget _buildAlternateButton(BuildContext context) => HadithDetailButton(
-    icon: Icons.fact_check_rounded,
+    icon: Icons.fact_check_outlined,
     label: context.l10n.alternate,
     onPressed: onAlternate,
   );
