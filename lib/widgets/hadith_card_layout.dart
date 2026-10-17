@@ -13,7 +13,6 @@ class HadithCardLayout extends StatelessWidget {
   final String text;
   final String? narrator;
   final String? grading;
-  final String? gradingLabel;
   final String attribution;
   final VoidCallback? onSourceInfo;
   final bool isFavourite;
@@ -31,7 +30,6 @@ class HadithCardLayout extends StatelessWidget {
     required this.text,
     this.narrator,
     required this.grading,
-    this.gradingLabel,
     required this.attribution,
     this.onSourceInfo,
     required this.isFavourite,
@@ -86,19 +84,7 @@ class HadithCardLayout extends StatelessWidget {
             child: Divider(height: 1, color: colors.outlineVariant),
           ),
           if (grading != null) ...[
-            SelectableText.rich(
-              TextSpan(
-                children: [
-                  if (gradingLabel != null)
-                    TextSpan(
-                      text: gradingLabel,
-                      style: const TextStyle(fontFamily: 'Cairo'),
-                    ),
-                  TextSpan(text: grading!),
-                ],
-              ),
-              style: textStyle,
-            ),
+            SelectableText(grading!, style: textStyle),
             if (onAlternate != null) _buildAlternateButton(context),
             const SizedBox(height: 4),
           ],

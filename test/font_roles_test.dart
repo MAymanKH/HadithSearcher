@@ -11,6 +11,7 @@ import 'package:hadithsearcher/widgets/hadith_card_layout.dart';
 import 'package:hadithsearcher/widgets/hadith_reading_sheet.dart';
 
 import 'package:hadithsearcher/models/hadith.dart';
+import 'package:hadithsearcher/models/settings.dart';
 import 'package:hadithsearcher/services/telemetry/telemetry_service.dart';
 import 'package:hadithsearcher/services/update_service.dart';
 import 'package:hadithsearcher/views/about/about_view.dart';
@@ -93,7 +94,7 @@ void main() {
       });
 
       testWidgets(
-        'metadata controls use Cairo in $language ${theme.brightness}',
+        'card metadata follows reading settings in $language ${theme.brightness}',
         (tester) async {
           final settings = SettingsViewModel();
           addTearDown(settings.dispose);
@@ -133,21 +134,36 @@ void main() {
           await tester.pumpAndSettle();
           for (final font in ['Roboto', 'Tajawal', 'Cairo']) {
             await settings.setFontFamily(font);
+            await settings.setFontSize(font == 'Tajawal' ? 24 : 20);
+            await settings.setFontWeight(
+              font == 'Tajawal'
+                  ? FontWeightPreference.bold
+                  : FontWeightPreference.normal,
+            );
             await tester.pumpAndSettle();
             final header = tester.widget<Text>(
               find.text(context.l10n.hideAdditionalInfo),
             );
-            expect(header.style!.fontFamily, 'Cairo');
+            expect(header.style!.fontFamily, font);
+            expect(header.style!.fontSize, settings.fontSize);
+            expect(header.style!.fontWeight, settings.fontWeight);
             final button = tester.widget<OutlinedButton>(
               find.byType(OutlinedButton),
             );
-            expect(button.style!.textStyle!.resolve({})!.fontFamily, 'Cairo');
+            final buttonStyle = button.style!.textStyle!.resolve({})!;
+            expect(buttonStyle.fontFamily, font);
+            expect(buttonStyle.fontSize, settings.fontSize * .8);
+            expect(buttonStyle.fontWeight, settings.fontWeight);
             final line = tester.widget<SelectableText>(
               find.byType(SelectableText).first,
             );
             expect(line.style!.fontFamily, font);
-            final label = line.textSpan!.children!.first as TextSpan;
-            expect(label.style!.fontFamily, 'Cairo');
+            expect(line.style!.fontSize, settings.fontSize);
+            expect(line.style!.fontWeight, settings.fontWeight);
+            expect(
+              line.data,
+              '${context.l10n.gradeExplanation}: تفصيل من المصدر',
+            );
           }
           expect(tester.takeException(), isNull);
           await tester.pumpWidget(const SizedBox());
@@ -174,8 +190,7 @@ void main() {
                         children: [
                           HadithCardLayout(
                             text: 'نص الحديث',
-                            grading: 'صحيح',
-                            gradingLabel: context.l10n.gradeLabel(''),
+                            grading: context.l10n.gradeLabel('صحيح'),
                             attribution: 'المصدر',
                             isFavourite: false,
                             onExplanation: () {},
@@ -212,6 +227,24 @@ void main() {
           await tester.pumpAndSettle();
 
           void expectReadingFont(String font) {
+            void expectSpanStyle(InlineSpan span, TextStyle inherited) {
+              final style = inherited.merge(span.style);
+              expect(style.fontFamily, font);
+              expect(style.fontWeight, settings.fontWeight);
+              if (span is TextSpan) {
+                for (final child in span.children ?? <InlineSpan>[]) {
+                  expectSpanStyle(child, style);
+                }
+              }
+            }
+
+            for (final text in tester.widgetList<SelectableText>(
+              find.byType(SelectableText),
+            )) {
+              if (text.textSpan != null) {
+                expectSpanStyle(text.textSpan!, text.style!);
+              }
+            }
             // EditableText contains the effective style after theme inheritance.
             final texts = tester.widgetList<EditableText>(
               find.byType(EditableText),
@@ -219,6 +252,8 @@ void main() {
             expect(texts, isNotEmpty);
             for (final text in texts) {
               expect(text.style.fontFamily, font);
+              expect(text.style.fontSize, settings.fontSize);
+              expect(text.style.fontWeight, settings.fontWeight);
               expect(
                 text.style.fontFamilyFallback ?? [],
                 isNot(contains('Cairo')),
@@ -228,20 +263,14 @@ void main() {
 
           for (final font in ['Roboto', 'Tajawal', 'Cairo']) {
             await settings.setFontFamily(font);
+            await settings.setFontSize(font == 'Tajawal' ? 24 : 20);
+            await settings.setFontWeight(
+              font == 'Tajawal'
+                  ? FontWeightPreference.bold
+                  : FontWeightPreference.normal,
+            );
             await tester.pumpAndSettle();
             expectReadingFont(font);
-            final grade = tester
-                .widgetList<SelectableText>(find.byType(SelectableText))
-                .firstWhere(
-                  (text) =>
-                      text.textSpan?.toPlainText() ==
-                      tester
-                          .element(find.byType(HadithCardLayout))
-                          .l10n
-                          .gradeLabel('صحيح'),
-                );
-            final gradeLabel = grade.textSpan!.children!.first as TextSpan;
-            expect(gradeLabel.style!.fontFamily, 'Cairo');
             final cardLabel = tester.widget<Text>(
               find.descendant(
                 of: find.byType(HadithCardLayout),

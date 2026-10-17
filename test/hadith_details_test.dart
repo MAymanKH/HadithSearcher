@@ -408,9 +408,7 @@ void main() {
             final infoText = tester
                 .widgetList<SelectableText>(find.byType(SelectableText))
                 .firstWhere(
-                  (text) =>
-                      text.textSpan?.toPlainText() ==
-                      'التخريج: ${hadith.takhrij}',
+                  (text) => text.data == 'التخريج: ${hadith.takhrij}',
                 );
             expect(infoText.style!.color, dark ? Colors.white : Colors.black);
             expect(
@@ -527,7 +525,7 @@ void main() {
     },
   );
 
-  testWidgets('additional labels use Cairo with reading size and weight', (
+  testWidgets('additional labels and toggle follow the basic reading style', (
     tester,
   ) async {
     final hadith = Hadith.fromJson(richJson);
@@ -543,7 +541,7 @@ void main() {
     final toggle = find.text('معلومات إضافية');
     final toggleStyle = tester.widget<Text>(toggle).style!;
     expect(toggleStyle.fontSize, basicStyle.fontSize);
-    expect(toggleStyle.fontFamily, 'Cairo');
+    expect(toggleStyle.fontFamily, basicStyle.fontFamily);
     expect(toggleStyle.fontWeight, basicStyle.fontWeight);
     await tester.ensureVisible(toggle);
     await tester.tap(toggle);
@@ -555,12 +553,10 @@ void main() {
     ]) {
       final text = tester
           .widgetList<SelectableText>(find.byType(SelectableText))
-          .firstWhere((text) => text.textSpan?.toPlainText() == line);
+          .firstWhere((text) => text.data == line);
       expect(text.style!.fontSize, basicStyle.fontSize);
       expect(text.style!.fontFamily, basicStyle.fontFamily);
       expect(text.style!.fontWeight, basicStyle.fontWeight);
-      final label = text.textSpan!.children!.first as TextSpan;
-      expect(label.style!.fontFamily, 'Cairo');
     }
     expect(find.byType(Chip), findsNothing);
     expect(find.text('التخريج'), findsNothing);

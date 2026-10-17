@@ -149,7 +149,7 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
                         _expanded
                             ? context.l10n.hideAdditionalInfo
                             : context.l10n.additionalInfo,
-                        style: readingStyle.copyWith(fontFamily: 'Cairo'),
+                        style: readingStyle,
                       ),
                     ),
                   ],
@@ -185,17 +185,24 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
                                   context.l10n.additionalInfoLoadFailed(
                                     _error!.title(context.l10n),
                                   ),
+                                  style: readingStyle,
                                 ),
                                 Align(
                                   alignment: AlignmentDirectional.centerStart,
                                   child: TextButton(
                                     onPressed: _load,
-                                    child: Text(context.l10n.retry),
+                                    child: Text(
+                                      context.l10n.retry,
+                                      style: readingStyle,
+                                    ),
                                   ),
                                 ),
                               ],
                               if (_loaded && !_hasContent)
-                                Text(context.l10n.noAdditionalInfo),
+                                Text(
+                                  context.l10n.noAdditionalInfo,
+                                  style: readingStyle,
+                                ),
                               if (_hasGradingNote)
                                 _infoLine(
                                   context.l10n.gradeExplanation,
@@ -267,17 +274,6 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
 
   Widget _infoLine(String title, String value, TextStyle style) => Padding(
     padding: const EdgeInsets.symmetric(vertical: 4),
-    child: SelectableText.rich(
-      TextSpan(
-        children: [
-          TextSpan(
-            text: '$title: ',
-            style: style.copyWith(fontFamily: 'Cairo'),
-          ),
-          TextSpan(text: value),
-        ],
-      ),
-      style: style,
-    ),
+    child: SelectableText('$title: $value', style: style),
   );
 }

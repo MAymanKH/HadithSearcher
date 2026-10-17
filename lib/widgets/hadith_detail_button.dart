@@ -38,10 +38,7 @@ class HadithDetailButton extends StatelessWidget {
             minimumSize: const Size(0, 44),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             tapTargetSize: MaterialTapTargetSize.padded,
-            textStyle: textStyle.copyWith(
-              fontFamily: 'Cairo',
-              fontSize: textStyle.fontSize! * .8,
-            ),
+            textStyle: textStyle.copyWith(fontSize: textStyle.fontSize! * .8),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(12),
             ),
