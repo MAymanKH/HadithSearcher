@@ -435,7 +435,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get language => 'اللغة';
 
   @override
-  String get welcomeTitle => 'مرحباً بك في باحث الأحاديث';
+  String get welcomeTitle => 'مرحباً بك في Hadith Searcher';
 
   @override
   String get welcomeDescription =>

@@ -140,7 +140,7 @@
   "email": "البريد",
   "licenses": "تراخيص المكتبات والخطوط",
   "language": "اللغة",
-  "welcomeTitle": "مرحباً بك في باحث الأحاديث",
+  "welcomeTitle": "مرحباً بك في Hadith Searcher",
   "welcomeDescription": "اختر لغة التطبيق ومظهره. يمكنك تغييرهما لاحقاً من الإعدادات.",
   "apiLanguageNotice": "تبقى الأحاديث ومحتويات المصدر باللغة العربية.",
   "preferencesSaveFailed": "تعذر حفظ الإعدادات. حاول مرة أخرى.",
