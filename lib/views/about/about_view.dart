@@ -157,13 +157,13 @@ class AboutView extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _ActionIconButton(
-              icon: Icons.language,
+              icon: Icons.language_rounded,
               label: context.l10n.website,
               onTap: () => _launchUrl(Uri.parse('https://mohamedayman.net')),
             ),
             const SizedBox(width: 40),
             _ActionIconButton(
-              icon: Icons.email,
+              icon: Icons.email_rounded,
               label: context.l10n.email,
               onTap: () => _launchUrl(
                 Uri.parse('mailto:mohamed.ayman.khodeir@gmail.com'),

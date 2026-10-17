@@ -114,7 +114,7 @@ class UpdateCheckButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final service = context.watch<UpdateService>();
     return TextButton.icon(
-      icon: const Icon(Icons.system_update),
+      icon: const Icon(Icons.system_update_rounded),
       label: Text(
         service.isChecking
             ? context.l10n.checkingUpdates

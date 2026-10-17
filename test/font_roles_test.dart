@@ -117,7 +117,7 @@ void main() {
                       children: [
                         HadithAdditionalInfo(hadith: hadith),
                         HadithDetailButton(
-                          icon: Icons.article,
+                          icon: Icons.article_rounded,
                           label: 'Details',
                           onPressed: () {},
                         ),

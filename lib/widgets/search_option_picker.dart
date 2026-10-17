@@ -293,7 +293,7 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
             autofocus: false,
             decoration: InputDecoration(
               hintText: context.l10n.searchByName,
-              prefixIcon: Icon(Icons.search),
+              prefixIcon: Icon(Icons.search_rounded),
             ),
             onChanged: _search,
           ),

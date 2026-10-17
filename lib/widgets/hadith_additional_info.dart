@@ -140,7 +140,9 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
                 child: Row(
                   children: [
                     Icon(
-                      _expanded ? Icons.expand_less : Icons.expand_more,
+                      _expanded
+                          ? Icons.expand_less_rounded
+                          : Icons.expand_more_rounded,
                       color: colors.onSurface,
                     ),
                     const SizedBox(width: 8),
@@ -257,7 +259,7 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
                                             )
                                             .join('\n\n'),
                                       ),
-                                  icon: Icons.account_tree_outlined,
+                                  icon: Icons.account_tree_rounded,
                                   label: context.l10n.hadithChains,
                                 ),
                             ],

@@ -65,7 +65,7 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
-            Icons.content_paste_off,
+            Icons.content_paste_off_rounded,
             size: 100,
             color: Theme.of(context).colorScheme.onSurfaceVariant,
           ),
@@ -87,15 +87,15 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
       String description;
 
       if (vm.errorMessage!.contains('خطأ بالإتصال')) {
-        icon = Icons.wifi_off;
+        icon = Icons.wifi_off_rounded;
         title = context.l10n.connectionError;
         description = context.l10n.connectionHelp;
       } else if (vm.errorMessage!.contains('نفذ الوقت')) {
-        icon = Icons.timer_off;
+        icon = Icons.timer_off_rounded;
         title = context.l10n.timeout;
         description = context.l10n.timeoutHelp;
       } else {
-        icon = Icons.error_outline;
+        icon = Icons.error_outline_rounded;
         title = localizedError(vm.errorMessage!, context.l10n);
         description = context.l10n.tryAgain;
       }
@@ -136,7 +136,7 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
                   vm.loadSimilarHadith(widget.hadithId!);
                 }
               },
-              icon: const Icon(Icons.refresh),
+              icon: const Icon(Icons.refresh_rounded),
               label: Text(context.l10n.retry),
               style: ElevatedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(

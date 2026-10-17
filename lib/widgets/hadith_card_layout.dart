@@ -115,7 +115,7 @@ class HadithCardLayout extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 _CardAction(
-                  icon: Icons.article_outlined,
+                  icon: Icons.article_rounded,
                   label: context.l10n.explanation,
                   onPressed: onExplanation,
                   unavailableMessage: context.l10n.noExplanation,
@@ -123,14 +123,16 @@ class HadithCardLayout extends StatelessWidget {
                 ),
                 if (showSimilarButton)
                   _CardAction(
-                    icon: Icons.library_books_outlined,
+                    icon: Icons.library_books_rounded,
                     label: context.l10n.similar,
                     onPressed: onSimilar,
                     unavailableMessage: context.l10n.noSimilarForHadith,
                     foregroundColor: colors.onInverseSurface,
                   ),
                 _CardAction(
-                  icon: isFavourite ? Icons.bookmark : Icons.bookmark_border,
+                  icon: isFavourite
+                      ? Icons.bookmark_rounded
+                      : Icons.bookmark_border_rounded,
                   label: isFavourite
                       ? context.l10n.savedHadith
                       : context.l10n.saveHadith,
@@ -141,7 +143,7 @@ class HadithCardLayout extends StatelessWidget {
                   foregroundColor: colors.onInverseSurface,
                 ),
                 _CardAction(
-                  icon: Icons.share_outlined,
+                  icon: Icons.share_rounded,
                   label: context.l10n.share,
                   onPressed: onShare,
                   foregroundColor: colors.onInverseSurface,
@@ -155,7 +157,7 @@ class HadithCardLayout extends StatelessWidget {
   }
 
   Widget _buildAlternateButton(BuildContext context) => HadithDetailButton(
-    icon: Icons.fact_check_outlined,
+    icon: Icons.fact_check_rounded,
     label: context.l10n.alternate,
     onPressed: onAlternate,
   );

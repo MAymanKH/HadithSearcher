@@ -84,7 +84,7 @@ class _BackToTopButtonState extends State<BackToTopButton> {
           ? FloatingActionButton(
               onPressed: _scrollToTop,
               tooltip: context.l10n.backToTop,
-              child: const Icon(Icons.arrow_upward),
+              child: const Icon(Icons.arrow_upward_rounded),
             )
           : null,
     );
@@ -158,7 +158,7 @@ mixin ScrollToTopMixin<T extends StatefulWidget> on State<T> {
     return FloatingActionButton(
       onPressed: scrollToTop,
       tooltip: context.l10n.backToTop,
-      child: const Icon(Icons.arrow_upward),
+      child: const Icon(Icons.arrow_upward_rounded),
     );
   }
 }

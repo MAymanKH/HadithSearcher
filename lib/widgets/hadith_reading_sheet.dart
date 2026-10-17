@@ -78,7 +78,7 @@ class _AlternateHadithBody extends StatelessWidget {
           if (!missing)
             TextButton.icon(
               onPressed: () => vm.loadSimilarHadith(hadithId, alternate: true),
-              icon: const Icon(Icons.refresh),
+              icon: const Icon(Icons.refresh_rounded),
               label: Text(context.l10n.retry),
             ),
         ],

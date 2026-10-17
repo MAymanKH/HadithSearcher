@@ -69,7 +69,7 @@ class AppearancePreferences extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(
-                      Icons.circle,
+                      Icons.circle_rounded,
                       size: 16,
                       color: AppPalettes.resolve(
                         scheme,

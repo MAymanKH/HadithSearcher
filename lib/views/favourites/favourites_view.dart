@@ -74,7 +74,7 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.bookmark_border,
+              Icons.bookmark_border_rounded,
               size: 100,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),

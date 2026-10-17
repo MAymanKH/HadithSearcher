@@ -97,7 +97,7 @@ class _ApiDetailsContentState<T extends Object>
                     onPressed: () => setState(() {
                       _result = widget.load();
                     }),
-                    icon: const Icon(Icons.refresh),
+                    icon: const Icon(Icons.refresh_rounded),
                     label: Text(context.l10n.retry),
                   ),
                 ),
@@ -109,7 +109,7 @@ class _ApiDetailsContentState<T extends Object>
                     child: ElevatedButton.icon(
                       onPressed: () =>
                           Clipboard.setData(ClipboardData(text: text)),
-                      icon: const Icon(Icons.copy_outlined),
+                      icon: const Icon(Icons.copy_rounded),
                       label: Text(context.l10n.copy),
                     ),
                   ),

@@ -35,7 +35,7 @@ class AppSelectionTile extends StatelessWidget {
                 onChanged: onTap == null ? null : (_) => onTap!(),
               )
             : selected == true
-            ? const Icon(Icons.check)
+            ? const Icon(Icons.check_rounded)
             : null,
         enabled: onTap != null,
         onTap: onTap,

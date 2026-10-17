@@ -20,7 +20,7 @@ class ScholarSourceDetails extends StatelessWidget {
   Widget build(BuildContext context) => _SourceDetailsSection<ScholarDetails>(
     title: context.l10n.scholar,
     name: name,
-    icon: Icons.person_outline,
+    icon: Icons.person_outline_rounded,
     load: () => hasSourceId(id)
         ? FavouriteDetailsService().getScholarDetails(id!.trim())
         : Future.value(ApiResult.error(ApiError.notFound)),
@@ -40,7 +40,7 @@ class BookSourceDetails extends StatelessWidget {
   Widget build(BuildContext context) => _SourceDetailsSection<BookDetails>(
     title: context.l10n.book,
     name: name,
-    icon: Icons.menu_book_outlined,
+    icon: Icons.menu_book_rounded,
     load: () => hasSourceId(id)
         ? FavouriteDetailsService().getBookDetails(id!.trim())
         : Future.value(ApiResult.error(ApiError.notFound)),
@@ -158,7 +158,7 @@ class _SourceDetailsSectionState<T extends Object>
                           child: ElevatedButton.icon(
                             onPressed: () =>
                                 Clipboard.setData(ClipboardData(text: text)),
-                            icon: const Icon(Icons.copy_outlined),
+                            icon: const Icon(Icons.copy_rounded),
                             label: Text(context.l10n.copy),
                           ),
                         ),
@@ -200,7 +200,7 @@ class SourceDetailsMessage extends StatelessWidget {
       if (error != ApiError.notFound)
         TextButton.icon(
           onPressed: onRetry,
-          icon: const Icon(Icons.refresh),
+          icon: const Icon(Icons.refresh_rounded),
           label: Text(context.l10n.retry),
         ),
     ],

@@ -47,7 +47,7 @@ Future<void> showDetailsSheet(
                   IconButton(
                     tooltip: context.l10n.close,
                     onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close),
+                    icon: const Icon(Icons.close_rounded),
                   ),
                 ],
               ),

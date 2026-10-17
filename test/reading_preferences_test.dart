@@ -171,7 +171,7 @@ void main() {
       );
       await tester.tap(find.byType(AppDropdown<String>));
       await tester.pumpAndSettle();
-      expect(find.byIcon(Icons.check), findsOneWidget);
+      expect(find.byIcon(Icons.check_rounded), findsOneWidget);
       expect(find.byType(BottomSheet), findsOneWidget);
       expect(find.text('الاختيارات'), findsOneWidget);
       await tester.tap(find.text('ب').last);

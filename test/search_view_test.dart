@@ -315,7 +315,7 @@ void main() {
     tester,
   ) async {
     await mount(tester);
-    await tester.tap(find.byIcon(Icons.tune));
+    await tester.tap(find.byIcon(Icons.tune_rounded));
     await tester.pumpAndSettle();
     final dropdown = find.byType(AppDropdown<bool>);
     expect(tester.widget<AppDropdown<bool>>(dropdown).value, isFalse);
@@ -325,13 +325,13 @@ void main() {
     await tester.tap(find.text('مفعّل'));
     await tester.pumpAndSettle();
     expect(tester.widget<AppDropdown<bool>>(dropdown).value, isTrue);
-    await tester.tap(find.byIcon(Icons.tune));
+    await tester.tap(find.byIcon(Icons.tune_rounded));
     await tester.pumpAndSettle();
     expect(
       (await SharedPreferences.getInstance()).getBool('searchSpecialist'),
       isTrue,
     );
-    await tester.tap(find.byIcon(Icons.tune));
+    await tester.tap(find.byIcon(Icons.tune_rounded));
     await tester.pumpAndSettle();
     await tester.ensureVisible(dropdown);
     await tester.tap(dropdown);
@@ -339,7 +339,7 @@ void main() {
     await tester.tap(find.text('غير مفعّل').last);
     await tester.pumpAndSettle();
     expect(tester.widget<AppDropdown<bool>>(dropdown).value, isFalse);
-    await tester.tap(find.byIcon(Icons.tune));
+    await tester.tap(find.byIcon(Icons.tune_rounded));
     await tester.pumpAndSettle();
     expect(
       (await SharedPreferences.getInstance()).getBool('searchSpecialist'),
@@ -352,14 +352,17 @@ void main() {
     tester,
   ) async {
     await mount(tester);
-    await tester.tap(find.byIcon(Icons.tune));
+    await tester.tap(find.byIcon(Icons.tune_rounded));
     await tester.pumpAndSettle();
     final icons = find.descendant(
       of: find.byType(InputDecorator),
       matching: find.byWidgetPredicate(
         (widget) =>
             widget is Icon &&
-            [Icons.expand_more_rounded, Icons.search].contains(widget.icon),
+            [
+              Icons.expand_more_rounded,
+              Icons.search_rounded,
+            ].contains(widget.icon),
       ),
     );
     expect(icons, findsNWidgets(7));

@@ -133,7 +133,9 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
                 backgroundColor: Theme.of(context).colorScheme.surfaceContainer,
                 textColor: Theme.of(context).colorScheme.onSurface,
                 child: Icon(
-                  vm.showActiveFilters ? Icons.expand_less : Icons.expand_more,
+                  vm.showActiveFilters
+                      ? Icons.expand_less_rounded
+                      : Icons.expand_more_rounded,
                 ),
               ),
             ),
@@ -155,7 +157,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
                 vm.toggleAdvancedSearch();
               }
             },
-            icon: const Icon(Icons.tune, size: 22),
+            icon: const Icon(Icons.tune_rounded, size: 22),
             label: Text(context.l10n.filters, style: TextStyle(fontSize: 14)),
             style: TextButton.styleFrom(
               padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -221,7 +223,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
           ),
           const SizedBox(width: 10),
           ElevatedButton.icon(
-            icon: const Icon(Icons.search, size: 30),
+            icon: const Icon(Icons.search_rounded, size: 30),
             label: Text(context.l10n.searchAction),
             onPressed: _onSearch,
             style: ElevatedButton.styleFrom(
@@ -333,7 +335,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
       vm.selectedOptions(filter).any((option) => option.apiCode != '0');
 
   Widget _customizedIndicator() => Icon(
-    Icons.circle,
+    Icons.circle_rounded,
     key: const Key('filter-customized-indicator'),
     size: 8,
     color: Theme.of(context).colorScheme.primary,
@@ -386,7 +388,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
           suffixIcon: Icon(
             filter == SearchFilter.grade
                 ? Icons.expand_more_rounded
-                : Icons.search,
+                : Icons.search_rounded,
           ),
         ),
         child: Text(
@@ -493,19 +495,19 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
       String description;
 
       if (vm.errorMessage == 'noResults') {
-        icon = Icons.search_off;
+        icon = Icons.search_off_rounded;
         title = context.l10n.noResults;
         description = context.l10n.searchNoResultsHelp;
       } else if (vm.errorMessage!.contains('خطأ بالإتصال')) {
-        icon = Icons.wifi_off;
+        icon = Icons.wifi_off_rounded;
         title = context.l10n.connectionError;
         description = context.l10n.connectionHelp;
       } else if (vm.errorMessage!.contains('نفذ الوقت')) {
-        icon = Icons.timer_off;
+        icon = Icons.timer_off_rounded;
         title = context.l10n.timeout;
         description = context.l10n.timeoutHelp;
       } else {
-        icon = Icons.error_outline;
+        icon = Icons.error_outline_rounded;
         title = localizedError(vm.errorMessage!, context.l10n);
         description = context.l10n.tryAgain;
       }
@@ -544,7 +546,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
                 const SizedBox(height: 20),
                 ElevatedButton.icon(
                   onPressed: () => _onSearch(),
-                  icon: const Icon(Icons.refresh),
+                  icon: const Icon(Icons.refresh_rounded),
                   label: Text(context.l10n.retry),
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
@@ -585,7 +587,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(
-                        Icons.search,
+                        Icons.search_rounded,
                         size: 100,
                         color: Theme.of(context).colorScheme.onSurfaceVariant,
                       ),

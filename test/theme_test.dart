@@ -118,7 +118,7 @@ void main() {
             theme: AppTheme.build(palette, brightness),
             home: const Scaffold(
               body: HadithDetailButton(
-                icon: Icons.fact_check_outlined,
+                icon: Icons.fact_check_rounded,
                 label: 'x',
                 onPressed: null,
               ),
@@ -372,7 +372,10 @@ void main() {
           final sheet = find.byType(BottomSheet);
           final sheetContext = tester.element(sheet);
           expect(
-            find.descendant(of: sheet, matching: find.byIcon(Icons.check)),
+            find.descendant(
+              of: sheet,
+              matching: find.byIcon(Icons.check_rounded),
+            ),
             findsOneWidget,
           );
           final scrollable = find.descendant(
