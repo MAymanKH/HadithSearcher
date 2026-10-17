@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'app_selection_tile.dart';
+import 'app_input_button.dart';
 import 'selection_sheet.dart';
 
 /// Opens choices in the same bottom sheet layout as the search filters.
@@ -70,23 +71,20 @@ class AppDropdown<T> extends StatelessWidget {
     final field = Semantics(
       button: true,
       label: title,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+      child: AppInputButton(
         onTap: () => _select(context),
-        child: InputDecorator(
-          decoration:
-              (_settingsRow ? InputDecoration(labelText: title) : decoration)
-                  .copyWith(
-                    suffixIcon: Icon(
-                      Icons.expand_more_rounded,
-                      color: Theme.of(context).colorScheme.onSurface,
-                    ),
+        decoration:
+            (_settingsRow ? InputDecoration(labelText: title) : decoration)
+                .copyWith(
+                  suffixIcon: Icon(
+                    Icons.expand_more_rounded,
+                    color: Theme.of(context).colorScheme.onSurface,
                   ),
-          child: DefaultTextStyle.merge(
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            child: selected.child,
-          ),
+                ),
+        child: DefaultTextStyle.merge(
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          child: selected.child,
         ),
       ),
     );

@@ -238,8 +238,6 @@ void main() {
         ]) {
           expect(contrast(pair.$1, pair.$2), greaterThanOrEqualTo(textMinimum));
         }
-        expect(theme.checkboxTheme.side, BorderSide.none);
-        expect(theme.switchTheme.trackOutlineWidth!.resolve({}), 0);
         final selected = {WidgetState.selected};
         expect(
           contrast(
@@ -330,13 +328,21 @@ void main() {
             final foreground = button.style!.foregroundColor!.resolve({})!;
             expect(
               contrast(foreground, colors.inverseSurface),
-              greaterThanOrEqualTo(available ? textMinimum : 3),
+              greaterThanOrEqualTo(textMinimum),
             );
           }
           final unavailable = tester.widget<TextButton>(
             find.widgetWithText(TextButton, 'مشابهة'),
           );
           expect(unavailable.style!.backgroundColor?.resolve({}), isNull);
+          final focusBorder = unavailable.style!.side!.resolve({
+            WidgetState.focused,
+          })!;
+          expect(focusBorder.width, greaterThanOrEqualTo(2));
+          expect(
+            contrast(focusBorder.color, colors.inverseSurface),
+            greaterThanOrEqualTo(3),
+          );
           final availableButton = tester.widget<TextButton>(
             find.widgetWithText(TextButton, 'الشرح'),
           );
@@ -350,7 +356,11 @@ void main() {
               final bytes = await image.toByteData(
                 format: ui.ImageByteFormat.png,
               );
-              final path = File('/tmp/hadith-themes/$name.png');
+              const directory = String.fromEnvironment(
+                'THEME_SCREENSHOT_DIR',
+                defaultValue: '/tmp/hadith-themes',
+              );
+              final path = File('$directory/$name.png');
               await path.parent.create(recursive: true);
               await path.writeAsBytes(bytes!.buffer.asUint8List());
               image.dispose();

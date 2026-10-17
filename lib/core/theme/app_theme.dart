@@ -14,7 +14,7 @@ class AppTheme {
 
   static Color unavailableActionForeground(ColorScheme colors) =>
       Color.alphaBlend(
-        colors.onInverseSurface.withValues(alpha: .52),
+        colors.onInverseSurface.withValues(alpha: .68),
         colors.inverseSurface,
       );
 
@@ -23,6 +23,15 @@ class AppTheme {
 
   static Color disabledBackground(ColorScheme colors) =>
       colors.onSurface.withValues(alpha: .12);
+
+  static WidgetStateBorderSide focusBorder(Color color) =>
+      WidgetStateBorderSide.resolveWith(
+        (states) =>
+            states.contains(WidgetState.focused) &&
+                !states.contains(WidgetState.disabled)
+            ? BorderSide(color: color, width: 2)
+            : null,
+      );
 
   static SystemUiOverlayStyle systemUiOverlayStyle(Brightness brightness) {
     final icons = brightness == Brightness.dark
@@ -79,11 +88,15 @@ class AppTheme {
       iconTheme: IconThemeData(color: colors.onSurface),
       checkboxTheme: CheckboxThemeData(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-        side: BorderSide.none,
+        side: WidgetStateBorderSide.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? BorderSide.none
+              : BorderSide(color: colors.outline, width: 2),
+        ),
         fillColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)
               ? colors.primary
-              : colors.outlineVariant,
+              : transparent,
         ),
         checkColor: WidgetStatePropertyAll(colors.onPrimary),
       ),
@@ -91,15 +104,19 @@ class AppTheme {
         trackColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)
               ? colors.primary
-              : colors.outlineVariant,
+              : colors.surfaceContainerHigh,
         ),
         thumbColor: WidgetStateProperty.resolveWith(
           (states) => states.contains(WidgetState.selected)
               ? colors.onPrimary
-              : colors.onSurfaceVariant,
+              : colors.onSurface,
         ),
-        trackOutlineColor: WidgetStatePropertyAll(transparent),
-        trackOutlineWidth: const WidgetStatePropertyAll(0),
+        trackOutlineColor: WidgetStateProperty.resolveWith(
+          (states) => states.contains(WidgetState.selected)
+              ? transparent
+              : colors.outline,
+        ),
+        trackOutlineWidth: const WidgetStatePropertyAll(2),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
@@ -118,9 +135,15 @@ class AppTheme {
         floatingLabelStyle: TextStyle(color: colors.primary),
         border: border,
         enabledBorder: border,
-        focusedBorder: border,
-        errorBorder: border,
-        focusedErrorBorder: border,
+        focusedBorder: border.copyWith(
+          borderSide: BorderSide(color: colors.primary, width: 2),
+        ),
+        errorBorder: border.copyWith(
+          borderSide: BorderSide(color: colors.error, width: 1.5),
+        ),
+        focusedErrorBorder: border.copyWith(
+          borderSide: BorderSide(color: colors.error, width: 2),
+        ),
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: colors.surface,
@@ -136,12 +159,12 @@ class AppTheme {
           foregroundColor: colors.onSecondary,
           disabledBackgroundColor: colors.surfaceContainer,
           disabledForegroundColor: colors.onSurfaceVariant,
-        ),
+        ).copyWith(side: focusBorder(colors.onSecondary)),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
           disabledForegroundColor: disabledForeground(colors),
-        ),
+        ).copyWith(side: focusBorder(colors.primary)),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style:
@@ -152,7 +175,10 @@ class AppTheme {
               side: WidgetStateBorderSide.resolveWith(
                 (states) => BorderSide(
                   // Keep the shape visible when disabled; only the content dims.
-                  color: colors.outline,
+                  color: states.contains(WidgetState.focused)
+                      ? colors.primary
+                      : colors.outline,
+                  width: states.contains(WidgetState.focused) ? 2 : 1,
                 ),
               ),
             ),
@@ -161,10 +187,11 @@ class AppTheme {
         style: FilledButton.styleFrom(
           disabledForegroundColor: disabledForeground(colors),
           disabledBackgroundColor: disabledBackground(colors),
-        ),
+        ).copyWith(side: focusBorder(colors.onPrimary)),
       ),
       iconButtonTheme: IconButtonThemeData(
         style: ButtonStyle(
+          side: focusBorder(colors.primary),
           foregroundColor: WidgetStateProperty<Color?>.fromMap({
             WidgetState.disabled: disabledForeground(colors),
           }),

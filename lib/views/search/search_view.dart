@@ -6,6 +6,7 @@ import '../../l10n/localization.dart';
 import '../../core/theme/app_theme.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/app_dropdown.dart';
+import '../../widgets/app_input_button.dart';
 import '../../models/search_params.dart';
 import '../../models/search_option.dart';
 import '../../widgets/search_option_picker.dart';
@@ -359,8 +360,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     final customized = _isCatalogCustomized(filter, vm);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
+      child: AppInputButton(
         onTap: () async {
           FocusScope.of(context).unfocus();
           await showSearchOptionPicker(
@@ -379,22 +379,20 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
           FocusScope.of(context).unfocus();
           await vm.saveAdvancedPrefs();
         },
-        child: InputDecorator(
-          decoration: InputDecoration(
-            label: _filterLabel(filter.label(context.l10n), customized),
-            labelStyle: _filterLabelStyle(customized),
-            floatingLabelStyle: _filterLabelStyle(customized),
-            suffixIcon: Icon(
-              filter == SearchFilter.grade
-                  ? Icons.expand_more_rounded
-                  : Icons.search,
-            ),
+        decoration: InputDecoration(
+          label: _filterLabel(filter.label(context.l10n), customized),
+          labelStyle: _filterLabelStyle(customized),
+          floatingLabelStyle: _filterLabelStyle(customized),
+          suffixIcon: Icon(
+            filter == SearchFilter.grade
+                ? Icons.expand_more_rounded
+                : Icons.search,
           ),
-          child: Text(
-            vm.selectionLabel(filter, context.l10n),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
+        ),
+        child: Text(
+          vm.selectionLabel(filter, context.l10n),
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
         ),
       ),
     );

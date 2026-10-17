@@ -202,7 +202,7 @@ class _CardAction extends StatelessWidget {
         minimumSize: const Size(0, 62),
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
         shape: const RoundedRectangleBorder(),
-      ),
+      ).copyWith(side: AppTheme.focusBorder(foregroundColor)),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
