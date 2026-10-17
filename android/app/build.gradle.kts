@@ -1,3 +1,5 @@
+import com.android.build.api.dsl.ApplicationExtension
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 import java.io.FileInputStream
 
@@ -14,7 +16,7 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
-android {
+configure<ApplicationExtension> {
     namespace = "com.moaymandev.hadithsearcher"
     compileSdk = 37
     ndkVersion = "29.0.13113456"
@@ -23,10 +25,6 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
         isCoreLibraryDesugaringEnabled = true
-    }
-
-    kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
     }
 
     defaultConfig {
@@ -72,6 +70,12 @@ android {
                 "proguard-rules.pro"
             )
         }
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_11
     }
 }
 
