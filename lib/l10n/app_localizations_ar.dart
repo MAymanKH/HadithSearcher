@@ -24,10 +24,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get about => 'حول';
 
   @override
-  String get readingSettings => 'إعدادات نص الأحاديث والشرح';
+  String get readingSettings => 'نص الأحاديث والشرح';
 
   @override
-  String get appearanceSettings => 'إعدادات المظهر';
+  String get appearanceSettings => 'المظهر';
 
   @override
   String get privacySettings => 'الخصوصية والقياس الاختياري';

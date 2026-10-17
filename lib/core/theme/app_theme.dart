@@ -42,8 +42,8 @@ class AppTheme {
     final colors = AppPalettes.resolve(palette, brightness);
     final transparent = AppPalettes.transparent;
     final border = OutlineInputBorder(
-      borderSide: BorderSide(width: 1.5, color: colors.outline),
-      borderRadius: BorderRadius.circular(50),
+      borderSide: BorderSide(width: 1, color: colors.outlineVariant),
+      borderRadius: BorderRadius.circular(16),
     );
     return ThemeData(
       useMaterial3: true,
@@ -95,6 +95,13 @@ class AppTheme {
         trackOutlineWidth: const WidgetStatePropertyAll(0),
       ),
       inputDecorationTheme: InputDecorationTheme(
+        filled: true,
+        fillColor: colors.surfaceContainerHigh,
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 18,
+        ),
         hintStyle: TextStyle(color: colors.onSurfaceVariant),
         labelStyle: TextStyle(color: colors.onSurface),
         floatingLabelStyle: TextStyle(color: colors.primary),

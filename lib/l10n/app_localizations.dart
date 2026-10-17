@@ -137,7 +137,7 @@ abstract class AppLocalizations {
   /// No description provided for @appearanceSettings.
   ///
   /// In en, this message translates to:
-  /// **'Appearance settings'**
+  /// **'Appearance'**
   String get appearanceSettings;
 
   /// No description provided for @privacySettings.

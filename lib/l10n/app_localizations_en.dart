@@ -27,7 +27,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get readingSettings => 'Hadith and explanation text';
 
   @override
-  String get appearanceSettings => 'Appearance settings';
+  String get appearanceSettings => 'Appearance';
 
   @override
   String get privacySettings => 'Privacy and optional analytics';

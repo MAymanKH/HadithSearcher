@@ -25,6 +25,7 @@ Future<void> showSearchOptionPicker(
   context: context,
   isScrollControlled: true,
   useSafeArea: true,
+  shape: SelectionSheet.shape(context),
   builder: (_) => _SearchOptionPicker(
     filter: filter,
     loadOptions: loadOptions,
@@ -300,8 +301,7 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
       controller: _scrollController,
       slivers: [
         SliverToBoxAdapter(child: _tile(widget.filter.all)),
-        if (_loading)
-          const SliverToBoxAdapter(child: AppLoadingIndicator()),
+        if (_loading) const SliverToBoxAdapter(child: AppLoadingIndicator()),
         if (_error != null)
           SliverToBoxAdapter(
             child: Padding(

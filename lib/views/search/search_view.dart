@@ -354,9 +354,9 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
   Widget _buildCatalogField(SearchFilter filter, SearchViewModel vm) {
     final customized = _isCatalogCustomized(filter, vm);
     return Padding(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: InkWell(
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(16),
         onTap: () async {
           FocusScope.of(context).unfocus();
           await showSearchOptionPicker(
@@ -406,7 +406,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
   }) {
     final customized = !isDefault;
     return Padding(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: AppDropdown<T>(
         title: label,
         key: ValueKey('$label:$value'),
@@ -432,7 +432,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
   Widget _buildExcludedWordsField(SearchViewModel vm) {
     final customized = vm.excludedWords.trim().isNotEmpty;
     return Padding(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: TextField(
         controller: _excludedWordsController,
         decoration: InputDecoration(

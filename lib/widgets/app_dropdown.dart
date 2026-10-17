@@ -19,12 +19,7 @@ class AppDropdown<T> extends StatelessWidget {
     required this.items,
     required this.onChanged,
     this.itemLeadingBuilder,
-    this.decoration = const InputDecoration(
-      border: InputBorder.none,
-      enabledBorder: InputBorder.none,
-      focusedBorder: InputBorder.none,
-      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-    ),
+    this.decoration = const InputDecoration(),
   }) : _settingsRow = false;
 
   const AppDropdown.settings({
@@ -42,6 +37,7 @@ class AppDropdown<T> extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       useSafeArea: true,
+      shape: SelectionSheet.shape(context),
       builder: (context) => SelectionSheet(
         title: title,
         child: ListView.builder(
@@ -70,56 +66,16 @@ class AppDropdown<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final selected = items.firstWhere((item) => item.value == value);
-    if (_settingsRow) {
-      final colors = Theme.of(context).colorScheme;
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
-        child: Material(
-          color: colors.surfaceContainer,
-          borderRadius: BorderRadius.circular(16),
-          clipBehavior: Clip.antiAlias,
-          child: InkWell(
-            onTap: () => _select(context),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(title, style: const TextStyle(fontSize: 18)),
-                  ),
-                  const SizedBox(width: 16),
-                  Flexible(
-                    child: Align(
-                      alignment: AlignmentDirectional.centerEnd,
-                      child: DefaultTextStyle.merge(
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(color: colors.onSurfaceVariant),
-                        child: selected.child,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Icon(
-                    Icons.expand_more_rounded,
-                    size: 22,
-                    color: colors.onSurfaceVariant,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      );
-    }
-    return Semantics(
+    final field = Semantics(
       button: true,
       label: title,
       child: InkWell(
-        borderRadius: BorderRadius.circular(30),
+        borderRadius: BorderRadius.circular(16),
         onTap: () => _select(context),
         child: InputDecorator(
-          decoration: decoration,
+          decoration: _settingsRow
+              ? InputDecoration(labelText: title)
+              : decoration,
           child: Row(
             children: [
               Expanded(
@@ -139,5 +95,11 @@ class AppDropdown<T> extends StatelessWidget {
         ),
       ),
     );
+    return _settingsRow
+        ? Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 5),
+            child: field,
+          )
+        : field;
   }
 }

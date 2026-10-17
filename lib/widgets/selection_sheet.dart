@@ -14,6 +14,14 @@ class SelectionSheet extends StatelessWidget {
     required this.child,
   });
 
+  static ShapeBorder shape(BuildContext context) => RoundedRectangleBorder(
+    borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+    side: BorderSide(
+      color: Theme.of(context).colorScheme.outlineVariant,
+      width: .75,
+    ),
+  );
+
   @override
   Widget build(BuildContext context) {
     final keyboard = MediaQuery.viewInsetsOf(context).bottom;
