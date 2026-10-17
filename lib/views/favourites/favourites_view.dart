@@ -66,26 +66,28 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
   }
 
   Widget _buildEmptyState() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.star_border,
-            size: 100,
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-          Text(
-            context.l10n.emptyFavourites,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 20,
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.star_border,
+              size: 100,
               color: Theme.of(context).colorScheme.onSurfaceVariant,
             ),
-          ),
-        ],
+            Text(
+              context.l10n.emptyFavourites,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 20,
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
