@@ -9,6 +9,7 @@ import 'details_sheet.dart';
 import 'selection_sheet.dart';
 import 'app_selection_tile.dart';
 import '../services/api_service.dart';
+import 'app_bottom_sheet.dart';
 
 Future<void> showSearchOptionPicker(
   BuildContext context, {
@@ -21,13 +22,11 @@ Future<void> showSearchOptionPicker(
     List<SearchOption> excluded,
   )
   onChanged,
-}) => showModalBottomSheet<void>(
+}) => showAppBottomSheet<void>(
   context: context,
-  isScrollControlled: true,
-  useSafeArea: true,
   shape: SelectionSheet.shape,
-  showDragHandle: true,
-  builder: (_) => _SearchOptionPicker(
+  builder: (_, scrollController) => _SearchOptionPicker(
+    scrollController: scrollController,
     filter: filter,
     loadOptions: loadOptions,
     selected: selected,
@@ -37,6 +36,7 @@ Future<void> showSearchOptionPicker(
 );
 
 class _SearchOptionPicker extends StatefulWidget {
+  final ScrollController scrollController;
   final SearchFilter filter;
   final Future<ApiResult<List<SearchOption>>> Function() loadOptions;
   final List<SearchOption> selected;
@@ -44,6 +44,7 @@ class _SearchOptionPicker extends StatefulWidget {
   final void Function(List<SearchOption> selected, List<SearchOption> excluded)
   onChanged;
   const _SearchOptionPicker({
+    required this.scrollController,
     required this.filter,
     required this.loadOptions,
     required this.selected,
@@ -57,7 +58,7 @@ class _SearchOptionPicker extends StatefulWidget {
 
 class _SearchOptionPickerState extends State<_SearchOptionPicker> {
   static const _batchSize = 40;
-  final _scrollController = ScrollController();
+  ScrollController get _scrollController => widget.scrollController;
   Timer? _debounce;
   String _query = '';
   final _visibleOptions = <_IndexedOption>[];
@@ -185,7 +186,6 @@ class _SearchOptionPickerState extends State<_SearchOptionPicker> {
   void dispose() {
     _debounce?.cancel();
     _scrollController.removeListener(_loadMoreOptions);
-    _scrollController.dispose();
     super.dispose();
   }
 

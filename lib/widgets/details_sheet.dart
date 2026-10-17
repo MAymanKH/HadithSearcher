@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import '../l10n/localization.dart';
+import 'app_bottom_sheet.dart';
 
 Future<void> showDetailsSheet(
   BuildContext context, {
   required String title,
   required Widget child,
-}) => showModalBottomSheet<void>(
+}) => showAppBottomSheet<void>(
   context: context,
-  isScrollControlled: true,
-  useSafeArea: true,
-  showDragHandle: true,
   sheetAnimationStyle: MediaQuery.disableAnimationsOf(context)
       ? AnimationStyle.noAnimation
       : const AnimationStyle(
@@ -19,7 +17,7 @@ Future<void> showDetailsSheet(
   shape: const RoundedRectangleBorder(
     borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
   ),
-  builder: (context) => SafeArea(
+  builder: (context, scrollController) => SafeArea(
     top: false,
     child: AnimatedSize(
       duration: MediaQuery.disableAnimationsOf(context)
@@ -32,6 +30,7 @@ Future<void> showDetailsSheet(
           maxHeight: MediaQuery.sizeOf(context).height * 0.85,
         ),
         child: SingleChildScrollView(
+          controller: scrollController,
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,

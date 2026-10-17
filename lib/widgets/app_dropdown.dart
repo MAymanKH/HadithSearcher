@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'app_selection_tile.dart';
 import 'app_input_button.dart';
 import 'selection_sheet.dart';
+import 'app_bottom_sheet.dart';
 
 /// Opens choices in the same bottom sheet layout as the search filters.
 class AppDropdown<T> extends StatelessWidget {
@@ -34,15 +35,13 @@ class AppDropdown<T> extends StatelessWidget {
        _settingsRow = true;
 
   Future<void> _select(BuildContext context) async {
-    final selection = await showModalBottomSheet<T>(
+    final selection = await showAppBottomSheet<T>(
       context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
       shape: SelectionSheet.shape,
-      showDragHandle: true,
-      builder: (context) => SelectionSheet(
+      builder: (context, scrollController) => SelectionSheet(
         title: title,
         child: ListView.builder(
+          controller: scrollController,
           shrinkWrap: true,
           itemCount: items.length,
           itemBuilder: (context, index) {
