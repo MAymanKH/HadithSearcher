@@ -303,6 +303,7 @@ void main() {
     await tester.tap(toggle);
     await tester.pumpAndSettle();
     expect(tester.widget<SwitchListTile>(toggle).value, isFalse);
+    expect(find.byKey(const Key('filter-customized-indicator')), findsNothing);
     expect(
       (await SharedPreferences.getInstance()).getBool('advancedSaveCheckbox'),
       isFalse,

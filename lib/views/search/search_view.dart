@@ -251,7 +251,6 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
               subtitle: context.l10n.rememberFiltersHelp,
               value: vm.saveAdvancedSettings,
               onChanged: vm.setSaveAdvancedSettings,
-              customized: !vm.saveAdvancedSettings,
             ),
             _buildDropdownRow(
               context.l10n.searchMethod,
@@ -333,9 +332,9 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
       vm.selectedOptions(filter).any((option) => option.apiCode != '0');
 
   Widget _customizedIndicator() => Icon(
-    Icons.check_circle_rounded,
+    Icons.circle,
     key: const Key('filter-customized-indicator'),
-    size: 16,
+    size: 8,
     color: Theme.of(context).colorScheme.primary,
   );
 
@@ -456,40 +455,24 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     required String subtitle,
     required bool value,
     required ValueChanged<bool> onChanged,
-    bool customized = false,
   }) {
     final colors = Theme.of(context).colorScheme;
     return Padding(
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Material(
         type: MaterialType.transparency,
         child: SwitchListTile.adaptive(
           value: value,
           onChanged: onChanged,
           dense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 14),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
+            borderRadius: BorderRadius.circular(16),
           ),
-          tileColor: colors.surfaceContainer,
-          title: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Flexible(
-                child: Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: customized ? colors.primary : null,
-                  ),
-                ),
-              ),
-              if (customized) ...[
-                const SizedBox(width: 8),
-                _customizedIndicator(),
-              ],
-            ],
+          tileColor: colors.surfaceContainerHigh,
+          title: Text(
+            title,
+            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
           ),
           subtitle: Text(
             subtitle,
