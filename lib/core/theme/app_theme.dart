@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../models/settings.dart';
@@ -50,11 +51,11 @@ class AppTheme {
       colorScheme: colors,
       pageTransitionsTheme: const PageTransitionsTheme(
         builders: {
-          TargetPlatform.android: _FadePageTransitionsBuilder(),
-          TargetPlatform.iOS: _FadePageTransitionsBuilder(),
-          TargetPlatform.linux: _FadePageTransitionsBuilder(),
-          TargetPlatform.macOS: _FadePageTransitionsBuilder(),
-          TargetPlatform.windows: _FadePageTransitionsBuilder(),
+          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.linux: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
+          TargetPlatform.windows: CupertinoPageTransitionsBuilder(),
         },
       ),
       scaffoldBackgroundColor: colors.surface,
@@ -222,17 +223,4 @@ class AppTheme {
       ),
     );
   }
-}
-
-class _FadePageTransitionsBuilder extends PageTransitionsBuilder {
-  const _FadePageTransitionsBuilder();
-
-  @override
-  Widget buildTransitions<T>(
-    PageRoute<T> route,
-    BuildContext context,
-    Animation<double> animation,
-    Animation<double> secondaryAnimation,
-    Widget child,
-  ) => FadeTransition(opacity: animation, child: child);
 }

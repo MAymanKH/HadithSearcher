@@ -95,6 +95,27 @@ void main() {
   }
 
   for (final policy in TelemetryPolicy.values) {
+    testWidgets('cold launch animates from the logo to search for $policy', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({
+        'welcomeCompleted': true,
+        TelemetryService.consentKey: const TelemetryConsent(
+          decided: true,
+        ).encode(),
+      });
+      await mount(tester, policy);
+      expect(find.byKey(const ValueKey('startup-splash')), findsOneWidget);
+      await waitFor(tester, MainShell);
+      expect(pageOpacity(tester, MainShell), 0);
+      await tester.pump(const Duration(milliseconds: 200));
+      expect(pageOpacity(tester, MainShell), inExclusiveRange(0, 1));
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('startup-splash')), findsNothing);
+      expect(pageOpacity(tester, MainShell), 1);
+      await tester.pumpWidget(const SizedBox());
+    });
+
     testWidgets('startup pages animate for $policy', (tester) async {
       await mount(tester, policy);
       await tester.pumpAndSettle();
