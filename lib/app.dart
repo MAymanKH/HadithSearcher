@@ -83,7 +83,18 @@ class HadithSearcherApp extends StatelessWidget {
                   child: SafeArea(
                     top: false,
                     bottom: false,
-                    child: AppScaffoldMessenger(child: child!),
+                    child: Actions(
+                      actions: {
+                        EditableTextTapOutsideIntent:
+                            CallbackAction<EditableTextTapOutsideIntent>(
+                              onInvoke: (intent) {
+                                intent.focusNode.unfocus();
+                                return null;
+                              },
+                            ),
+                      },
+                      child: AppScaffoldMessenger(child: child!),
+                    ),
                   ),
                 ),
               );

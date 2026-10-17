@@ -543,6 +543,86 @@ void main() {
     );
   });
 
+  for (final sheet in [false, true]) {
+    testWidgets(
+      'outside touch dismisses ${sheet ? 'filter sheet' : 'main'} search keyboard',
+      (tester) async {
+        await mount(tester, width: 800);
+        if (sheet) {
+          await tester.tap(find.widgetWithText(TextButton, 'التصفية'));
+          await tester.pumpAndSettle();
+          await tester.ensureVisible(find.text('جميع الرواة'));
+          await tester.tap(find.text('جميع الرواة'));
+          await tester.pump();
+          await tester.runAsync(() async {
+            for (var i = 0; i < 200; i++) {
+              await tester.pump();
+              if (find.byType(AppLoadingIndicator).evaluate().isEmpty) break;
+              await Future<void>.delayed(const Duration(milliseconds: 10));
+            }
+          });
+          await tester.pumpAndSettle();
+        }
+        final field = sheet
+            ? find.descendant(
+                of: find.byType(BottomSheet),
+                matching: find.byType(TextField),
+              )
+            : find.byType(TextField);
+        await tester.tap(field);
+        await tester.enterText(field, 'query');
+        await tester.pumpAndSettle();
+        final editable = tester.widget<EditableText>(
+          find.descendant(of: field, matching: find.byType(EditableText)),
+        );
+        expect(editable.focusNode.hasFocus, isTrue);
+        expect(tester.testTextInput.isVisible, isTrue);
+        await tester.tapAt(
+          Offset(2, tester.getCenter(field).dy),
+          kind: ui.PointerDeviceKind.touch,
+        );
+        await tester.pumpAndSettle();
+        expect(editable.focusNode.hasFocus, isFalse);
+        expect(tester.testTextInput.isVisible, isFalse);
+        expect(editable.controller.text, 'query');
+        await tester.pumpWidget(const SizedBox());
+      },
+    );
+  }
+
+  testWidgets('touching outside excluded words dismisses focus and keyboard', (
+    tester,
+  ) async {
+    await mount(tester, width: 800);
+    await tester.tap(find.widgetWithText(TextButton, 'التصفية'));
+    await tester.pumpAndSettle();
+    final field = find.byWidgetPredicate(
+      (widget) =>
+          widget is TextField && widget.decoration?.hintText == 'مثال: السفر',
+    );
+    await tester.ensureVisible(field);
+    await tester.pumpAndSettle();
+    await tester.tap(field);
+    await tester.enterText(field, 'السفر');
+    await tester.pumpAndSettle();
+    final editable = tester.widget<EditableText>(
+      find.descendant(of: field, matching: find.byType(EditableText)),
+    );
+    expect(editable.focusNode.hasFocus, isTrue);
+    expect(tester.testTextInput.isVisible, isTrue);
+
+    await tester.tapAt(
+      Offset(2, tester.getCenter(field).dy),
+      kind: ui.PointerDeviceKind.touch,
+    );
+    await tester.pumpAndSettle();
+
+    expect(editable.focusNode.hasFocus, isFalse);
+    expect(tester.testTextInput.isVisible, isFalse);
+    expect(editable.controller.text, 'السفر');
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets('advanced controls fit a narrow phone', (tester) async {
     await mount(tester);
     await tester.tap(find.widgetWithText(TextButton, 'التصفية'));
