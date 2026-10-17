@@ -295,11 +295,7 @@ void main() {
     final toggle = find.widgetWithText(SwitchListTile, 'تذكّر عوامل التصفية');
     expect(
       tester.getTopLeft(toggle).dy,
-      lessThan(
-        tester
-            .getTopLeft(find.widgetWithText(SwitchListTile, 'البحث للمتخصصين'))
-            .dy,
-      ),
+      lessThan(tester.getTopLeft(find.byType(AppDropdown<bool>)).dy),
     );
     await tester.pumpAndSettle();
     expect(tester.widget<SwitchListTile>(toggle).value, isTrue);
@@ -309,6 +305,41 @@ void main() {
     expect(tester.widget<SwitchListTile>(toggle).value, isFalse);
     expect(
       (await SharedPreferences.getInstance()).getBool('advancedSaveCheckbox'),
+      isFalse,
+    );
+    await tester.pumpWidget(const SizedBox());
+  });
+
+  testWidgets('specialist dropdown applies and persists both choices', (
+    tester,
+  ) async {
+    await mount(tester);
+    await tester.tap(find.byIcon(Icons.tune));
+    await tester.pumpAndSettle();
+    final dropdown = find.byType(AppDropdown<bool>);
+    expect(tester.widget<AppDropdown<bool>>(dropdown).value, isFalse);
+    await tester.tap(dropdown);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('مفعّل'));
+    await tester.pumpAndSettle();
+    expect(tester.widget<AppDropdown<bool>>(dropdown).value, isTrue);
+    await tester.tap(find.byIcon(Icons.tune));
+    await tester.pumpAndSettle();
+    expect(
+      (await SharedPreferences.getInstance()).getBool('searchSpecialist'),
+      isTrue,
+    );
+    await tester.tap(find.byIcon(Icons.tune));
+    await tester.pumpAndSettle();
+    await tester.tap(dropdown);
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('غير مفعّل').last);
+    await tester.pumpAndSettle();
+    expect(tester.widget<AppDropdown<bool>>(dropdown).value, isFalse);
+    await tester.tap(find.byIcon(Icons.tune));
+    await tester.pumpAndSettle();
+    expect(
+      (await SharedPreferences.getInstance()).getBool('searchSpecialist'),
       isFalse,
     );
     await tester.pumpWidget(const SizedBox());
@@ -468,7 +499,7 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(
       find.byWidgetPredicate((widget) => widget is AppDropdown),
-      findsNWidgets(2),
+      findsNWidgets(3),
     );
     await tester.pumpWidget(const SizedBox());
   });
@@ -515,7 +546,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(
       find.byWidgetPredicate((widget) => widget is AppDropdown),
-      findsNWidgets(2),
+      findsNWidgets(3),
     );
     await tester.tap(find.widgetWithText(TextButton, 'التصفية'));
     await tester.pumpAndSettle();

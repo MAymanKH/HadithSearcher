@@ -78,6 +78,8 @@
   "rememberFilters": "Remember filters",
   "rememberFiltersHelp": "Keep filters when you reopen the app",
   "specialistSearch": "Specialist search",
+  "enabled": "Enabled",
+  "disabled": "Disabled",
   "specialistSearchHelp": "Include differences in scholarly grading and chain details",
   "searchMethod": "Search method",
   "searchRange": "Search scope",

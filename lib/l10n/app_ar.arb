@@ -78,6 +78,8 @@
   "rememberFilters": "تذكّر عوامل التصفية",
   "rememberFiltersHelp": "حفظها عند إعادة فتح التطبيق",
   "specialistSearch": "البحث للمتخصصين",
+  "enabled": "مفعّل",
+  "disabled": "غير مفعّل",
   "specialistSearchHelp": "يشمل اختلاف أحكام المحدثين وتفاصيل الأسانيد",
   "searchMethod": "طريقة البحث",
   "searchRange": "نطاق البحث",

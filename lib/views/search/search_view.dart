@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/localization.dart';
+import '../../core/theme/app_theme.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/app_dropdown.dart';
 import '../../models/search_params.dart';
@@ -208,7 +209,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
               onTapAlwaysCalled: true,
               textInputAction: TextInputAction.search,
               controller: _textController,
-              decoration: InputDecoration(
+              decoration: AppTheme.searchInputDecoration(context).copyWith(
                 hintText: context.l10n.searchHint,
                 constraints: BoxConstraints(minHeight: 60),
               ),
@@ -252,12 +253,17 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
               onChanged: vm.setSaveAdvancedSettings,
               customized: !vm.saveAdvancedSettings,
             ),
-            _buildFilterSwitch(
-              title: context.l10n.specialistSearch,
-              subtitle: context.l10n.specialistSearchHelp,
-              value: vm.specialist,
-              onChanged: vm.setSpecialist,
-              customized: vm.specialist,
+            _buildDropdownRow<bool>(
+              context.l10n.specialistSearch,
+              vm.specialist,
+              const [false, true],
+              (value) {
+                if (value != null) vm.setSpecialist(value);
+              },
+              itemLabel: (value) =>
+                  value ? context.l10n.enabled : context.l10n.disabled,
+              isDefault: !vm.specialist,
+              help: context.l10n.specialistSearchHelp,
             ),
             _buildDropdownRow(
               context.l10n.searchMethod,
@@ -403,6 +409,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
     void Function(T?) onChanged, {
     required String Function(T) itemLabel,
     required bool isDefault,
+    String? help,
   }) {
     final customized = !isDefault;
     return Padding(
@@ -415,6 +422,8 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
           label: _filterLabel(label, customized),
           labelStyle: _filterLabelStyle(customized),
           floatingLabelStyle: _filterLabelStyle(customized),
+          helperText: help,
+          helperMaxLines: 3,
         ),
         onChanged: onChanged,
         items: items
@@ -464,9 +473,6 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
           contentPadding: const EdgeInsets.symmetric(horizontal: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(30),
-            side: BorderSide(
-              color: customized ? colors.primary : colors.outline,
-            ),
           ),
           tileColor: colors.surfaceContainer,
           title: Row(

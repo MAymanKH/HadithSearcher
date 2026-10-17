@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart' show CupertinoPageTransitionsBuilder;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../models/settings.dart';
@@ -38,26 +37,34 @@ class AppTheme {
     );
   }
 
+  static InputDecoration searchInputDecoration(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    final border = OutlineInputBorder(
+      borderSide: BorderSide(width: 1.5, color: colors.outline),
+      borderRadius: BorderRadius.circular(50),
+    );
+    return InputDecoration(
+      filled: false,
+      contentPadding: const EdgeInsetsDirectional.fromSTEB(12, 20, 12, 12),
+      border: border,
+      enabledBorder: border,
+      focusedBorder: border.copyWith(
+        borderSide: BorderSide(width: 2, color: colors.primary),
+      ),
+    );
+  }
+
   static ThemeData build(ColorSchemePreference palette, Brightness brightness) {
     final colors = AppPalettes.resolve(palette, brightness);
     final transparent = AppPalettes.transparent;
     final border = OutlineInputBorder(
-      borderSide: BorderSide(width: 1, color: colors.outlineVariant),
+      borderSide: BorderSide.none,
       borderRadius: BorderRadius.circular(16),
     );
     return ThemeData(
       useMaterial3: true,
       fontFamily: 'Cairo',
       colorScheme: colors,
-      pageTransitionsTheme: const PageTransitionsTheme(
-        builders: {
-          TargetPlatform.android: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.iOS: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.linux: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.macOS: CupertinoPageTransitionsBuilder(),
-          TargetPlatform.windows: CupertinoPageTransitionsBuilder(),
-        },
-      ),
       scaffoldBackgroundColor: colors.surface,
       canvasColor: colors.surface,
       cardColor: colors.surfaceContainer,
@@ -105,16 +112,11 @@ class AppTheme {
         hintStyle: TextStyle(color: colors.onSurfaceVariant),
         labelStyle: TextStyle(color: colors.onSurface),
         floatingLabelStyle: TextStyle(color: colors.primary),
+        border: border,
         enabledBorder: border,
-        focusedBorder: border.copyWith(
-          borderSide: BorderSide(width: 2, color: colors.primary),
-        ),
-        errorBorder: border.copyWith(
-          borderSide: BorderSide(width: 1.5, color: colors.error),
-        ),
-        focusedErrorBorder: border.copyWith(
-          borderSide: BorderSide(width: 2, color: colors.error),
-        ),
+        focusedBorder: border,
+        errorBorder: border,
+        focusedErrorBorder: border,
       ),
       appBarTheme: AppBarTheme(
         backgroundColor: colors.surface,

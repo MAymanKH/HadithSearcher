@@ -245,6 +245,12 @@ class AppLocalizationsAr extends AppLocalizations {
   String get specialistSearch => 'البحث للمتخصصين';
 
   @override
+  String get enabled => 'مفعّل';
+
+  @override
+  String get disabled => 'غير مفعّل';
+
+  @override
   String get specialistSearchHelp =>
       'يشمل اختلاف أحكام المحدثين وتفاصيل الأسانيد';
 

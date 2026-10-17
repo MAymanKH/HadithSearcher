@@ -566,6 +566,18 @@ abstract class AppLocalizations {
   /// **'Specialist search'**
   String get specialistSearch;
 
+  /// No description provided for @enabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Enabled'**
+  String get enabled;
+
+  /// No description provided for @disabled.
+  ///
+  /// In en, this message translates to:
+  /// **'Disabled'**
+  String get disabled;
+
   /// No description provided for @specialistSearchHelp.
   ///
   /// In en, this message translates to:

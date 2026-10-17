@@ -250,6 +250,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get specialistSearch => 'Specialist search';
 
   @override
+  String get enabled => 'Enabled';
+
+  @override
+  String get disabled => 'Disabled';
+
+  @override
   String get specialistSearchHelp =>
       'Include differences in scholarly grading and chain details';
 

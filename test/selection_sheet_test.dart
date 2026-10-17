@@ -8,6 +8,43 @@ import 'package:hadithsearcher/widgets/app_selection_tile.dart';
 import 'package:hadithsearcher/widgets/selection_sheet.dart';
 
 void main() {
+  testWidgets('option sheet outline paints only its rounded top edge', (
+    tester,
+  ) async {
+    late BuildContext sheetContext;
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.darkTheme,
+        home: Builder(
+          builder: (context) {
+            sheetContext = context;
+            return const SizedBox();
+          },
+        ),
+      ),
+    );
+    await tester.runAsync(() async {
+      final recorder = ui.PictureRecorder();
+      SelectionSheet.shape(
+        sheetContext,
+      ).paint(Canvas(recorder), const Rect.fromLTWH(0, 0, 120, 200));
+      final picture = recorder.endRecording();
+      final image = await picture.toImage(120, 200);
+      final pixels = (await image.toByteData(
+        format: ui.ImageByteFormat.rawRgba,
+      ))!;
+      int alpha(int x, int y) => pixels.getUint8((y * 120 + x) * 4 + 3);
+      expect(alpha(60, 0), greaterThan(0));
+      for (var y = 24; y < 200; y++) {
+        expect(alpha(0, y), 0);
+        expect(alpha(119, y), 0);
+      }
+      expect(alpha(60, 199), 0);
+      image.dispose();
+      picture.dispose();
+    });
+  });
+
   testWidgets('scrolled selected backgrounds stay below the search field', (
     tester,
   ) async {
