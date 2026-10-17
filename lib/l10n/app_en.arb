@@ -129,7 +129,7 @@
   "updateOpenFailed": "Could not open the update page. Try again later.",
   "checkingUpdates": "Checking...",
   "checkUpdates": "Check for updates",
-  "aboutDescription": "Hadith Searcher is a free, open source app for searching thousands of prophetic hadiths, with advanced search filters and detailed information about chains of transmission and authenticity.",
+  "aboutDescription": "Hadith Searcher is a free, open source app for finding and studying prophetic hadiths. It helps you explore their meanings, sources, and scholarly assessments, and keep hadiths saved for later reading.",
   "sourceCredit": "All hadiths and information are provided by ",
   "usingApi": " using ",
   "code": "Code",

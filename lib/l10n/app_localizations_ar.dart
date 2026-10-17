@@ -402,13 +402,13 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get aboutDescription =>
-      'تطبيق Hadith Searcher هو تطبيق مجاني ومفتوح المصدر للبحث في آلاف الأحاديث النبوية الشريفة. يوفر التطبيق إمكانيات بحث وتصفية متقدمة، مع عرض تفصيلي لمعلومات سند الحديث ودرجة صحته.';
+      'Hadith Searcher تطبيق مجاني ومفتوح المصدر للبحث في الأحاديث النبوية والاطّلاع على شروحها ومصادرها وأحكام المحدثين عليها. يجمع معلومات الحديث في مكان واحد لتيسير قراءته ودراسته.';
 
   @override
-  String get sourceCredit => 'جميع الأحاديث والمعلومات مأخوذة من موقع ';
+  String get sourceCredit => 'مصدر الأحاديث والمعلومات هو موقع ';
 
   @override
-  String get usingApi => ' باستخدام ';
+  String get usingApi => ' عبر ';
 
   @override
   String get code => 'الكود';

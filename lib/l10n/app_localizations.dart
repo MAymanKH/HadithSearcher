@@ -875,7 +875,7 @@ abstract class AppLocalizations {
   /// No description provided for @aboutDescription.
   ///
   /// In en, this message translates to:
-  /// **'Hadith Searcher is a free, open source app for searching thousands of prophetic hadiths, with advanced search filters and detailed information about chains of transmission and authenticity.'**
+  /// **'Hadith Searcher is a free, open source app for finding and studying prophetic hadiths. It helps you explore their meanings, sources, and scholarly assessments, and keep hadiths saved for later reading.'**
   String get aboutDescription;
 
   /// No description provided for @sourceCredit.
