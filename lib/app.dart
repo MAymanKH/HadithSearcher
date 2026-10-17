@@ -22,12 +22,14 @@ class HadithSearcherApp extends StatelessWidget {
   final ThemeMode initialThemeMode;
   final ColorSchemePreference initialColorScheme;
   final TelemetryService telemetry;
+  final Future<void>? startupReady;
 
   const HadithSearcherApp({
     super.key,
     required this.initialThemeMode,
     this.initialColorScheme = ColorSchemePreference.classic,
     required this.telemetry,
+    this.startupReady,
   });
 
   @override
@@ -86,7 +88,7 @@ class HadithSearcherApp extends StatelessWidget {
                 ),
               );
             },
-            home: const StartupFlow(),
+            home: StartupFlow(startupReady: startupReady),
             routes: {
               searchRoute: (context) => const MainShell(initialIndex: 0),
               similarHadithRoute: (context) => const SimilarHadithView(),

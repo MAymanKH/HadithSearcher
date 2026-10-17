@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
@@ -14,7 +15,11 @@ import 'telemetry/fake_backend.dart';
 void main() {
   setUp(() => SharedPreferences.setMockInitialValues({}));
 
-  Future<void> mount(WidgetTester tester, TelemetryPolicy policy) async {
+  Future<void> mount(
+    WidgetTester tester,
+    TelemetryPolicy policy, {
+    Future<void>? startupReady,
+  }) async {
     final telemetry = TelemetryService(
       preferences: await SharedPreferences.getInstance(),
       backend: FakeBackend(),
@@ -25,6 +30,7 @@ void main() {
       HadithSearcherApp(
         initialThemeMode: ThemeMode.light,
         telemetry: telemetry,
+        startupReady: startupReady,
       ),
     );
   }
@@ -86,6 +92,7 @@ void main() {
       ),
       isTrue,
     );
+    await tester.pump();
     await tester.pump(const Duration(milliseconds: 200));
     expect(pageOpacity(tester, to), inExclusiveRange(0, 1));
     expect(pageOpacity(tester, from), inExclusiveRange(0, 1));
@@ -93,6 +100,25 @@ void main() {
     expect(find.byType(from), findsNothing);
     expect(pageOpacity(tester, to), 1);
   }
+
+  testWidgets(
+    'startup waits for the platform handoff before revealing a page',
+    (tester) async {
+      final ready = Completer<void>();
+      await mount(tester, TelemetryPolicy.alwaysOn, startupReady: ready.future);
+      await tester.pumpAndSettle();
+      expect(find.byKey(const ValueKey('startup-splash')), findsOneWidget);
+      expect(find.byType(WelcomeView), findsNothing);
+      ready.complete();
+      await waitFor(tester, WelcomeView);
+      expect(pageOpacity(tester, WelcomeView), 0);
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
+      expect(pageOpacity(tester, WelcomeView), inExclusiveRange(0, 1));
+      await tester.pumpAndSettle();
+      expect(pageOpacity(tester, WelcomeView), 1);
+    },
+  );
 
   for (final policy in TelemetryPolicy.values) {
     testWidgets('cold launch animates from the logo to search for $policy', (
@@ -108,6 +134,7 @@ void main() {
       expect(find.byKey(const ValueKey('startup-splash')), findsOneWidget);
       await waitFor(tester, MainShell);
       expect(pageOpacity(tester, MainShell), 0);
+      await tester.pump();
       await tester.pump(const Duration(milliseconds: 200));
       expect(pageOpacity(tester, MainShell), inExclusiveRange(0, 1));
       await tester.pumpAndSettle();

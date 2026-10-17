@@ -10,7 +10,7 @@ import 'services/telemetry/telemetry_service.dart';
 import 'services/telemetry/sdk_telemetry_backend.dart';
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+  final binding = WidgetsFlutterBinding.ensureInitialized();
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
   LicenseRegistry.addLicense(() async* {
     yield LicenseEntryWithLineBreaks(
@@ -60,6 +60,9 @@ void main() async {
       initialThemeMode: initialSettings.themeMode,
       initialColorScheme: initialSettings.colorScheme,
       telemetry: telemetry,
+      startupReady: binding.waitUntilFirstFrameRasterized.then(
+        (_) => Future<void>.delayed(const Duration(milliseconds: 200)),
+      ),
     ),
   );
 }
