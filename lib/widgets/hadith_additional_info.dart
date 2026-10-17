@@ -122,8 +122,7 @@ class _HadithAdditionalInfoState extends State<HadithAdditionalInfo>
       margin: const EdgeInsets.only(top: 12),
       child: Material(
         color: colors.surfaceContainerHigh,
-        shape: RoundedRectangleBorder(
-          side: BorderSide(color: colors.outlineVariant),
+        shape: const RoundedRectangleBorder(
           borderRadius: HadithCardLayout.panelBorderRadius,
         ),
         clipBehavior: Clip.antiAlias,
