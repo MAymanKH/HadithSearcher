@@ -119,7 +119,10 @@ def build_play(version, dry_run, *, patch=False):
 
     # Shorebird's asset validator requires a plain asset entry. Build in a
     # separate directory so the F-Droid manifest always excludes that asset.
-    with tempfile.TemporaryDirectory(prefix="hadith-play-") as directory:
+    # Android intermediates can exceed the system temporary filesystem's quota.
+    build_directory = ROOT / "build"
+    build_directory.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="hadith-play-", dir=build_directory) as directory:
         workspace = Path(directory)
         files = subprocess.check_output(
             ["git", "ls-files", "-z", "--cached", "--others", "--exclude-standard"],

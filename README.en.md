@@ -113,6 +113,8 @@ GitHub releases also require `android/local.properties` with `sdk.dir` and Andro
 
 Artifacts are saved in `build/releases/play/`, `build/releases/fdroid/`, and `build/releases/github/`, with the version in each filename. The script does not upload artifacts to Google Play, F-Droid, or GitHub.
 
+Play builds use an isolated workspace under `build/hadith-play-*` to avoid system temporary filesystem quotas. Keep several GiB free on the project filesystem. The script removes the workspace after success or failure. If Play fails after the APKs finish, retry with `./scripts/release.py play`.
+
 The F-Droid flavor excludes the Shorebird updater and Google Play update library. To build it directly:
 
 ```bash
