@@ -141,7 +141,7 @@
   "licenses": "Library and font licenses",
   "language": "Language",
   "welcomeTitle": "Welcome to Hadith Searcher",
-  "welcomeDescription": "Choose your app language and theme. You can change them later in settings.",
+  "welcomeDescription": "Choose your language and appearance.",
   "apiLanguageNotice": "Hadiths and source content remain in Arabic.",
   "preferencesSaveFailed": "Could not save your preferences. Try again.",
   "backToTop": "Back to top",

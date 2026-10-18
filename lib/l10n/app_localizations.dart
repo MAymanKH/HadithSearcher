@@ -947,7 +947,7 @@ abstract class AppLocalizations {
   /// No description provided for @welcomeDescription.
   ///
   /// In en, this message translates to:
-  /// **'Choose your app language and theme. You can change them later in settings.'**
+  /// **'Choose your language and appearance.'**
   String get welcomeDescription;
 
   /// No description provided for @apiLanguageNotice.

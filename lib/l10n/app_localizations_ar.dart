@@ -438,8 +438,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get welcomeTitle => 'مرحباً بك في Hadith Searcher';
 
   @override
-  String get welcomeDescription =>
-      'اختر لغة التطبيق ومظهره. يمكنك تغييرهما لاحقاً من الإعدادات.';
+  String get welcomeDescription => 'اختر اللغة والمظهر، وغيّرهما متى شئت.';
 
   @override
   String get apiLanguageNotice =>

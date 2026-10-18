@@ -63,19 +63,27 @@ class _WelcomeViewState extends State<WelcomeView> {
                         children: [
                           const Center(child: AppLogo(size: 100)),
                           const SizedBox(height: 24),
-                          Text(
-                            l.welcomeTitle,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.bold,
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              l.welcomeTitle,
+                              maxLines: 1,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 12),
-                          Text(
-                            l.welcomeDescription,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(fontSize: 16, height: 1.5),
+                          FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Text(
+                              l.welcomeDescription,
+                              maxLines: 1,
+                              textAlign: TextAlign.center,
+                              style: const TextStyle(fontSize: 14, height: 1.5),
+                            ),
                           ),
                         ],
                       ),

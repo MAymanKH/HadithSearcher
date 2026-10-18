@@ -444,8 +444,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get welcomeTitle => 'Welcome to Hadith Searcher';
 
   @override
-  String get welcomeDescription =>
-      'Choose your app language and theme. You can change them later in settings.';
+  String get welcomeDescription => 'Choose your language and appearance.';
 
   @override
   String get apiLanguageNotice =>

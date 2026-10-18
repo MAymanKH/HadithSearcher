@@ -141,7 +141,7 @@
   "licenses": "تراخيص المكتبات والخطوط",
   "language": "اللغة",
   "welcomeTitle": "مرحباً بك في Hadith Searcher",
-  "welcomeDescription": "اختر لغة التطبيق ومظهره. يمكنك تغييرهما لاحقاً من الإعدادات.",
+  "welcomeDescription": "اختر اللغة والمظهر، وغيّرهما متى شئت.",
   "apiLanguageNotice": "تبقى الأحاديث ومحتويات المصدر باللغة العربية.",
   "preferencesSaveFailed": "تعذر حفظ الإعدادات. حاول مرة أخرى.",
   "backToTop": "العودة إلى الأعلى",
