@@ -17,25 +17,9 @@ import 'package:hadithsearcher/services/database_service.dart';
 import 'package:hadithsearcher/widgets/hadith_card.dart';
 import '../test/telemetry/fake_backend.dart';
 
-const _hadith = {
-  'hadithId': 'intentions',
-  'hadith':
-      'إنَّما الأعمالُ بالنِّيَّاتِ، وإنَّما لكُلِّ امرِئٍ ما نَوى، فمَن كانَت هِجرَتُه إلى دُنيا يُصيبُها، أو إلى امرَأةٍ يَنكِحُها، فهِجرَتُه إلى ما هاجَرَ إليه.',
-  'rawi': 'عمر بن الخطاب',
-  'mohdith': 'البخاري',
-  'mohdithId': '256',
-  'book': 'صحيح البخاري',
-  'bookId': '6216',
-  'numberOrPage': '1',
-  'grade': '[صحيح]',
-  'explainGrade': 'حكم المحدث على الحديث بالصحة.',
-  'takhrij': 'أخرجه البخاري (1)، ومسلم (1907).',
-  'categories': [
-    {'id': 'intention', 'name': 'رقائق وزهد - النية'},
-    {'id': 'worship', 'name': 'نية - النية في العبادات'},
-  ],
-  'hasUsulHadith': true,
-};
+import 'fixtures/store_hadiths.dart';
+import 'fixtures/store_collections.dart';
+import 'fixtures/store_sources.dart';
 
 void main() {
   final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
@@ -102,40 +86,14 @@ void main() {
       } else if (path == '/v1/site/hadith/search') {
         result = {
           'metadata': {'hasNextPage': false, 'exclusionsApplied': true},
-          'data': [_hadith],
+          'data': storeHadiths,
         };
-      } else if (path == '/v1/site/book/6216') {
-        result = {
-          'data': {
-            'name': 'صحيح البخاري',
-            'author': 'محمد بن إسماعيل البخاري',
-            'publisher': 'دار طوق النجاة',
-            'edition': 'الأولى',
-            'editionYear': '1422',
-          },
-        };
-      } else if (path == '/v1/site/mohdith/256') {
-        result = {
-          'data': {
-            'name': 'البخاري',
-            'info': 'محمد بن إسماعيل البخاري، صاحب الجامع الصحيح.',
-          },
-        };
-      } else if (path == '/v1/site/hadith/usul/intentions') {
-        result = {
-          'data': {
-            'usulHadith': {
-              'sources': [
-                {
-                  'source': 'صحيح البخاري (1)',
-                  'chain':
-                      'الحميدي، عن سفيان، عن يحيى بن سعيد، عن محمد بن إبراهيم، عن علقمة بن وقاص، عن عمر بن الخطاب.',
-                  'hadithText': 'إنما الأعمال بالنيات، وإنما لكل امرئ ما نوى.',
-                },
-              ],
-            },
-          },
-        };
+      } else if (path == '/v1/site/hadith/usul/JIDbtVSz') {
+        result = {'data': storeOrigins};
+      } else if (path == '/v1/site/book/3664') {
+        result = {'data': storeBook};
+      } else if (path == '/v1/site/mohdith/1122') {
+        result = {'data': storeScholar};
       } else {
         request.response.statusCode = 404;
         result = {};
@@ -148,23 +106,22 @@ void main() {
     Future<void> capture(String name) async {
       await tester.pumpAndSettle();
       await tester.pump(const Duration(milliseconds: 500));
+      await Future<void>.delayed(const Duration(milliseconds: 400));
+      await tester.pumpAndSettle();
       await binding.takeScreenshot(name);
       expect(tester.takeException(), isNull);
     }
 
     await tester.pumpWidget(
-      HadithSearcherApp(
-        initialThemeMode: ThemeMode.light,
-        telemetry: telemetry,
-      ),
+      HadithSearcherApp(initialThemeMode: ThemeMode.dark, telemetry: telemetry),
     );
     await tester.pumpAndSettle();
     final settings = tester
         .element(find.byType(TextField))
         .read<SettingsViewModel>();
-    await settings.setTheme(ThemePreference.light);
+    await settings.setTheme(ThemePreference.dark);
     await tester.tap(find.byType(TextField));
-    await tester.enterText(find.byType(TextField), 'إنما الأعمال بالنيات');
+    await tester.enterText(find.byType(TextField), 'الأعمال بالنيات');
     await tester.tap(find.widgetWithText(ElevatedButton, 'بحث'));
     await tester.pumpAndSettle();
     await tester.runAsync(() async {
@@ -182,37 +139,90 @@ void main() {
         .read<SearchViewModel>();
     expect(
       find.byType(HadithCard),
-      findsOneWidget,
+      findsWidgets,
       reason:
           'Search error: ${search.errorMessage}; query: ${search.searchQuery}',
     );
+    expect(search.results, hasLength(storeHadiths.length));
     await binding.convertFlutterSurfaceToImage();
     await tester.pumpAndSettle();
     await capture('01-search');
     await tester.tap(find.widgetWithText(TextButton, 'التصفية'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byType(TextField).first);
+    await tester.enterText(find.byType(TextField).first, '');
+    FocusManager.instance.primaryFocus?.unfocus();
+    await tester.pumpAndSettle();
+    expect(
+      tester.widget<TextField>(find.byType(TextField).first).controller!.text,
+      isEmpty,
+    );
     await capture('02-filters');
+    await tester.tap(find.byType(TextField).first);
+    await tester.enterText(find.byType(TextField).first, 'الأعمال بالنيات');
+    FocusManager.instance.primaryFocus?.unfocus();
     await tester.tap(find.widgetWithText(TextButton, 'التصفية'));
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('معلومات إضافية'));
-    await tester.tap(find.text('معلومات إضافية'));
+    await tester.tap(find.text('معلومات إضافية').first);
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.text('أصول الحديث وطرق إخراجه'));
-    await capture('03-details');
-    await DatabaseService().addFavourite(
-      hadithText: _hadith['hadith'] as String,
-      hadithInfo: Hadith.fromJson(_hadith).formattedInfo,
-      hadithId: 'intentions',
-      hadith: Hadith.fromJson(_hadith),
-    );
+    final originsButton = find.text('أصول الحديث وطرق إخراجه').first;
+    await tester.ensureVisible(originsButton);
+    await tester.tap(originsButton);
+    for (
+      var i = 0;
+      i < 100 && find.textContaining('[صحيح البخاري]').evaluate().isEmpty;
+      i++
+    ) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(find.text('أصول الحديث'), findsOneWidget);
+    expect(find.textContaining('[صحيح البخاري]'), findsOneWidget);
+    await capture('03-origins');
+    tester.state<NavigatorState>(find.byType(Navigator)).pop();
+    await tester.pumpAndSettle();
+    for (final item in storeSavedHadiths.reversed) {
+      final hadith = Hadith.fromJson(item);
+      await DatabaseService().addFavourite(
+        hadithText: hadith.text,
+        hadithInfo: hadith.formattedInfo,
+        hadithId: hadith.id,
+        hadith: hadith,
+      );
+    }
     await tester.tap(find.text('المحفوظات').last);
     await capture('04-saved');
     await tester.tap(find.text('الإعدادات').last);
+    await settings.setColorScheme(ColorSchemePreference.sepia);
     await capture('05-appearance');
+    await settings.setColorScheme(ColorSchemePreference.forest);
+    await capture('05-appearance-forest');
+    await settings.setColorScheme(ColorSchemePreference.ocean);
+    await capture('05-appearance-ocean');
+    await settings.setColorScheme(ColorSchemePreference.lavender);
+    await capture('05-appearance-lavender');
+    await settings.setColorScheme(ColorSchemePreference.rose);
+    await capture('05-appearance-rose');
+    await settings.setColorScheme(ColorSchemePreference.amber);
+    await capture('05-appearance-amber');
+    await settings.setColorScheme(ColorSchemePreference.classic);
     await settings.setTheme(ThemePreference.dark);
     await tester.pumpAndSettle();
     await tester.tap(find.text('البحث').last);
     await tester.pumpAndSettle();
-    await capture('06-dark');
+    tester.widget<ListView>(find.byType(ListView)).controller!.jumpTo(0);
+    await tester.pumpAndSettle();
+    await tester.tap(find.byTooltip('معلومات المحدث والكتاب').first);
+    for (
+      var i = 0;
+      i < 100 && find.textContaining('المكتب الإسلامي').evaluate().isEmpty;
+      i++
+    ) {
+      await tester.pump(const Duration(milliseconds: 100));
+    }
+    expect(find.text('معلومات المحدث والكتاب'), findsOneWidget);
+    expect(find.textContaining('المكتب الإسلامي'), findsOneWidget);
+    expect(find.text(storeScholar['info'] as String), findsOneWidget);
+    await capture('06-sources');
     await tester.pumpWidget(const SizedBox());
   });
 }
