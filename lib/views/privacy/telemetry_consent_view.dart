@@ -78,8 +78,8 @@ class _TelemetryConsentViewState extends State<TelemetryConsentView> {
                       Text(
                         context.l10n.consentTitle,
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 28,
+                        style: const TextStyle(
+                          fontSize: 24,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
@@ -87,7 +87,7 @@ class _TelemetryConsentViewState extends State<TelemetryConsentView> {
                       Text(
                         context.l10n.consentDescription,
                         textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 16, height: 1.5),
+                        style: const TextStyle(fontSize: 14, height: 1.5),
                       ),
                       const SizedBox(height: 24),
                       CheckboxListTile(
