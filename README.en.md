@@ -115,6 +115,8 @@ Artifacts are saved in `build/releases/play/`, `build/releases/fdroid/`, and `bu
 
 Play builds use an isolated workspace under `build/hadith-play-*` to avoid system temporary filesystem quotas. Keep several GiB free on the project filesystem. The script removes the workspace after success or failure. If Play fails after the APKs finish, retry with `./scripts/release.py play`.
 
+Android builds use one Gradle worker and compile Kotlin in the Gradle JVM with a 2 GiB heap limit. Gradle exits after each build to release memory between release steps. These settings reduce memory use at the cost of build speed. If the Gradle daemon disappears, check the system journal for memory pressure or processes terminated by the system.
+
 The F-Droid flavor excludes the Shorebird updater and Google Play update library. To build it directly:
 
 ```bash
