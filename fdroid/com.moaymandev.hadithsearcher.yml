@@ -1,0 +1,63 @@
+AntiFeatures:
+  TetheredNet:
+    en-US: Search uses a hosted Dorar Hadith API endpoint that cannot be changed in
+      the app settings.
+Categories:
+  - Reading
+License: GPL-3.0-only
+AuthorName: MAymanKH
+AuthorWebSite: https://github.com/MAymanKH
+SourceCode: https://github.com/MAymanKH/HadithSearcher
+IssueTracker: https://github.com/MAymanKH/HadithSearcher/issues
+
+AutoName: Hadith Searcher
+
+RepoType: git
+Repo: https://github.com/MAymanKH/HadithSearcher.git
+
+Builds:
+  - versionName: 3.0.0
+    versionCode: 19
+    commit: dfa05abedfc561f5155d45c9729239b34ef3ab2f
+    submodules: true
+    sudo:
+      - apt-get update
+      - apt-get install -y openjdk-21-jdk-headless
+    output: build/app/outputs/flutter-apk/app-fdroid-release.apk
+    rm:
+      - android/app/src/play
+    prebuild:
+      - sed -i '/"playImplementation"/d' android/app/build.gradle.kts
+      - export PUB_CACHE=$(pwd)/.pub-cache
+      - .flutter/bin/flutter config --no-analytics
+      - .flutter/bin/flutter pub get --enforce-lockfile
+    scanignore:
+      - .flutter/bin/cache
+    scandelete:
+      - .flutter
+      - .pub-cache
+    build:
+      - export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
+      - export PUB_CACHE=$(pwd)/.pub-cache
+      - .flutter/bin/flutter build apk --release --flavor fdroid --dart-define=UPDATE_CHANNEL=fdroid
+    ndk: 29.0.13113456
+
+MaintainerNotes: |-
+  Search uses https://hadith-searcher-dorar-api-amx.vercel.app, backed by
+  https://github.com/MAymanKH/dorar-hadith-api and content from https://dorar.net.
+  The API endpoint can be changed at build time, but not in the app settings.
+  Please review service and content licensing during inclusion.
+
+  Sentry and PostHog SDKs are included. Both services are disabled until separate
+  informed consent in this flavor, including native auto-initialization.
+  See docs/telemetry.md and the privacy policy linked in the store description.
+
+  The .flutter submodule pins upstream Flutter 3.47.7. The fdroid flavor
+  excludes the Shorebird asset and does not enable the Play update implementation.
+  Play-only sources and the Play dependency declaration are removed before scanning.
+
+AutoUpdateMode: Version
+UpdateCheckMode: Tags ^[0-9]+\.[0-9]+\.[0-9]+$
+UpdateCheckData: pubspec.yaml|version:\s.+\+(\d+)|.|version:\s(.+)\+
+CurrentVersion: 3.0.0
+CurrentVersionCode: 19
