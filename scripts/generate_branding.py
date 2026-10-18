@@ -42,6 +42,16 @@ def generate(icons):
     white_mark.find('{http://www.w3.org/2000/svg}g').set('fill', white_color)
     white_svg = ET.tostring(white_mark, encoding='unicode')
     ET.register_namespace('', 'http://www.w3.org/2000/svg')
+    readme_logo = ET.fromstring(white_svg)
+    readme_logo.insert(0, ET.Element('{http://www.w3.org/2000/svg}rect', {
+        'width': '256', 'height': '256', 'rx': '48', 'fill': black_color,
+    }))
+    readme_logo.find('{http://www.w3.org/2000/svg}g').set(
+        'transform', 'translate(28 28) scale(0.78)',
+    )
+    (icons / 'logo_readme.svg').write_text(
+        ET.tostring(readme_logo, encoding='unicode') + '\n',
+    )
     light_logo = ET.fromstring(white_svg)
     mark = light_logo.find('{http://www.w3.org/2000/svg}g')
     mark.set('stroke', black_color)
