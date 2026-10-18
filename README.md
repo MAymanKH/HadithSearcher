@@ -30,13 +30,15 @@
 
 | البحث | البحث المتقدم |
 |:---:|:---:|
-| <img src="https://i.imgur.com/wo6bGGc.png" width="250"> | <img src="https://i.imgur.com/KFjDb4B.png" width="250"> |
+| <img src="store/screenshots/ar/sources/01-search.png" width="250"> | <img src="store/screenshots/ar/sources/02-filters.png" width="250"> |
 
 | المحفوظات | الإعدادات |
 |:---:|:---:|
-| <img src="https://i.imgur.com/bS4FQF8.png" width="250"> | <img src="https://i.imgur.com/77MRNM4.png" width="250"> |
+| <img src="store/screenshots/ar/sources/04-saved.png" width="250"> | <img src="store/screenshots/ar/sources/05-appearance.png" width="250"> |
 
 </div>
+
+[تصاميم صور المتجر وطريقة تحديثها](store/screenshots/README.md)
 
 ## مصادر البيانات
 
