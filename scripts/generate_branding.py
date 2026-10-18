@@ -57,8 +57,12 @@ def generate(icons):
         # Keep the whole mark within Android's circular adaptive safe zone.
         padded(white, icons / 'launcher_foreground.png', 1024, 552)
         padded(white, icons / 'logo_dark.png', 512, 512)
-        padded(icons / 'logo.png', icons / 'splash_android12.png', 1152, 640, rgba=True)
-        padded(white, icons / 'splash_android12_dark.png', 1152, 640)
+        # Native splash images use 4 source pixels per dp, matching AppLogo's 112 dp.
+        splash_size = 112 * 4
+        render(svg, icons / 'splash.png', splash_size)
+        padded(white, icons / 'splash_dark.png', splash_size, splash_size)
+        padded(icons / 'splash.png', icons / 'splash_android12.png', 1152, splash_size, rgba=True)
+        padded(white, icons / 'splash_android12_dark.png', 1152, splash_size)
 
 
 def main():
