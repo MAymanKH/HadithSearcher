@@ -1,0 +1,1 @@
+Advanced search with filters for scholars, books, narrators, and authenticity grades. Read original narrations and source details, save hadiths offline, and customize fonts and colors. F-Droid builds ask separately before enabling crash reporting or usage analytics.

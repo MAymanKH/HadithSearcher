@@ -1,0 +1,15 @@
+Search prophetic hadiths in Arabic and read their explanations, sources, and scholars' authenticity assessments from Dorar al-Saniyyah.
+
+• Search by any word, all words, or an exact phrase, and exclude words or phrases.
+• Filter by authenticity grade, scholar, book, or narrator.
+• View narrators, source references, original narrations, and similar hadiths.
+• Save hadiths for offline reading.
+• Adjust fonts, text size, and app colors.
+
+Search and new explanations require an internet connection to the hosted Dorar Hadith API. Saved hadiths remain available offline. The app's interface and hadith content are in Arabic.
+
+Crash reporting through Sentry and usage analytics through PostHog are disabled by default in the F-Droid build. Each service requires separate consent and can be disabled in Settings. See the privacy policy for details.
+
+The F-Droid build does not include Shorebird code updates or Google Play's update library. Updates come through F-Droid.
+
+<a href="https://hadith-searcher-privacy-policy.pages.dev">Privacy policy</a>
