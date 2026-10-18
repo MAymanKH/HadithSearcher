@@ -65,7 +65,7 @@ cd HadithSearcher
 
 لتجربة خادم آخر، مرّر `--dart-define=HADITH_API_BASE_URL=https://your-api.example` إلى أمر التشغيل أو البناء.
 
-تفعّل نسخة Play تقارير الأعطال وتحليلات الاستخدام تلقائياً. تطلب نسختا F-Droid وGitHub موافقة منفصلة لكل خدمة. تفاصيل القياس والخصوصية: [Telemetry](docs/telemetry.md). خطوات الاختبار المحلي والتحقق من وصول الأحداث: [Verify telemetry](docs/verify-telemetry.md).
+تفعّل نسخة Play تقارير الأعطال وتحليلات الاستخدام تلقائياً. تطلب نسختا F-Droid وGitHub موافقة منفصلة لكل خدمة. تفاصيل القياس والخصوصية واختبار وصول الأحداث: [Telemetry](docs/telemetry.md).
 
 ### 3. تثبيت الاعتماديات
 
@@ -160,11 +160,8 @@ flutter test integration_test/update_test.dart -d emulator-5554 --flavor play
 ## أدلة التطوير
 
 - [ترجمة الواجهة وإضافة النصوص](lib/l10n/README.md)
-- [تنظيم لوحات الألوان](docs/color-schemes.md)
 - [تعديل الألوان وتوليد الملفات](docs/change-colors.md)
-- [استبعاد عوامل التصفية ومتطلبات API](docs/filter-exclusions.md)
 - [القياس والخصوصية](docs/telemetry.md)
-- [التحقق من القياس](docs/verify-telemetry.md)
 
 ## الترخيص
 
