@@ -21,7 +21,7 @@ class FdroidWorkspaceTest(unittest.TestCase):
                 root = Path(directory) / "source"
                 workspace = Path(directory) / "fixed-path"
                 files = {
-                    ".flutter/bin/flutter": "",
+                    "sdk/bin/flutter": "",
                     "android/app/build.gradle.kts": 'keep\n"playImplementation"("play")\n',
                     "android/app/src/play/Play.kt": "play code",
                     "pubspec.yaml": "version: 3.0.0+19\n",
@@ -31,14 +31,16 @@ class FdroidWorkspaceTest(unittest.TestCase):
                     target = root / name
                     target.parent.mkdir(parents=True, exist_ok=True)
                     target.write_text(text)
+                    if name == "sdk/bin/flutter":
+                        target.chmod(0o755)
 
                 def run(args, **kwargs):
                     self.assertEqual(kwargs["cwd"], workspace)
-                    self.assertEqual(args[0], str(root / ".flutter/bin/flutter"))
+                    self.assertEqual(args[0], str(root / "sdk/bin/flutter"))
                     self.assertFalse((workspace / "android/key.properties").exists())
                     self.assertFalse((workspace / "android/app/src/play").exists())
                     self.assertEqual((workspace / "android/app/build.gradle.kts").read_text(), "keep\n")
-                    self.assertTrue((workspace / ".flutter").is_symlink())
+                    self.assertFalse((workspace / ".flutter").exists())
                     if args[1] == "build":
                         self.assertIn("--dart-define=UPDATE_CHANNEL=fdroid", args)
                         if failure:
@@ -50,16 +52,16 @@ class FdroidWorkspaceTest(unittest.TestCase):
                         self.assertEqual(args[1:], ["pub", "get", "--enforce-lockfile"])
 
                 tracked = "\0".join(name for name in files if name not in (
-                    "android/key.properties", ".flutter/bin/flutter",
+                    "android/key.properties", "sdk/bin/flutter",
                 )).encode()
                 with patch.object(build, "ROOT", root), patch.object(
                     build, "WORKSPACE", workspace
                 ), patch.object(build.subprocess, "check_output", return_value=tracked), patch.object(
                     build.subprocess, "run", side_effect=run
-                ):
+                ), patch.dict(build.os.environ, {"FLUTTER_BIN": str(root / "sdk/bin/flutter")}):
                     if failure:
                         with self.assertRaises(subprocess.CalledProcessError):
-                            build.main()
+                            build.main(root / "sdk/bin/flutter")
                         self.assertFalse((root / build.OUTPUT).exists())
                     else:
                         build.main()
@@ -69,12 +71,13 @@ class FdroidWorkspaceTest(unittest.TestCase):
     def test_existing_workspace_is_left_untouched(self):
         with tempfile.TemporaryDirectory() as directory:
             workspace = Path(directory)
-            (workspace / ".flutter/bin").mkdir(parents=True)
-            (workspace / ".flutter/bin/flutter").touch()
+            (workspace / "sdk/bin").mkdir(parents=True)
+            (workspace / "sdk/bin/flutter").touch()
+            (workspace / "sdk/bin/flutter").chmod(0o755)
             with patch.object(build, "ROOT", workspace), patch.object(build, "WORKSPACE", workspace):
                 with self.assertRaises(FileExistsError):
-                    build.main()
-            self.assertTrue((workspace / ".flutter/bin/flutter").exists())
+                    build.main(workspace / "sdk/bin/flutter")
+            self.assertTrue((workspace / "sdk/bin/flutter").exists())
 
 
 if __name__ == "__main__":

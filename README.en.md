@@ -96,7 +96,7 @@ flutter run --flavor play
 
 Update `version` in `pubspec.yaml` once for each new release. The About page displays the actual app version.
 
-The release script requires Python 3 and Flutter. Initialize the pinned F-Droid SDK with `git submodule update --init .flutter`. Play releases also require Shorebird and a prior login with `shorebird login`. The script uses Flutter `3.47.7` through Shorebird for Play releases.
+The release script requires Python 3 and Flutter. F-Droid fetches its Flutter SDK through the build recipe; the app repository has no SDK submodule. Play releases also require Shorebird and a prior login with `shorebird login`. The script uses Flutter `3.47.7` through Shorebird for Play releases.
 
 For all three releases, prepare `android/key.properties` and a local signing keystore. The properties file must contain `storeFile`, `storePassword`, `keyAlias`, and `keyPassword`. Relative keystore paths resolve from `android/app/`. Keep signing credentials out of version control.
 
@@ -123,13 +123,13 @@ The F-Droid flavor excludes the Shorebird updater and Google Play update library
 python3 scripts/build_fdroid_unsigned.py
 ```
 
-The output is `build/app/outputs/flutter-apk/app-fdroid-release.apk`. This build is unsigned and is used by the F-Droid build server. Both the release script and recipe build with the pinned SDK in `/var/tmp/hadithsearcher-fdroid`, then remove the workspace. This fixed path keeps generated Dart library URIs identical. The JNI native library disables its path-dependent build ID. Keep several GiB free and run one F-Droid build at a time. If a killed process leaves the workspace behind, remove it after confirming no build is running. To produce the signed upstream APK, use `./scripts/release.py fdroid`. It selects `UPDATE_CHANNEL=fdroid` and signs with the same local key as GitHub releases. The script preserves ZIP alignment during signing so F-Droid can copy the signature. It uses v2/v3 signatures and disables legacy v1 signing; the app requires Android 7.0 or newer.
+The output is `build/app/outputs/flutter-apk/app-fdroid-release.apk`. This build is unsigned and is used by the F-Droid build server. Both the release script and recipe build in `/var/tmp/hadithsearcher-fdroid`, then remove the workspace. This fixed path keeps generated Dart library URIs identical. The JNI native library disables its path-dependent build ID. Keep several GiB free and run one F-Droid build at a time. If a killed process leaves the workspace behind, remove it after confirming no build is running. To produce the signed upstream APK, use `./scripts/release.py fdroid`. It selects `UPDATE_CHANNEL=fdroid` and signs with the same local key as GitHub releases. The script preserves ZIP alignment during signing so F-Droid can copy the signature. It uses v2/v3 signatures and disables legacy v1 signing; the app requires Android 7.0 or newer.
 
 For direct installation, use `./scripts/release.py github`. This command builds from source using the F-Droid flavor, selects the GitHub update channel, and signs the APK. It does not require an existing F-Droid build. The signed output is `build/releases/github/HadithSearcher-<version>-github.apk`, and the script verifies its signature.
 
 Publish `build/releases/fdroid/HadithSearcher-<versionName>+<versionCode>-fdroid.apk` as an asset on the GitHub release tagged `<versionName>`, for example `3.0.0`. The F-Droid recipe uses that exact URL through `Binaries` and pins the signing certificate with `AllowedAPKSigningKeys`. Upload the F-Droid asset alongside the GitHub APK; their embedded update channels differ, so they cannot substitute for each other.
 
-F-Droid publishes the upstream-signed APK only after its rebuild matches. Use the pinned `.flutter` SDK, the recipe's source commit, and the same Android toolchain for both builds. Before submitting the recipe, check a fresh unsigned rebuild against the signed release:
+F-Droid publishes the upstream-signed APK only after its rebuild matches. Use the recipe's Flutter revision, source commit, and Android toolchain for both builds. Local builds use `flutter` from PATH; set `FLUTTER_BIN=/path/to/flutter` to select another SDK. F-Droid passes its source-library SDK to the unsigned builder with `--flutter`. For reference APKs, use a detached checkout of that revision too; Flutter embeds channel metadata, so an SDK on a named branch can produce a different binary. Before submitting the recipe, check a fresh unsigned rebuild against the signed release:
 
 ```bash
 python3 -m venv /tmp/hadith-repro-check

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Build an unsigned F-Droid APK at a stable path for Dart's generated URIs."""
 
+import argparse
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -10,10 +12,11 @@ WORKSPACE = Path("/var/tmp/hadithsearcher-fdroid")
 OUTPUT = Path("build/app/outputs/flutter-apk/app-fdroid-release.apk")
 
 
-def main():
-    flutter = ROOT / ".flutter/bin/flutter"
-    if not flutter.is_file():
-        raise RuntimeError("Initialize the pinned SDK with git submodule update --init .flutter")
+def main(flutter=None):
+    executable = shutil.which(str(flutter or os.environ.get("FLUTTER_BIN", "flutter")))
+    if executable is None:
+        raise RuntimeError("Install Flutter on PATH or specify --flutter /path/to/flutter")
+    flutter = Path(executable).resolve()
     # Exclusive creation also prevents concurrent builds from sharing this path.
     WORKSPACE.mkdir()
     try:
@@ -27,7 +30,6 @@ def main():
                 target = WORKSPACE / name
                 target.parent.mkdir(parents=True, exist_ok=True)
                 shutil.copy2(source, target)
-        (WORKSPACE / ".flutter").symlink_to(ROOT / ".flutter", target_is_directory=True)
         local = ROOT / "android/local.properties"
         if local.is_file():
             shutil.copy2(local, WORKSPACE / "android/local.properties")
@@ -50,7 +52,10 @@ def main():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--flutter", help="Flutter executable; defaults to FLUTTER_BIN or PATH")
+    args = parser.parse_args()
     try:
-        main()
+        main(args.flutter)
     except (OSError, RuntimeError, subprocess.CalledProcessError) as error:
         raise SystemExit(str(error)) from error
