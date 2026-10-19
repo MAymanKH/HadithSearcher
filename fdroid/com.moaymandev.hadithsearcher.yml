@@ -12,7 +12,8 @@ IssueTracker: https://github.com/MAymanKH/HadithSearcher/issues
 
 AutoName: Hadith Searcher
 
-Binaries: https://github.com/MAymanKH/HadithSearcher/releases/download/%v/HadithSearcher-%v+%c-fdroid.apk
+Binaries:
+  https://github.com/MAymanKH/HadithSearcher/releases/download/%v/HadithSearcher-%v+%c-fdroid.apk
 AllowedAPKSigningKeys:
   - 2f64e27afe52527d62b314f5ee896add96c3adedb63366aeca372504c095d0c4
 
@@ -22,7 +23,7 @@ Repo: https://github.com/MAymanKH/HadithSearcher.git
 Builds:
   - versionName: 3.0.0
     versionCode: 19
-    commit: ea8f9e95471e086071bfe732b6a83347a926ce9e
+    commit: 7c8fe82e519fc669c937df455b42c7d31b6e1bce
     srclibs:
       - flutter@abaf9c523780a608bd46686fd5e53740a07077f8
     sudo:

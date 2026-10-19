@@ -140,7 +140,7 @@ python3 -m venv /tmp/hadith-repro-check
   --apksigner "$ANDROID_HOME/build-tools/37.0.0/apksigner"
 ```
 
-The check copies the upstream signature onto the unsigned rebuild, verifies it, and checks the certificate against the recipe. A local match does not replace verification on F-Droid's build server. The recipe's pinned commit must correspond to the published APK; update it when preparing a new release.
+The check copies the upstream signature onto the unsigned rebuild, verifies it, and checks the certificate against the recipe. A local match does not replace verification on F-Droid's build server. The recipe's pinned commit must correspond to the published APK; update it when preparing a new release. Format submission metadata with the fdroidserver and YAML library versions used by F-Droid CI, since released tooling can wrap long URLs differently.
 
 Switching between installed Play, GitHub, and F-Droid builds requires the same app signing certificate and an equal or higher `versionCode`. Play's app signing key must match the local key, even when its upload key differs. Existing installations signed with F-Droid's own key need a one-time reinstall to move to the developer key.
 
