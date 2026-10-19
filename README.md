@@ -105,21 +105,25 @@ flutter run --flavor play
 | الأمر | الناتج |
 | --- | --- |
 | `./scripts/release.py play` | ملف AAB لنسخة Google Play، وتسجيل الإصدار في Shorebird |
-| `./scripts/release.py fdroid` | ملف APK غير موقّع لنسخة F-Droid |
+| `./scripts/release.py fdroid` | بناء ملف APK وتوقيعه للتحقق من نسخة F-Droid |
 | `./scripts/release.py github` | بناء ملف APK لنسخة GitHub وتوقيعه للتثبيت المباشر |
 | `./scripts/release.py all` | بناء نسخ F-Droid وGitHub وGoogle Play بالتتابع |
 | `./scripts/release.py play --dry-run` | بناء ملف Play دون تسجيل إصدار على الخادم |
 | `./scripts/release.py patch-play` | إرسال تحديث Dart لإصدار Play المحدد حالياً في `pubspec.yaml` |
 
-يحفظ السكربت ملفات الإصدارات في `build/releases/play/` و`build/releases/fdroid/` و`build/releases/github/` بأسماء تتضمن رقم الإصدار. لا يرفع الملفات إلى Google Play أو F-Droid أو GitHub. لبناء نسختي Play وGitHub، جهّز ملف `android/key.properties` ومفتاح التوقيع المحلي. لا تُضمّن بيانات التوقيع الخاصة في المصدر.
+يحفظ السكربت ملفات الإصدارات في `build/releases/play/` و`build/releases/fdroid/` و`build/releases/github/` بأسماء تتضمن رقم الإصدار. لا يرفع الملفات إلى Google Play أو F-Droid أو GitHub. لبناء النسخ الثلاث، جهّز ملف `android/key.properties` ومفتاح التوقيع المحلي. لا تُضمّن بيانات التوقيع الخاصة في المصدر.
 
 يستخدم بناء Play مجلداً معزولاً داخل `build/hadith-play-*` لتجنّب حدود مساحة نظام الملفات المؤقت. وفّر عدة غيغابايت على نظام ملفات المشروع. يحذف السكربت المجلد بعد النجاح أو الفشل. إذا فشل بناء Play بعد اكتمال ملفات APK، أعد المحاولة بالأمر `./scripts/release.py play`.
 
 يستخدم بناء Android عامل Gradle واحداً، ويشغّل مترجم Kotlin داخل JVM الخاص بـGradle بحد أقصى 2 GiB للـheap. ينتهي Gradle بعد كل بناء لتحرير الذاكرة بين خطوات الإصدار. تقلّل هذه الإعدادات استهلاك الذاكرة مقابل زيادة وقت البناء. إذا اختفت عملية Gradle، افحص سجل النظام بحثاً عن ضغط الذاكرة أو العمليات التي أنهى النظام تشغيلها.
 
-لا تحتوي نسخة F-Droid على محدّث Shorebird أو مكتبة تحديث Google Play. للبناء المباشر استخدم `flutter build apk --release --flavor fdroid`، والناتج هو `build/app/outputs/flutter-apk/app-fdroid-release.apk`.
+لا تحتوي نسخة F-Droid على محدّث Shorebird أو مكتبة تحديث Google Play. للبناء المباشر استخدم `python3 scripts/build_fdroid_unsigned.py`، والناتج هو `build/app/outputs/flutter-apk/app-fdroid-release.apk`.
 
-ملف F-Droid غير موقّع، ولا يمكن تثبيته مباشرة على الهاتف. لإنشاء نسخة GitHub للتثبيت المباشر، جهّز `android/key.properties` ومفتاح التوقيع المحلي، ثم شغّل `./scripts/release.py github`. يبني الأمر ملف APK من المصدر باستخدام إعدادات F-Droid ثم يوقّعه، دون الحاجة إلى بناء نسخة F-Droid مسبقاً. يحفظ الناتج باسم `HadithSearcher-<version>-github.apk` في `build/releases/github/` ويتحقق من توقيعه. تظل نسخة F-Droid غير موقّعة لكي يوقّعها F-Droid عند النشر. تتطلب تحديثات التطبيق استخدام مفتاح التوقيع نفسه؛ قد تختلف مفاتيح نسخ Google Play وF-Droid المنشورة عن المفتاح المحلي.
+الناتج من أمر البناء المباشر غير موقّع ويُستخدم لإعادة البناء على خادم F-Droid. جهّز SDK المثبّت بالأمر `git submodule update --init .flutter`. يستخدم البناء المسار الثابت `/var/tmp/hadithsearcher-fdroid` ثم يحذفه لضمان تطابق مسارات Dart المضمّنة؛ وفّر عدة غيغابايت وشغّل بناءً واحداً في كل مرة. لإنشاء ملف موقّع شغّل `./scripts/release.py fdroid`؛ يستخدم مفتاح التوقيع المحلي نفسه لنسخة GitHub ويحفظ الناتج في `build/releases/fdroid/`. تتطلب نسختا F-Droid وGitHub ملف `android/local.properties` مع `sdk.dir` وأداتي `apksigner` و`zipalign` من Android SDK Build Tools بإصدار 35 أو أحدث.
+
+ارفع الملف `HadithSearcher-<versionName>+<versionCode>-fdroid.apk` إلى إصدار GitHub ذي الوسم `<versionName>`. تشير وصفة F-Droid إليه عبر `Binaries` وتثبت بصمة شهادة التوقيع عبر `AllowedAPKSigningKeys`. ينشر F-Droid الملف الموقّع بمفتاح المطوّر بعد نجاح التحقق من تطابق إعادة البناء. تختلف قناة التحديث المضمّنة بين ملفي GitHub وF-Droid، لذلك يجب رفعهما معاً. راجع [خطوات التحقق من إعادة البناء](README.en.md#build-android-releases).
+
+للتثبيت المباشر مع قناة تحديث GitHub شغّل `./scripts/release.py github`. يتطلب الانتقال بين النسخ الثلاث شهادة توقيع واحدة و`versionCode` مساوياً أو أعلى من النسخة المثبّتة. يجب أن يطابق مفتاح توقيع التطبيق في Play المفتاح المحلي، وقد يختلف عن مفتاح رفع الملفات. الانتقال من نسخة موقّعة بمفتاح F-Droid الخاص إلى مفتاح المطوّر يتطلب إعادة تثبيت لمرة واحدة.
 
 ## التحقق من المشروع
 

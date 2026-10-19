@@ -12,13 +12,17 @@ IssueTracker: https://github.com/MAymanKH/HadithSearcher/issues
 
 AutoName: Hadith Searcher
 
+Binaries: https://github.com/MAymanKH/HadithSearcher/releases/download/%v/HadithSearcher-%v+%c-fdroid.apk
+AllowedAPKSigningKeys:
+  - 2f64e27afe52527d62b314f5ee896add96c3adedb63366aeca372504c095d0c4
+
 RepoType: git
 Repo: https://github.com/MAymanKH/HadithSearcher.git
 
 Builds:
   - versionName: 3.0.0
     versionCode: 19
-    commit: dfa05abedfc561f5155d45c9729239b34ef3ab2f
+    commit: 787dfc48d0ea53cd146de77b649c57eb88e34946
     submodules: true
     sudo:
       - apt-get update
@@ -39,10 +43,14 @@ Builds:
     build:
       - export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
       - export PUB_CACHE=$(pwd)/.pub-cache
-      - .flutter/bin/flutter build apk --release --flavor fdroid --dart-define=UPDATE_CHANNEL=fdroid
+      - python3 scripts/build_fdroid_unsigned.py
     ndk: 29.0.13113456
 
 MaintainerNotes: |-
+  Publish the signed F-Droid APK from scripts/release.py fdroid as the
+  HadithSearcher-<versionName>+<versionCode>-fdroid.apk asset on the <versionName>
+  GitHub release. F-Droid must reproduce it before publishing the upstream signature.
+
   Search uses https://hadith-searcher-dorar-api-amx.vercel.app, backed by
   https://github.com/MAymanKH/dorar-hadith-api and content from https://dorar.net.
   The API endpoint can be changed at build time, but not in the app settings.
@@ -51,6 +59,9 @@ MaintainerNotes: |-
   Sentry and PostHog SDKs are included. Both services are disabled until separate
   informed consent in this flavor, including native auto-initialization.
   See docs/telemetry.md and the privacy policy linked in the store description.
+
+  The unsigned builder uses /var/tmp/hadithsearcher-fdroid for stable Dart URIs
+  and disables the JNI native library build ID. Both upstream and recipe use it.
 
   The .flutter submodule pins upstream Flutter 3.47.7. The fdroid flavor
   excludes the Shorebird asset and does not enable the Play update implementation.
