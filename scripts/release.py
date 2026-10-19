@@ -12,7 +12,7 @@ import tempfile
 import zipfile
 
 ROOT = Path(__file__).resolve().parent.parent
-SHOREBIRD_FLUTTER_VERSION = "3.47.7"
+SHOREBIRD_FLUTTER_VERSION = (ROOT / ".flutter-version").read_text().strip()
 PLAY_ASSET = "    - path: shorebird.yaml\n      flavors:\n        - play\n"
 
 
