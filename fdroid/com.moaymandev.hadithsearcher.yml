@@ -1,4 +1,10 @@
 AntiFeatures:
+  NonFreeNet:
+    en-US: Optional crash reports and analytics use Sentry and PostHog, disabled until
+      separate consent.
+  Tracking:
+    en-US: Optional crash reports and usage analytics are disabled by default and
+      require separate consent.
   TetheredNet:
     en-US: Search uses a hosted Dorar Hadith API endpoint that cannot be changed in
       the app settings.
@@ -16,9 +22,9 @@ RepoType: git
 Repo: https://github.com/MAymanKH/HadithSearcher.git
 
 Builds:
-  - versionName: 3.0.1
-    versionCode: 201
-    commit: 77d60159eb01b87a0d2f59535b0c1c170ea81c2d
+  - versionName: 3.0.2
+    versionCode: 211
+    commit: 3.0.2
     output: build/app/outputs/flutter-apk/app-armeabi-v7a-foss-release.apk
     binary:
       https://github.com/MAymanKH/HadithSearcher/releases/download/%v/HadithSearcher-%v+%c-foss-armeabi-v7a.apk
@@ -43,9 +49,9 @@ Builds:
         armeabi-v7a
     ndk: 29.0.13113456
 
-  - versionName: 3.0.1
-    versionCode: 202
-    commit: 77d60159eb01b87a0d2f59535b0c1c170ea81c2d
+  - versionName: 3.0.2
+    versionCode: 212
+    commit: 3.0.2
     output: build/app/outputs/flutter-apk/app-arm64-v8a-foss-release.apk
     binary:
       https://github.com/MAymanKH/HadithSearcher/releases/download/%v/HadithSearcher-%v+%c-foss-arm64-v8a.apk
@@ -70,9 +76,9 @@ Builds:
         arm64-v8a
     ndk: 29.0.13113456
 
-  - versionName: 3.0.1
-    versionCode: 203
-    commit: 77d60159eb01b87a0d2f59535b0c1c170ea81c2d
+  - versionName: 3.0.2
+    versionCode: 213
+    commit: 3.0.2
     output: build/app/outputs/flutter-apk/app-x86_64-foss-release.apk
     binary:
       https://github.com/MAymanKH/HadithSearcher/releases/download/%v/HadithSearcher-%v+%c-foss-x86_64.apk
@@ -132,5 +138,5 @@ VercodeOperation:
   - '%c+2'
   - '%c+3'
 UpdateCheckData: pubspec.yaml|version:\s.+\+(\d+)|.|version:\s(.+)\+
-CurrentVersion: 3.0.1
-CurrentVersionCode: 203
+CurrentVersion: 3.0.2
+CurrentVersionCode: 213

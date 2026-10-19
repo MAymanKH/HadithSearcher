@@ -1,0 +1,1 @@
+Pin the Flutter toolchain in the release source and declare optional Sentry/PostHog telemetry in the F-Droid listing. Crash reports and analytics remain disabled until separate consent.
