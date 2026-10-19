@@ -22,8 +22,9 @@ Repo: https://github.com/MAymanKH/HadithSearcher.git
 Builds:
   - versionName: 3.0.0
     versionCode: 19
-    commit: 787dfc48d0ea53cd146de77b649c57eb88e34946
-    submodules: true
+    commit: ea8f9e95471e086071bfe732b6a83347a926ce9e
+    srclibs:
+      - flutter@abaf9c523780a608bd46686fd5e53740a07077f8
     sudo:
       - apt-get update
       - apt-get install -y openjdk-21-jdk-headless
@@ -33,17 +34,14 @@ Builds:
     prebuild:
       - sed -i '/"playImplementation"/d' android/app/build.gradle.kts
       - export PUB_CACHE=$(pwd)/.pub-cache
-      - .flutter/bin/flutter config --no-analytics
-      - .flutter/bin/flutter pub get --enforce-lockfile
-    scanignore:
-      - .flutter/bin/cache
+      - $$flutter$$/bin/flutter config --no-analytics
+      - $$flutter$$/bin/flutter pub get --enforce-lockfile
     scandelete:
-      - .flutter
       - .pub-cache
     build:
       - export JAVA_HOME=/usr/lib/jvm/java-21-openjdk-amd64
       - export PUB_CACHE=$(pwd)/.pub-cache
-      - python3 scripts/build_fdroid_unsigned.py
+      - python3 scripts/build_fdroid_unsigned.py --flutter $$flutter$$/bin/flutter
     ndk: 29.0.13113456
 
 MaintainerNotes: |-
@@ -63,7 +61,7 @@ MaintainerNotes: |-
   The unsigned builder uses /var/tmp/hadithsearcher-fdroid for stable Dart URIs
   and disables the JNI native library build ID. Both upstream and recipe use it.
 
-  The .flutter submodule pins upstream Flutter 3.47.7. The fdroid flavor
+  The Flutter srclib pins upstream Flutter 3.47.7. The fdroid flavor
   excludes the Shorebird asset and does not enable the Play update implementation.
   Play-only sources and the Play dependency declaration are removed before scanning.
 
