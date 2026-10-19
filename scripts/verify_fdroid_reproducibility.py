@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parent.parent
 
 def verify(signed, unsigned, apksigner):
     metadata = (ROOT / "fdroid/com.moaymandev.hadithsearcher.yml").read_text()
-    key = re.search(r"^AllowedAPKSigningKeys:\n  - ([0-9a-f]{64})$", metadata, re.MULTILINE)
+    key = re.search(r"^AllowedAPKSigningKeys:(?:\n  -)?[ \t]+([0-9a-f]{64})$", metadata, re.MULTILINE)
     if key is None:
         raise RuntimeError("F-Droid recipe must pin one SHA-256 signing certificate")
     with tempfile.TemporaryDirectory(prefix="hadith-repro-") as directory:

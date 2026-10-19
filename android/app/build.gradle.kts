@@ -18,6 +18,7 @@ plugins {
 configure<ApplicationExtension> {
     namespace = "com.moaymandev.hadithsearcher"
     compileSdk = 37
+    compileSdkMinor = 0
     ndkVersion = "29.0.13113456"
 
     compileOptions {
