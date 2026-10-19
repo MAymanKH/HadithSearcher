@@ -1,3 +1,5 @@
+import com.android.build.api.dsl.LibraryExtension
+
 allprojects {
     repositories {
         google()
@@ -14,6 +16,15 @@ subprojects {
 }
 subprojects {
     project.evaluationDependsOn(":app")
+    plugins.withId("com.android.library") {
+        if (name == "jni") {
+            extensions.configure<LibraryExtension> {
+                defaultConfig.externalNativeBuild.cmake.arguments.add(
+                    "-DCMAKE_SHARED_LINKER_FLAGS=-Wl,--build-id=none"
+                )
+            }
+        }
+    }
 }
 
 tasks.register<Delete>("clean") {

@@ -7,6 +7,7 @@ from pathlib import Path
 import re
 import shutil
 import subprocess
+import sys
 import tempfile
 import zipfile
 
@@ -43,18 +44,17 @@ def keep_artifact(source, store, version):
 
 
 def build_unsigned_apk(*, channel="fdroid"):
-    run("flutter", "build", "apk", "--release", "--flavor", "fdroid",
-        f"--dart-define=UPDATE_CHANNEL={channel}")
+    if channel == "fdroid":
+        run(sys.executable, str(ROOT / "scripts/build_fdroid_unsigned.py"))
+    else:
+        run("flutter", "build", "apk", "--release", "--flavor", "fdroid",
+            f"--dart-define=UPDATE_CHANNEL={channel}")
     apk = ROOT / "build/app/outputs/flutter-apk/app-fdroid-release.apk"
     verify_artifact(apk, shorebird=False)
     return apk
 
 
-def build_fdroid(version):
-    keep_artifact(build_unsigned_apk(), "fdroid", version)
-
-
-def build_github(version):
+def build_signed_apk(version, *, channel):
     properties = dict(re.findall(
         r"^\s*(\w+)\s*=\s*(.*?)\s*$",
         (ROOT / "android/key.properties").read_text(), re.MULTILINE,
@@ -82,7 +82,7 @@ def build_github(version):
                   and (path / "zipalign").is_file()), None)
     if tools is None:
         raise RuntimeError("Install Android SDK Build Tools with apksigner and zipalign")
-    apk = build_unsigned_apk(channel="github")
+    apk = build_unsigned_apk(channel=channel)
     env = os.environ.copy()
     env["HADITH_STORE_PASSWORD"] = properties["storePassword"]
     env["HADITH_KEY_PASSWORD"] = properties["keyPassword"]
@@ -92,6 +92,8 @@ def build_github(version):
         run(str(tools / "zipalign"), "-P", "16", "-f", "4", str(apk), str(aligned))
         subprocess.run([
             str(tools / "apksigner"), "sign", "--ks", str(keystore),
+            "--alignment-preserved", "true",
+            "--v1-signing-enabled", "false",
             "--ks-key-alias", properties["keyAlias"],
             "--ks-pass", "env:HADITH_STORE_PASSWORD",
             "--key-pass", "env:HADITH_KEY_PASSWORD",
@@ -100,7 +102,7 @@ def build_github(version):
         run(str(tools / "apksigner"), "verify", "--verbose", str(signed))
         run(str(tools / "zipalign"), "-P", "16", "-c", "4", str(signed))
         verify_artifact(signed, shorebird=False)
-        keep_artifact(signed, "github", version)
+        keep_artifact(signed, channel, version)
 
 
 def build_play(version, dry_run, *, patch=False):
@@ -172,10 +174,9 @@ def main():
     version = re.search(r"^version:\s*(\S+)", (ROOT / "pubspec.yaml").read_text(), re.MULTILINE)
     if version is None:
         parser.error("pubspec.yaml has no version")
-    if args.store in ("fdroid", "all"):
-        build_fdroid(version.group(1))
-    if args.store in ("github", "all"):
-        build_github(version.group(1))
+    for channel in ("fdroid", "github"):
+        if args.store in (channel, "all"):
+            build_signed_apk(version.group(1), channel=channel)
     if args.store in ("play", "all"):
         build_play(version.group(1), args.dry_run)
     if args.store == "patch-play":
