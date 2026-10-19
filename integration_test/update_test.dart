@@ -13,27 +13,31 @@ import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
-  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  final binding = IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('each channel prompts using the installed Android build number', (
     tester,
   ) async {
     final info = await PackageInfo.fromPlatform();
-    final nextCode = int.parse(info.buildNumber) + 1;
+    final nextBase = (int.parse(info.buildNumber) ~/ 10 + 1) * 10;
     for (final channel in UpdateChannel.values) {
       final preferences = await SharedPreferences.getInstance();
       await preferences.remove('update_check_${channel.name}');
       Uri? opened;
       final updates = UpdateService(
         channel: channel,
-        playVersion: () async => nextCode,
+        playVersion: () async => nextBase,
         get: (url) async => http.Response(
           jsonEncode(
-            channel == UpdateChannel.fdroid
+            url.host == 'f-droid.org'
                 ? {
-                    'suggestedVersionCode': nextCode,
+                    'suggestedVersionCode': nextBase + 3,
                     'packages': [
-                      {'versionName': '99.0.0', 'versionCode': nextCode},
+                      for (var abi = 1; abi <= 3; abi++)
+                        {
+                          'versionName': '99.0.0',
+                          'versionCode': nextBase + abi,
+                        },
                     ],
                   }
                 : {
@@ -41,10 +45,16 @@ void main() {
                     'draft': false,
                     'prerelease': false,
                     'assets': [
-                      {
-                        'state': 'uploaded',
-                        'name': 'HadithSearcher-99.0.0+$nextCode-github.apk',
-                      },
+                      for (final entry in {
+                        'armeabi-v7a': 1,
+                        'arm64-v8a': 2,
+                        'x86_64': 3,
+                      }.entries)
+                        {
+                          'state': 'uploaded',
+                          'name':
+                              'HadithSearcher-99.0.0+${nextBase + entry.value}-foss-${entry.key}.apk',
+                        },
                     ],
                   },
           ),
@@ -82,12 +92,22 @@ void main() {
         findsOneWidget,
         reason: channel.name,
       );
-      await tester.tap(find.text('تحديث الآن'));
+      if (channel == UpdateChannel.foss) {
+        expect(find.text('GitHub'), findsOneWidget);
+        expect(find.text('F-Droid'), findsOneWidget);
+        if (const bool.fromEnvironment('UPDATE_SCREENSHOTS')) {
+          await binding.convertFlutterSurfaceToImage();
+          await tester.pumpAndSettle();
+          await binding.takeScreenshot('update-foss');
+        }
+      }
+      await tester.tap(
+        find.text(channel == UpdateChannel.play ? 'تحديث الآن' : 'GitHub'),
+      );
       await tester.pumpAndSettle();
       expect(opened!.host, switch (channel) {
         UpdateChannel.play => 'play.google.com',
-        UpdateChannel.fdroid => 'f-droid.org',
-        UpdateChannel.github => 'github.com',
+        UpdateChannel.foss => 'github.com',
       });
       await tester.pumpWidget(const SizedBox());
       updates.dispose();
@@ -98,6 +118,9 @@ void main() {
     'native update bridge is registered only with Play support in Play',
     (tester) async {
       const platform = MethodChannel('hadithsearcher/updates');
+      final abis = await platform.invokeListMethod<String>('supportedAbis');
+      expect(abis, isNotEmpty);
+      expect(abis!.first, isIn(['armeabi-v7a', 'arm64-v8a', 'x86_64']));
       if (appFlavor == 'play') {
         try {
           final code = await platform
@@ -116,11 +139,7 @@ void main() {
       }
       expect(
         buildUpdateChannel,
-        appFlavor == 'play'
-            ? UpdateChannel.play
-            : const String.fromEnvironment('UPDATE_CHANNEL') == 'github'
-            ? UpdateChannel.github
-            : UpdateChannel.fdroid,
+        appFlavor == 'play' ? UpdateChannel.play : UpdateChannel.foss,
       );
     },
   );

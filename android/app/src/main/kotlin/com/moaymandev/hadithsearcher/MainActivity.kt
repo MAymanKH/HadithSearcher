@@ -1,6 +1,7 @@
 package com.moaymandev.hadithsearcher
 
 import android.os.Bundle
+import android.os.Build
 import android.content.Intent
 import androidx.core.view.WindowCompat
 import io.flutter.embedding.android.FlutterActivity
@@ -42,7 +43,9 @@ class MainActivity : FlutterActivity() {
         super.configureFlutterEngine(flutterEngine)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "hadithsearcher/updates")
             .setMethodCallHandler { call, result ->
-                if (call.method == "availableVersionCode") {
+                if (call.method == "supportedAbis") {
+                    result.success(Build.SUPPORTED_ABIS.toList())
+                } else if (call.method == "availableVersionCode") {
                     DistributionUpdates.availableVersionCode(this, result)
                 } else {
                     result.notImplemented()

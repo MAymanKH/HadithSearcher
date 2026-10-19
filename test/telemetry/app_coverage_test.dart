@@ -57,7 +57,7 @@ void main() {
       playVersion: () async => throw StateError('Store unavailable'),
     );
     addTearDown(updates.dispose);
-    expect(await updates.check(), isNull);
+    expect(await updates.check(), isEmpty);
     expect(updates.failed, true);
     expect(backend.reports, ['updates.play.check']);
   });

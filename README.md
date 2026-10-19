@@ -73,7 +73,7 @@ cd HadithSearcher
 
 لتجربة خادم آخر، مرّر `--dart-define=HADITH_API_BASE_URL=https://your-api.example` إلى أمر التشغيل أو البناء.
 
-تفعّل نسخة Play تقارير الأعطال وتحليلات الاستخدام تلقائياً. تطلب نسختا F-Droid وGitHub موافقة منفصلة لكل خدمة. تفاصيل القياس والخصوصية واختبار وصول الأحداث: [Telemetry](docs/telemetry.md).
+تفعّل نسخة Play تقارير الأعطال وتحليلات الاستخدام تلقائياً. تطلب نسخة FOSS موافقة منفصلة لكل خدمة. تفاصيل القياس والخصوصية واختبار وصول الأحداث: [Telemetry](docs/telemetry.md).
 
 ### 3. تثبيت الاعتماديات
 
@@ -85,14 +85,14 @@ flutter pub get
 ### 4. تشغيل التطبيق
 
 ```bash
-flutter run --flavor fdroid
+flutter run --flavor foss
 # لتشغيل نسخة Google Play:
 flutter run --flavor play
 ```
 
 ### 5. بناء التطبيق
 
-لبناء نسخ Android الثلاث، جهّز متطلبات التوقيع وShorebird الموضحة أدناه، ثم شغّل:
+لبناء نسختَي Android، جهّز متطلبات التوقيع وShorebird الموضحة أدناه، ثم شغّل:
 
 ```bash
 ./scripts/release.py all
@@ -100,30 +100,27 @@ flutter run --flavor play
 
 ## بناء Android والتوزيع
 
-غيّر `version` في `pubspec.yaml` مرة واحدة لكل إصدار جديد، ثم شغّل `./scripts/release.py all`. تعرض صفحة حول التطبيق رقم الإصدار الفعلي. يتطلب السكربت Python 3، وFlutter، وShorebird عند بناء نسخة Play، مع تسجيل الدخول مسبقاً عبر `shorebird login`. يستخدم سكربت إصدار Play إصدار Flutter `3.47.7` عبر Shorebird.
+يوجد نوعان من البناء: `play` و`foss`. توزّع GitHub وF-Droid ملفات FOSS نفسها، ويتيح مربع التحديث اختيار المصدر مع عرض الإصدار المتاح لدى كل منهما. تختار تنزيلات GitHub المعمارية المناسبة للجهاز. لا تحتوي نسخة FOSS على Shorebird أو مكتبة تحديث Google Play، وتتطلب موافقة مستقلة للقياس الاختياري.
+
+غيّر `version` في `pubspec.yaml` لكل إصدار. يجب أن يقبل رقم البناء القسمة على 10، مثل `3.0.1+200` ثم `3.0.2+210`. تستخدم Play الرقم الأساسي، وتضيف FOSS الرقم 1 لمعمارية `armeabi-v7a`، و2 لمعمارية `arm64-v8a`، و3 لمعمارية `x86_64`. لذلك تكون أرقام ملفات FOSS في المثال الأول 201 و202 و203. يتجاهل فحص التحديث خانة المعمارية عند مقارنة الإصدارات.
+
+يتطلب السكربت Python 3 وFlutter، وShorebird لنسخة Play مع تسجيل الدخول عبر `shorebird login`. جهّز `android/key.properties` ومفتاح التوقيع المحلي، ولا تضمّن بيانات التوقيع الخاصة في المصدر. تتطلب FOSS أيضاً ملف `android/local.properties` مع `sdk.dir` وأداتي `apksigner` و`zipalign` من Android SDK Build Tools بإصدار 35 أو أحدث.
 
 | الأمر | الناتج |
 | --- | --- |
-| `./scripts/release.py play` | ملف AAB لنسخة Google Play، وتسجيل الإصدار في Shorebird |
-| `./scripts/release.py fdroid` | بناء ملف APK وتوقيعه للتحقق من نسخة F-Droid |
-| `./scripts/release.py github` | بناء ملف APK لنسخة GitHub وتوقيعه للتثبيت المباشر |
-| `./scripts/release.py all` | بناء نسخ F-Droid وGitHub وGoogle Play بالتتابع |
-| `./scripts/release.py play --dry-run` | بناء ملف Play دون تسجيل إصدار على الخادم |
-| `./scripts/release.py patch-play` | إرسال تحديث Dart لإصدار Play المحدد حالياً في `pubspec.yaml` |
+| `./scripts/release.py play` | ملف AAB لنسخة Google Play وتسجيل الإصدار في Shorebird |
+| `./scripts/release.py foss` | ثلاثة ملفات APK موقعة حسب المعمارية لتوزيعها على GitHub وF-Droid |
+| `./scripts/release.py all` | بناء FOSS وGoogle Play بالتتابع |
+| `./scripts/release.py play --dry-run` | بناء ملف Play دون تسجيل الإصدار على الخادم |
+| `./scripts/release.py patch-play` | إرسال تحديث Dart لإصدار Play المحدد في `pubspec.yaml` |
 
-يحفظ السكربت ملفات الإصدارات في `build/releases/play/` و`build/releases/fdroid/` و`build/releases/github/` بأسماء تتضمن رقم الإصدار. لا يرفع الملفات إلى Google Play أو F-Droid أو GitHub. لبناء النسخ الثلاث، جهّز ملف `android/key.properties` ومفتاح التوقيع المحلي. لا تُضمّن بيانات التوقيع الخاصة في المصدر.
+يحفظ السكربت الملفات في `build/releases/play/` و`build/releases/foss/` ولا يرفعها تلقائياً. مثال لاسم ملف FOSS: `HadithSearcher-3.0.1+202-foss-arm64-v8a.apk`. ارفع الملفات الثلاثة إلى إصدار GitHub ذي الوسم `3.0.1`. تستخدم F-Droid الملفات نفسها للتحقق من إعادة البناء ثم تنشرها بتوقيع المطوّر.
 
-يستخدم بناء Play مجلداً معزولاً داخل `build/hadith-play-*` لتجنّب حدود مساحة نظام الملفات المؤقت. وفّر عدة غيغابايت على نظام ملفات المشروع. يحذف السكربت المجلد بعد النجاح أو الفشل. إذا فشل بناء Play بعد اكتمال ملفات APK، أعد المحاولة بالأمر `./scripts/release.py play`.
+للبناء غير الموقّع شغّل `python3 scripts/build_foss_unsigned.py`. يمكن بناء معمارية واحدة بإضافة `--abi arm64-v8a`. الناتج هو `build/app/outputs/flutter-apk/app-<abi>-foss-release.apk`. يستخدم البناء المسار الثابت `/var/tmp/hadithsearcher-foss` ثم يحذفه لضمان تطابق مسارات Dart المضمّنة. وفّر عدة غيغابايت وشغّل بناء FOSS واحداً في كل مرة.
 
-يستخدم بناء Android عامل Gradle واحداً، ويشغّل مترجم Kotlin داخل JVM الخاص بـGradle بحد أقصى 2 GiB للـheap. ينتهي Gradle بعد كل بناء لتحرير الذاكرة بين خطوات الإصدار. تقلّل هذه الإعدادات استهلاك الذاكرة مقابل زيادة وقت البناء. إذا اختفت عملية Gradle، افحص سجل النظام بحثاً عن ضغط الذاكرة أو العمليات التي أنهى النظام تشغيلها.
+يجلب F-Droid نسخة Flutter المحددة في الوصفة دون وحدة فرعية في مستودع التطبيق. يستخدم البناء المحلي `flutter` من PATH، ويمكن اختيار SDK آخر عبر `FLUTTER_BIN=/path/to/flutter`. راجع [خطوات التحقق من إعادة البناء](README.en.md#build-android-releases) لكل معمارية.
 
-لا تحتوي نسخة F-Droid على محدّث Shorebird أو مكتبة تحديث Google Play. للبناء المباشر استخدم `python3 scripts/build_fdroid_unsigned.py`، والناتج هو `build/app/outputs/flutter-apk/app-fdroid-release.apk`.
-
-الناتج من أمر البناء المباشر غير موقّع ويُستخدم لإعادة البناء على خادم F-Droid. يجلب F-Droid نسخة Flutter المحددة في وصفة البناء دون وحدة فرعية في مستودع التطبيق. يستخدم البناء المحلي `flutter` من PATH، ويمكن اختيار SDK آخر عبر `FLUTTER_BIN=/path/to/flutter`. يستخدم البناء المسار الثابت `/var/tmp/hadithsearcher-fdroid` ثم يحذفه لضمان تطابق مسارات Dart المضمّنة؛ وفّر عدة غيغابايت وشغّل بناءً واحداً في كل مرة. لإنشاء ملف موقّع شغّل `./scripts/release.py fdroid`؛ يستخدم مفتاح التوقيع المحلي نفسه لنسخة GitHub ويحفظ الناتج في `build/releases/fdroid/`. تتطلب نسختا F-Droid وGitHub ملف `android/local.properties` مع `sdk.dir` وأداتي `apksigner` و`zipalign` من Android SDK Build Tools بإصدار 35 أو أحدث.
-
-ارفع الملف `HadithSearcher-<versionName>+<versionCode>-fdroid.apk` إلى إصدار GitHub ذي الوسم `<versionName>`. تشير وصفة F-Droid إليه عبر `Binaries` وتثبت بصمة شهادة التوقيع عبر `AllowedAPKSigningKeys`. ينشر F-Droid الملف الموقّع بمفتاح المطوّر بعد نجاح التحقق من تطابق إعادة البناء. تختلف قناة التحديث المضمّنة بين ملفي GitHub وF-Droid، لذلك يجب رفعهما معاً. راجع [خطوات التحقق من إعادة البناء](README.en.md#build-android-releases).
-
-للتثبيت المباشر مع قناة تحديث GitHub شغّل `./scripts/release.py github`. يتطلب الانتقال بين النسخ الثلاث شهادة توقيع واحدة و`versionCode` مساوياً أو أعلى من النسخة المثبّتة. يجب أن يطابق مفتاح توقيع التطبيق في Play المفتاح المحلي، وقد يختلف عن مفتاح رفع الملفات. الانتقال من نسخة موقّعة بمفتاح F-Droid الخاص إلى مفتاح المطوّر يتطلب إعادة تثبيت لمرة واحدة.
+يتطلب الانتقال بين Play وFOSS شهادة توقيع واحدة و`versionCode` مساوياً أو أعلى من النسخة المثبّتة. يجب أن يطابق مفتاح توقيع التطبيق في Play المفتاح المحلي. داخل الإصدار نفسه يكون رقم FOSS أعلى من رقم Play الأساسي، لذا تتطلب العودة إلى Play إصداراً أحدث. ملفات GitHub وF-Droid متطابقة لكل معمارية.
 
 ## التحقق من المشروع
 
@@ -147,7 +144,7 @@ flutter test test/filter_catalog_live_test.dart --dart-define=VERIFY_LIVE_FILTER
 ```bash
 flutter drive --driver=test_driver/api_capabilities.dart \
   --target=integration_test/api_capabilities_test.dart \
-  -d emulator-5554 --flavor fdroid \
+  -d emulator-5554 --flavor foss \
   --dart-define=HADITH_API_BASE_URL=http://127.0.0.1:8717 \
   --dart-define=API_SCREENSHOTS=true
 ```

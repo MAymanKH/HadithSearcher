@@ -830,6 +830,12 @@ abstract class AppLocalizations {
   /// **'You are using the latest version.'**
   String get upToDate;
 
+  /// No description provided for @chooseUpdateSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose where to update. Each source shows its available version.'**
+  String get chooseUpdateSource;
+
   /// No description provided for @updateAvailable.
   ///
   /// In en, this message translates to:

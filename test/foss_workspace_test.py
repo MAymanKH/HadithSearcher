@@ -1,4 +1,4 @@
-"""Exercise the fixed-path F-Droid workspace without invoking Flutter."""
+"""Exercise the fixed-path FOSS workspace without invoking Flutter."""
 
 import importlib.util
 from pathlib import Path
@@ -8,13 +8,13 @@ import unittest
 from unittest.mock import patch
 
 spec = importlib.util.spec_from_file_location(
-    "fdroid_build", Path(__file__).resolve().parents[1] / "scripts/build_fdroid_unsigned.py"
+    "foss_build", Path(__file__).resolve().parents[1] / "scripts/build_foss_unsigned.py"
 )
 build = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(build)
 
 
-class FdroidWorkspaceTest(unittest.TestCase):
+class FossWorkspaceTest(unittest.TestCase):
     def test_workspace_is_unsigned_and_cleaned_on_success_or_failure(self):
         for failure in (False, True):
             with self.subTest(failure=failure), tempfile.TemporaryDirectory() as directory:
@@ -42,12 +42,14 @@ class FdroidWorkspaceTest(unittest.TestCase):
                     self.assertEqual((workspace / "android/app/build.gradle.kts").read_text(), "keep\n")
                     self.assertFalse((workspace / ".flutter").exists())
                     if args[1] == "build":
-                        self.assertIn("--dart-define=UPDATE_CHANNEL=fdroid", args)
+                        self.assertIn("foss", args)
+                        self.assertIn("--split-per-abi", args)
                         if failure:
                             raise subprocess.CalledProcessError(1, args)
-                        output = workspace / build.OUTPUT
-                        output.parent.mkdir(parents=True)
-                        output.write_bytes(b"unsigned APK")
+                        for path in build.OUTPUTS.values():
+                            output = workspace / path
+                            output.parent.mkdir(parents=True, exist_ok=True)
+                            output.write_bytes(b"unsigned APK")
                     else:
                         self.assertEqual(args[1:], ["pub", "get", "--enforce-lockfile"])
 
@@ -62,10 +64,10 @@ class FdroidWorkspaceTest(unittest.TestCase):
                     if failure:
                         with self.assertRaises(subprocess.CalledProcessError):
                             build.main(root / "sdk/bin/flutter")
-                        self.assertFalse((root / build.OUTPUT).exists())
+                        self.assertTrue(all(not (root / path).exists() for path in build.OUTPUTS.values()))
                     else:
                         build.main()
-                        self.assertEqual((root / build.OUTPUT).read_bytes(), b"unsigned APK")
+                        self.assertTrue(all((root / path).read_bytes() == b"unsigned APK" for path in build.OUTPUTS.values()))
                 self.assertFalse(workspace.exists())
 
     def test_existing_workspace_is_left_untouched(self):

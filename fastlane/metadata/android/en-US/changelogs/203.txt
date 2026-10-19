@@ -1,0 +1,1 @@
+One FOSS build for GitHub and F-Droid, with separate APKs for ARMv7, ARM64, and x86_64. The update dialog checks both sources and offers the compatible GitHub download or F-Droid page.

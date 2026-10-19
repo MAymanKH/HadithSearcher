@@ -20,11 +20,14 @@ def run(*args, cwd=ROOT):
     subprocess.run(args, cwd=cwd, check=True)
 
 
-def verify_artifact(path, *, shorebird):
+def verify_artifact(path, *, shorebird, abi=None):
     with zipfile.ZipFile(path) as artifact:
         names = artifact.namelist()
         configs = [name for name in names if name.endswith("/shorebird.yaml")]
         engines = [name for name in names if name.endswith("/libflutter.so")]
+        native_abis = {name.split("/")[1] for name in names if name.startswith("lib/") and name.endswith(".so")}
+        if abi is not None and native_abis != {abi}:
+            raise RuntimeError(f"Expected only {abi} native libraries, found {native_abis}")
         if not engines:
             raise RuntimeError("The artifact has no Flutter engine")
         if bool(configs) != shorebird:
@@ -35,26 +38,26 @@ def verify_artifact(path, *, shorebird):
                 raise RuntimeError("Unexpected Flutter engine in artifact")
 
 
-def keep_artifact(source, store, version):
+def keep_artifact(source, store, version, *, abi=None):
     destination = ROOT / "build" / "releases" / store
     destination.mkdir(parents=True, exist_ok=True)
-    target = destination / f"HadithSearcher-{version}-{store}{source.suffix}"
+    target = destination / f"HadithSearcher-{version}-{store}{'-' + abi if abi else ''}{source.suffix}"
     shutil.copy2(source, target)
     print(f"Release artifact: {target}", flush=True)
 
 
-def build_unsigned_apk(*, channel="fdroid"):
-    if channel == "fdroid":
-        run(sys.executable, str(ROOT / "scripts/build_fdroid_unsigned.py"))
-    else:
-        run("flutter", "build", "apk", "--release", "--flavor", "fdroid",
-            f"--dart-define=UPDATE_CHANNEL={channel}")
-    apk = ROOT / "build/app/outputs/flutter-apk/app-fdroid-release.apk"
-    verify_artifact(apk, shorebird=False)
-    return apk
+ABI_CODES = {"armeabi-v7a": 1, "arm64-v8a": 2, "x86_64": 3}
 
 
-def build_signed_apk(version, *, channel):
+def build_unsigned_apks():
+    run(sys.executable, str(ROOT / "scripts/build_foss_unsigned.py"))
+    apks = {abi: ROOT / f"build/app/outputs/flutter-apk/app-{abi}-foss-release.apk" for abi in ABI_CODES}
+    for abi, apk in apks.items():
+        verify_artifact(apk, shorebird=False, abi=abi)
+    return apks
+
+
+def build_foss(version):
     properties = dict(re.findall(
         r"^\s*(\w+)\s*=\s*(.*?)\s*$",
         (ROOT / "android/key.properties").read_text(), re.MULTILINE,
@@ -82,27 +85,29 @@ def build_signed_apk(version, *, channel):
                   and (path / "zipalign").is_file()), None)
     if tools is None:
         raise RuntimeError("Install Android SDK Build Tools with apksigner and zipalign")
-    apk = build_unsigned_apk(channel=channel)
+    apks = build_unsigned_apks()
+    name, base_code = version.split("+")
     env = os.environ.copy()
     env["HADITH_STORE_PASSWORD"] = properties["storePassword"]
     env["HADITH_KEY_PASSWORD"] = properties["keyPassword"]
-    with tempfile.TemporaryDirectory(prefix="hadith-sign-") as directory:
-        aligned = Path(directory) / "aligned.apk"
-        signed = Path(directory) / "signed.apk"
-        run(str(tools / "zipalign"), "-P", "16", "-f", "4", str(apk), str(aligned))
-        subprocess.run([
-            str(tools / "apksigner"), "sign", "--ks", str(keystore),
-            "--alignment-preserved", "true",
-            "--v1-signing-enabled", "false",
-            "--ks-key-alias", properties["keyAlias"],
-            "--ks-pass", "env:HADITH_STORE_PASSWORD",
-            "--key-pass", "env:HADITH_KEY_PASSWORD",
-            "--out", str(signed), str(aligned),
-        ], cwd=ROOT, env=env, check=True)
-        run(str(tools / "apksigner"), "verify", "--verbose", str(signed))
-        run(str(tools / "zipalign"), "-P", "16", "-c", "4", str(signed))
-        verify_artifact(signed, shorebird=False)
-        keep_artifact(signed, channel, version)
+    for abi, apk in apks.items():
+        with tempfile.TemporaryDirectory(prefix="hadith-sign-") as directory:
+            aligned = Path(directory) / "aligned.apk"
+            signed = Path(directory) / "signed.apk"
+            run(str(tools / "zipalign"), "-P", "16", "-f", "4", str(apk), str(aligned))
+            subprocess.run([
+                str(tools / "apksigner"), "sign", "--ks", str(keystore),
+                "--alignment-preserved", "true",
+                "--v1-signing-enabled", "false",
+                "--ks-key-alias", properties["keyAlias"],
+                "--ks-pass", "env:HADITH_STORE_PASSWORD",
+                "--key-pass", "env:HADITH_KEY_PASSWORD",
+                "--out", str(signed), str(aligned),
+            ], cwd=ROOT, env=env, check=True)
+            run(str(tools / "apksigner"), "verify", "--verbose", str(signed))
+            run(str(tools / "zipalign"), "-P", "16", "-c", "4", str(signed))
+            verify_artifact(signed, shorebird=False, abi=abi)
+            keep_artifact(signed, "foss", f"{name}+{int(base_code) + ABI_CODES[abi]}", abi=abi)
 
 
 def build_play(version, dry_run, *, patch=False):
@@ -120,7 +125,7 @@ def build_play(version, dry_run, *, patch=False):
         raise RuntimeError("The configured signing keystore does not exist")
 
     # Shorebird's asset validator requires a plain asset entry. Build in a
-    # separate directory so the F-Droid manifest always excludes that asset.
+    # separate directory so the FOSS manifest always excludes that asset.
     # Android intermediates can exceed the system temporary filesystem's quota.
     build_directory = ROOT / "build"
     build_directory.mkdir(parents=True, exist_ok=True)
@@ -168,15 +173,16 @@ def build_play(version, dry_run, *, patch=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("store", choices=["play", "fdroid", "all", "patch-play", "github"], nargs="?", default="all")
+    parser.add_argument("store", choices=["play", "foss", "all", "patch-play"], nargs="?", default="all")
     parser.add_argument("--dry-run", action="store_true", help="Build Play without registering a Shorebird release")
     args = parser.parse_args()
     version = re.search(r"^version:\s*(\S+)", (ROOT / "pubspec.yaml").read_text(), re.MULTILINE)
     if version is None:
         parser.error("pubspec.yaml has no version")
-    for channel in ("fdroid", "github"):
-        if args.store in (channel, "all"):
-            build_signed_apk(version.group(1), channel=channel)
+    if int(version.group(1).split("+")[1]) % 10 != 0:
+        parser.error("The versionCode must be divisible by 10; the last digit identifies the ABI")
+    if args.store in ("foss", "all"):
+        build_foss(version.group(1))
     if args.store in ("play", "all"):
         build_play(version.group(1), args.dry_run)
     if args.store == "patch-play":

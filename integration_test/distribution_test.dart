@@ -14,7 +14,7 @@ void main() {
     tester,
   ) async {
     final isPlay = appFlavor == 'play';
-    expect(appFlavor, isIn(['play', 'fdroid']));
+    expect(appFlavor, isIn(['play', 'foss']));
     final preferences = await SharedPreferences.getInstance();
     await preferences.clear();
     final backend = FakeBackend();

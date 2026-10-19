@@ -1,4 +1,7 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hadithsearcher/services/update_service.dart';
@@ -104,4 +107,71 @@ void main() {
       findsOneWidget,
     );
   });
+  for (final source in [UpdateSource.github, UpdateSource.fdroid]) {
+    testWidgets('FOSS popup lets the user choose ${source.label}', (
+      tester,
+    ) async {
+      tester.view.physicalSize = const Size(360, 720);
+      tester.view.devicePixelRatio = 1;
+      tester.platformDispatcher.textScaleFactorTestValue = 1.5;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+      addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
+      Uri? opened;
+      await showApp(
+        tester,
+        UpdateService(
+          channel: UpdateChannel.foss,
+          packageInfo: () async => PackageInfo(
+            appName: 'test',
+            packageName: UpdateService.packageName,
+            version: '3.0.1',
+            buildNumber: '202',
+          ),
+          supportedAbis: () async => ['arm64-v8a'],
+          get: (url) async => http.Response(
+            jsonEncode(
+              url.host == 'api.github.com'
+                  ? {
+                      'tag_name': '3.0.2',
+                      'draft': false,
+                      'prerelease': false,
+                      'assets': [
+                        {
+                          'state': 'uploaded',
+                          'name': 'HadithSearcher-3.0.2+212-foss-arm64-v8a.apk',
+                        },
+                      ],
+                    }
+                  : {
+                      'suggestedVersionCode': 223,
+                      'packages': [
+                        {'versionCode': 222, 'versionName': '3.0.3'},
+                      ],
+                    },
+            ),
+            200,
+          ),
+          openUrl: (url) async {
+            opened = url;
+            return true;
+          },
+        ),
+      );
+      expect(find.text('GitHub'), findsOneWidget);
+      expect(find.text('F-Droid'), findsOneWidget);
+      expect(find.textContaining('3.0.2'), findsOneWidget);
+      expect(find.textContaining('3.0.3'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+      await tester.ensureVisible(find.text(source.label));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(source.label));
+      await tester.pumpAndSettle();
+      expect(
+        opened!.host,
+        source == UpdateSource.github ? 'github.com' : 'f-droid.org',
+      );
+      expect(find.byType(AlertDialog), findsNothing);
+    });
+  }
 }

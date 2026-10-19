@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build an unsigned F-Droid APK at a stable path for Dart's generated URIs."""
+"""Build unsigned ABI-specific FOSS APKs at a stable path for Dart's generated URIs."""
 
 import argparse
 import os
@@ -8,11 +8,13 @@ import shutil
 import subprocess
 
 ROOT = Path(__file__).resolve().parent.parent
-WORKSPACE = Path("/var/tmp/hadithsearcher-fdroid")
-OUTPUT = Path("build/app/outputs/flutter-apk/app-fdroid-release.apk")
+WORKSPACE = Path("/var/tmp/hadithsearcher-foss")
+ABIS = {"armeabi-v7a": "android-arm", "arm64-v8a": "android-arm64", "x86_64": "android-x64"}
+OUTPUTS = {abi: Path(f"build/app/outputs/flutter-apk/app-{abi}-foss-release.apk") for abi in ABIS}
 
 
-def main(flutter=None):
+def main(flutter=None, abi=None):
+    abis = [abi] if abi else list(ABIS)
     executable = shutil.which(str(flutter or os.environ.get("FLUTTER_BIN", "flutter")))
     if executable is None:
         raise RuntimeError("Install Flutter on PATH or specify --flutter /path/to/flutter")
@@ -40,13 +42,14 @@ def main(flutter=None):
         ) + "\n")
         for args in (
             ["pub", "get", "--enforce-lockfile"],
-            ["build", "apk", "--release", "--flavor", "fdroid",
-             "--dart-define=UPDATE_CHANNEL=fdroid"],
+            ["build", "apk", "--release", "--flavor", "foss", "--split-per-abi",
+             "--target-platform=" + ",".join(ABIS[item] for item in abis)],
         ):
             subprocess.run([str(flutter), *args], cwd=WORKSPACE, check=True)
-        destination = ROOT / OUTPUT
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(WORKSPACE / OUTPUT, destination)
+        for item in abis:
+            destination = ROOT / OUTPUTS[item]
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(WORKSPACE / OUTPUTS[item], destination)
     finally:
         shutil.rmtree(WORKSPACE)
 
@@ -54,8 +57,9 @@ def main(flutter=None):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--flutter", help="Flutter executable; defaults to FLUTTER_BIN or PATH")
+    parser.add_argument("--abi", choices=list(ABIS), help="Build only this ABI; defaults to all three")
     args = parser.parse_args()
     try:
-        main(args.flutter)
+        main(args.flutter, args.abi)
     except (OSError, RuntimeError, subprocess.CalledProcessError) as error:
         raise SystemExit(str(error)) from error

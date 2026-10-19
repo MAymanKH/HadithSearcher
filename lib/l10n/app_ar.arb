@@ -122,6 +122,7 @@
   "analyticsFailed": "تعذر تشغيل إحصاءات الاستخدام حالياً.",
   "updateCheckFailed": "تعذر التحقق من التحديثات. حاول مرة أخرى لاحقاً.",
   "upToDate": "أنت تستخدم أحدث إصدار متاح.",
+  "chooseUpdateSource": "اختر مصدر التحديث. يظهر الإصدار المتاح لدى كل مصدر.",
   "updateAvailable": "تحديث جديد متاح",
   "playUpdateAvailable": "يتوفر تحديث جديد للتطبيق على Google Play.",
   "later": "لاحقاً",

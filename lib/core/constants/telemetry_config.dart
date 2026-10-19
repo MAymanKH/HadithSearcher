@@ -1,10 +1,6 @@
 import 'package:flutter/services.dart';
 
-const telemetryDistribution = appFlavor == 'play'
-    ? 'play'
-    : String.fromEnvironment('UPDATE_CHANNEL') == 'github'
-    ? 'github'
-    : 'fdroid';
+const telemetryDistribution = appFlavor == 'play' ? 'play' : 'foss';
 
 const sentryDsn = String.fromEnvironment(
   'SENTRY_DSN',

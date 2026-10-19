@@ -122,6 +122,7 @@
   "analyticsFailed": "Usage analytics are currently unavailable.",
   "updateCheckFailed": "Could not check for updates. Try again later.",
   "upToDate": "You are using the latest version.",
+  "chooseUpdateSource": "Choose where to update. Each source shows its available version.",
   "updateAvailable": "Update available",
   "playUpdateAvailable": "An app update is available on Google Play.",
   "later": "Later",

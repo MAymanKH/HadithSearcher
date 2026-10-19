@@ -71,7 +71,7 @@ The default API URL is in `lib/core/constants/app_config.dart`. Public Sentry an
 
 To use another API server, pass `--dart-define=HADITH_API_BASE_URL=https://your-api.example` to the run or build command.
 
-Play builds enable crash reports and usage analytics automatically. F-Droid and GitHub builds request separate consent for each service. See [Telemetry](docs/telemetry.md) for configuration, privacy details, and delivery checks.
+Play builds enable crash reports and usage analytics automatically. FOSS builds request separate consent for each service. See [Telemetry](docs/telemetry.md) for configuration, privacy details, and delivery checks.
 
 ### 3. Install dependencies
 
@@ -83,7 +83,7 @@ flutter pub get
 ### 4. Run the app
 
 ```bash
-flutter run --flavor fdroid
+flutter run --flavor foss
 ```
 
 To run the Google Play flavor:
@@ -94,55 +94,52 @@ flutter run --flavor play
 
 ## Build Android releases
 
-Update `version` in `pubspec.yaml` once for each new release. The About page displays the actual app version.
+The two flavors are `play` and `foss`. The same FOSS APKs are distributed on GitHub and F-Droid. Their update dialog checks both sources and lets the user choose an available update. GitHub downloads select the device ABI. The FOSS flavor excludes Shorebird and the Google Play update library, and requires separate telemetry consent.
 
-The release script requires Python 3 and Flutter. F-Droid fetches its Flutter SDK through the build recipe; the app repository has no SDK submodule. Play releases also require Shorebird and a prior login with `shorebird login`. The script uses Flutter `3.47.7` through Shorebird for Play releases.
+Set `version` in `pubspec.yaml` for each release. Reserve the last version-code digit for ABI variants: use base codes divisible by 10, such as `3.0.1+200`, then `3.0.2+210`. Play uses the base code. FOSS adds 1 for `armeabi-v7a`, 2 for `arm64-v8a`, or 3 for `x86_64`, producing codes 201, 202, and 203 for the first example. The FOSS updater compares release codes without the ABI digit.
 
-For all three releases, prepare `android/key.properties` and a local signing keystore. The properties file must contain `storeFile`, `storePassword`, `keyAlias`, and `keyPassword`. Relative keystore paths resolve from `android/app/`. Keep signing credentials out of version control.
+Prepare `android/key.properties` with `storeFile`, `storePassword`, `keyAlias`, and `keyPassword`, and a local signing keystore. Relative keystore paths resolve from `android/app/`. Keep signing credentials out of version control. FOSS builds also require `android/local.properties` with `sdk.dir` and Android SDK Build Tools 35 or newer containing `apksigner` and `zipalign`.
 
-F-Droid and GitHub releases also require `android/local.properties` with `sdk.dir` and Android SDK Build Tools 35 or newer containing `apksigner` and `zipalign`.
+The release script requires Python 3 and Flutter. Play releases require Shorebird and a prior `shorebird login`, and use Flutter `3.47.7` through Shorebird.
 
 | Command | Result |
 | --- | --- |
-| `./scripts/release.py play` | Build a Google Play AAB and register the release with Shorebird. |
-| `./scripts/release.py fdroid` | Build and sign an APK for F-Droid verification. |
-| `./scripts/release.py github` | Build and sign an APK for direct installation. |
-| `./scripts/release.py all` | Build F-Droid, GitHub, and Google Play releases in sequence. |
-| `./scripts/release.py play --dry-run` | Build the Play bundle without registering a release with Shorebird. |
-| `./scripts/release.py patch-play` | Send a Dart update for the Play release version currently specified in `pubspec.yaml`. |
+| `./scripts/release.py play` | Build a Google Play AAB and register it with Shorebird. |
+| `./scripts/release.py foss` | Build and sign three ABI APKs for GitHub and F-Droid. |
+| `./scripts/release.py all` | Build FOSS and Google Play releases in sequence. |
+| `./scripts/release.py play --dry-run` | Build the Play bundle without registering it with Shorebird. |
+| `./scripts/release.py patch-play` | Send a Dart update for the Play release in `pubspec.yaml`. |
 
-Artifacts are saved in `build/releases/play/`, `build/releases/fdroid/`, and `build/releases/github/`, with the version in each filename. The script does not upload artifacts to Google Play, F-Droid, or GitHub.
+Outputs are saved in `build/releases/play/` and `build/releases/foss/`. The script does not upload files. FOSS filenames include the actual APK version code and ABI, for example `HadithSearcher-3.0.1+202-foss-arm64-v8a.apk`. Publish all three APKs on the GitHub release tagged `3.0.1`. F-Droid uses those same signed assets as reference binaries and publishes them after reproducing the build and verifying the pinned signing certificate.
 
-Play builds use an isolated workspace under `build/hadith-play-*` to avoid system temporary filesystem quotas. Keep several GiB free on the project filesystem. The script removes the workspace after success or failure. If Play fails after the APKs finish, retry with `./scripts/release.py play`.
-
-Android builds use one Gradle worker and compile Kotlin in the Gradle JVM with a 2 GiB heap limit. Gradle exits after each build to release memory between release steps. These settings reduce memory use at the cost of build speed. If the Gradle daemon disappears, check the system journal for memory pressure or processes terminated by the system.
-
-The F-Droid flavor excludes the Shorebird updater and Google Play update library. To build it directly:
+For unsigned rebuilds, run:
 
 ```bash
-python3 scripts/build_fdroid_unsigned.py
+python3 scripts/build_foss_unsigned.py
+# Build only one architecture:
+python3 scripts/build_foss_unsigned.py --abi arm64-v8a
 ```
 
-The output is `build/app/outputs/flutter-apk/app-fdroid-release.apk`. This build is unsigned and is used by the F-Droid build server. Both the release script and recipe build in `/var/tmp/hadithsearcher-fdroid`, then remove the workspace. This fixed path keeps generated Dart library URIs identical. The JNI native library disables its path-dependent build ID. Keep several GiB free and run one F-Droid build at a time. If a killed process leaves the workspace behind, remove it after confirming no build is running. To produce the signed upstream APK, use `./scripts/release.py fdroid`. It selects `UPDATE_CHANNEL=fdroid` and signs with the same local key as GitHub releases. The script preserves ZIP alignment during signing so F-Droid can copy the signature. It uses v2/v3 signatures and disables legacy v1 signing; the app requires Android 7.0 or newer.
+Outputs are `build/app/outputs/flutter-apk/app-<abi>-foss-release.apk`. Both the release script and F-Droid recipe use this builder. It builds in `/var/tmp/hadithsearcher-foss` to keep generated Dart URIs stable, disables the JNI native library's path-dependent build ID, and removes the workspace afterward. Keep several GiB free and run one FOSS build at a time. If a killed process leaves the workspace behind, remove it after confirming no build is running. Signing preserves ZIP alignment and uses v2/v3 signatures without legacy v1 signing.
 
-For direct installation, use `./scripts/release.py github`. This command builds from source using the F-Droid flavor, selects the GitHub update channel, and signs the APK. It does not require an existing F-Droid build. The signed output is `build/releases/github/HadithSearcher-<version>-github.apk`, and the script verifies its signature.
+Use the recipe's Flutter revision, source commit, and Android toolchain for reference APKs and rebuilds. F-Droid fetches Flutter through its srclib mechanism; the app repository has no SDK submodule. Set `FLUTTER_BIN=/path/to/flutter` for local builds, or pass `--flutter` to the unsigned builder. Use a detached SDK checkout at the pinned revision because Flutter embeds channel metadata.
 
-Publish `build/releases/fdroid/HadithSearcher-<versionName>+<versionCode>-fdroid.apk` as an asset on the GitHub release tagged `<versionName>`, for example `3.0.0`. The F-Droid recipe uses that exact URL through `Binaries` and pins the signing certificate with `AllowedAPKSigningKeys`. Upload the F-Droid asset alongside the GitHub APK; their embedded update channels differ, so they cannot substitute for each other.
-
-F-Droid publishes the upstream-signed APK only after its rebuild matches. Use the recipe's Flutter revision, source commit, and Android toolchain for both builds. Local builds use `flutter` from PATH; set `FLUTTER_BIN=/path/to/flutter` to select another SDK. F-Droid passes its source-library SDK to the unsigned builder with `--flutter`. For reference APKs, use a detached checkout of that revision too; Flutter embeds channel metadata, so an SDK on a named branch can produce a different binary. Before submitting the recipe, check a fresh unsigned rebuild against the signed release:
+Before updating the recipe, verify each signed APK against a fresh unsigned build:
 
 ```bash
 python3 -m venv /tmp/hadith-repro-check
 /tmp/hadith-repro-check/bin/pip install apksigcopier
 /tmp/hadith-repro-check/bin/python scripts/verify_fdroid_reproducibility.py \
-  build/releases/fdroid/HadithSearcher-3.0.0+19-fdroid.apk \
-  path/to/rebuilt-unsigned.apk \
+  build/releases/foss/HadithSearcher-3.0.1+202-foss-arm64-v8a.apk \
+  build/app/outputs/flutter-apk/app-arm64-v8a-foss-release.apk \
   --apksigner "$ANDROID_HOME/build-tools/37.0.0/apksigner"
 ```
 
-The check copies the upstream signature onto the unsigned rebuild, verifies it, and checks the certificate against the recipe. A local match does not replace verification on F-Droid's build server. The recipe's pinned commit must correspond to the published APK; update it when preparing a new release. Format submission metadata with the fdroidserver and YAML library versions used by F-Droid CI, since released tooling can wrap long URLs differently.
+The check copies the upstream signature onto the rebuild, verifies it, and checks the certificate against the recipe. Local verification does not replace F-Droid's build-server verification. Pin the source commit matching the published APKs. Each ABI has its own recipe build and binary URL. `VercodeOperation` adds the ABI suffix to the base code when checking for updates. Format submission metadata with the fdroidserver and YAML versions used by F-Droid CI.
 
-Switching between installed Play, GitHub, and F-Droid builds requires the same app signing certificate and an equal or higher `versionCode`. Play's app signing key must match the local key, even when its upload key differs. Existing installations signed with F-Droid's own key need a one-time reinstall to move to the developer key.
+Play builds use an isolated workspace under `build/hadith-play-*`. Android builds use one Gradle worker and compile Kotlin in the Gradle JVM with a 2 GiB heap limit. Gradle exits after each build. Keep several GiB free; if a daemon disappears, check the system journal for memory pressure. If Play fails after FOSS finishes, retry with `./scripts/release.py play`.
+
+Switching between Play and FOSS requires the same app signing certificate and an equal or higher installed `versionCode`. Play's app signing key must match the local key, even when its upload key differs. Within a release, a FOSS ABI code is higher than Play's base code, so moving back to Play requires a newer release. GitHub and F-Droid distribute identical APKs for each ABI.
 
 ## Verify the project
 
@@ -166,7 +163,7 @@ The following integration test starts a local fixture server and clears app pref
 ```bash
 flutter drive --driver=test_driver/api_capabilities.dart \
   --target=integration_test/api_capabilities_test.dart \
-  -d emulator-5554 --flavor fdroid \
+  -d emulator-5554 --flavor foss \
   --dart-define=HADITH_API_BASE_URL=http://127.0.0.1:8717 \
   --dart-define=API_SCREENSHOTS=true
 ```

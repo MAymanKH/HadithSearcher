@@ -384,6 +384,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get upToDate => 'You are using the latest version.';
 
   @override
+  String get chooseUpdateSource =>
+      'Choose where to update. Each source shows its available version.';
+
+  @override
   String get updateAvailable => 'Update available';
 
   @override

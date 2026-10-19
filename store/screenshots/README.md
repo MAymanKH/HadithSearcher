@@ -44,7 +44,7 @@ adb -s emulator-5554 shell wm size reset
 adb -s emulator-5554 shell wm density reset
 flutter drive --driver=test_driver/store_screenshots.dart \
   --target=integration_test/store_screenshots_test.dart \
-  -d emulator-5554 --flavor fdroid \
+  -d emulator-5554 --flavor foss \
   --dart-define=HADITH_API_BASE_URL=http://127.0.0.1:8717
 ```
 

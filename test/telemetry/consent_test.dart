@@ -72,13 +72,13 @@ void main() {
       expect(await service.save(diagnostics: false, analytics: false), false);
       expect(service.analyticsEnabled && service.diagnosticsEnabled, true);
       expect(preferences.getString(TelemetryService.consentKey), declined);
-      final fdroid = TelemetryService(
+      final foss = TelemetryService(
         preferences: preferences,
         backend: FakeBackend(),
       );
-      await fdroid.initialize();
-      expect(fdroid.analyticsEnabled || fdroid.diagnosticsEnabled, false);
-      fdroid.dispose();
+      await foss.initialize();
+      expect(foss.analyticsEnabled || foss.diagnosticsEnabled, false);
+      foss.dispose();
     },
   );
 
@@ -94,14 +94,14 @@ void main() {
       );
       await service.initialize();
       expect(preferences.containsKey(TelemetryService.consentKey), false);
-      final fdroid = TelemetryService(
+      final foss = TelemetryService(
         preferences: preferences,
         backend: FakeBackend(),
       );
-      await fdroid.initialize();
-      expect(fdroid.needsConsent, true);
-      expect(fdroid.analyticsEnabled || fdroid.diagnosticsEnabled, false);
-      fdroid.dispose();
+      await foss.initialize();
+      expect(foss.needsConsent, true);
+      expect(foss.analyticsEnabled || foss.diagnosticsEnabled, false);
+      foss.dispose();
     },
   );
 
@@ -199,14 +199,7 @@ void main() {
   test('SDK metadata separates development and distribution channels', () {
     final backend = SdkTelemetryBackend();
     expect(backend.environment, 'development');
-    expect(
-      backend.distribution,
-      appFlavor == 'play'
-          ? 'play'
-          : const String.fromEnvironment('UPDATE_CHANNEL') == 'github'
-          ? 'github'
-          : 'fdroid',
-    );
+    expect(backend.distribution, appFlavor == 'play' ? 'play' : 'foss');
   });
 
   test('corrupted or old consent never enables collection', () {

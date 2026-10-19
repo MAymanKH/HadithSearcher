@@ -10,9 +10,9 @@ Future<void> checkForUpdates(
   bool automatic = false,
 }) async {
   final service = context.read<UpdateService>();
-  final update = await service.check(automatic: automatic);
+  final updates = await service.check(automatic: automatic);
   if (!context.mounted) return;
-  if (update == null) {
+  if (updates.isEmpty) {
     if (!automatic) {
       showAppSnackBar(
         context,
@@ -27,30 +27,50 @@ Future<void> checkForUpdates(
     }
     return;
   }
-  final accepted = await showDialog<bool>(
+  final isPlay =
+      updates.length == 1 && updates.first.source == UpdateSource.play;
+  final selected = await showDialog<Uri>(
     context: context,
     builder: (context) => AlertDialog(
       title: Text(context.l10n.updateAvailable),
-      content: Text(
-        update.version == null
-            ? context.l10n.playUpdateAvailable
-            : context.l10n.versionAvailable(update.version!),
-      ),
+      content: isPlay
+          ? Text(context.l10n.playUpdateAvailable)
+          : SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Text(context.l10n.chooseUpdateSource),
+                  const SizedBox(height: 12),
+                  for (final update in updates)
+                    ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      title: Text(update.source.label),
+                      subtitle: Text(
+                        context.l10n.versionAvailable(update.version!),
+                      ),
+                      trailing: const Icon(Icons.open_in_new_rounded),
+                      onTap: () => Navigator.pop(context, update.url),
+                    ),
+                ],
+              ),
+            ),
       actions: [
         TextButton(
-          onPressed: () => Navigator.pop(context, false),
+          onPressed: () => Navigator.pop(context),
           child: Text(context.l10n.later),
         ),
-        FilledButton(
-          onPressed: () => Navigator.pop(context, true),
-          child: Text(context.l10n.updateNow),
-        ),
+        if (isPlay)
+          FilledButton(
+            onPressed: () => Navigator.pop(context, updates.first.url),
+            child: Text(context.l10n.updateNow),
+          ),
       ],
     ),
   );
-  if (accepted != true || !context.mounted) return;
+  if (selected == null || !context.mounted) return;
   try {
-    if (await service.openUrl(update.url)) return;
+    if (await service.openUrl(selected)) return;
   } catch (_) {
     // The device may have no application capable of opening the update page.
   }

@@ -380,6 +380,10 @@ class AppLocalizationsAr extends AppLocalizations {
   String get upToDate => 'أنت تستخدم أحدث إصدار متاح.';
 
   @override
+  String get chooseUpdateSource =>
+      'اختر مصدر التحديث. يظهر الإصدار المتاح لدى كل مصدر.';
+
+  @override
   String get updateAvailable => 'تحديث جديد متاح';
 
   @override

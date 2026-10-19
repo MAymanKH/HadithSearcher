@@ -1,4 +1,4 @@
-"""Check the release script embeds the correct channel before signing."""
+"""Check shared FOSS ABI artifacts are verified and signed before publishing."""
 import importlib.util
 from pathlib import Path
 import shutil
@@ -16,23 +16,16 @@ spec.loader.exec_module(release)
 
 
 class ReleaseUpdateChannelTest(unittest.TestCase):
-    def test_unsigned_builds_embed_their_channel(self):
-        for channel in ("fdroid", "github"):
-            with self.subTest(channel=channel), patch.object(release, "run") as run, patch.object(release, "verify_artifact"):
-                release.build_unsigned_apk(channel=channel)
-                if channel == "fdroid":
-                    run.assert_called_once_with(
-                        sys.executable, str(release.ROOT / "scripts/build_fdroid_unsigned.py")
-                    )
-                else:
-                    run.assert_called_once_with(
-                        "flutter", "build", "apk", "--release", "--flavor", "fdroid",
-                        "--dart-define=UPDATE_CHANNEL=github",
-                    )
+    def test_unsigned_foss_build_produces_three_abi_outputs(self):
+        with patch.object(release, "run") as run, patch.object(release, "verify_artifact") as verify:
+            apks = release.build_unsigned_apks()
+            run.assert_called_once_with(sys.executable, str(release.ROOT / "scripts/build_foss_unsigned.py"))
+            self.assertEqual(set(apks), set(release.ABI_CODES))
+            self.assertEqual(verify.call_count, 3)
 
-    def test_both_channels_are_signed_before_publication(self):
-        for channel in ("fdroid", "github"):
-            with self.subTest(channel=channel), tempfile.TemporaryDirectory() as directory:
+    def test_all_abis_are_signed_before_publication(self):
+        for abi, suffix in release.ABI_CODES.items():
+            with self.subTest(abi=abi), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 (root / "android/app").mkdir(parents=True)
                 (root / "android/app/release.keystore").touch()
@@ -62,14 +55,14 @@ class ReleaseUpdateChannelTest(unittest.TestCase):
                     Path(args[args.index("--out") + 1]).write_bytes(b"signed APK")
 
                 with patch.object(release, "ROOT", root), patch.object(
-                    release, "build_unsigned_apk", return_value=unsigned
+                    release, "build_unsigned_apks", return_value={abi: unsigned}
                 ) as build, patch.object(release, "run", side_effect=run) as commands, patch.object(
                     release.subprocess, "run", side_effect=sign
                 ), patch.object(release, "verify_artifact"):
-                    release.build_signed_apk("3.0.0+19", channel=channel)
-                    build.assert_called_once_with(channel=channel)
+                    release.build_foss("3.0.1+200")
+                    build.assert_called_once_with()
                     self.assertEqual(
-                        (root / f"build/releases/{channel}/HadithSearcher-3.0.0+19-{channel}.apk").read_bytes(),
+                        (root / f"build/releases/foss/HadithSearcher-3.0.1+{200 + suffix}-foss-{abi}.apk").read_bytes(),
                         b"signed APK",
                     )
                     self.assertEqual(commands.call_args_list[1].args[1:3], ("verify", "--verbose"))
@@ -82,7 +75,7 @@ class ReleaseUpdateChannelTest(unittest.TestCase):
                     commands.side_effect = fail_verification
                     with patch.object(release, "keep_artifact") as publish:
                         with self.assertRaises(subprocess.CalledProcessError):
-                            release.build_signed_apk("3.0.0+20", channel=channel)
+                            release.build_foss("3.0.1+210")
                         publish.assert_not_called()
 
 
