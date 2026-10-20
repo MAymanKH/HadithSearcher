@@ -62,7 +62,7 @@ void main() {
       expect(opened, isNull);
       await tester.tap(find.text('التحقق من التحديثات'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text('تحديث الآن'));
+      await tester.tap(find.text('التحديث من Google Play'));
       await tester.pumpAndSettle();
       expect(opened!.host, 'play.google.com');
       expect(find.byType(AlertDialog), findsNothing);
@@ -100,7 +100,7 @@ void main() {
     tester,
   ) async {
     await showApp(tester, service(open: (_) async => false));
-    await tester.tap(find.text('تحديث الآن'));
+    await tester.tap(find.text('التحديث من Google Play'));
     await tester.pumpAndSettle();
     expect(
       find.text('تعذر فتح صفحة التحديث. حاول مرة أخرى لاحقاً.'),
@@ -139,14 +139,14 @@ void main() {
                       'assets': [
                         {
                           'state': 'uploaded',
-                          'name': 'HadithSearcher-3.0.2+212-foss-arm64-v8a.apk',
+                          'name': 'HadithSearcher-3.0.2+211-foss-arm64-v8a.apk',
                         },
                       ],
                     }
                   : {
                       'suggestedVersionCode': 223,
                       'packages': [
-                        {'versionCode': 222, 'versionName': '3.0.3'},
+                        {'versionCode': 221, 'versionName': '3.0.3'},
                       ],
                     },
             ),
@@ -158,14 +158,22 @@ void main() {
           },
         ),
       );
-      expect(find.text('GitHub'), findsOneWidget);
-      expect(find.text('F-Droid'), findsOneWidget);
+      expect(find.text('التحديث من GitHub'), findsOneWidget);
+      expect(find.text('التحديث من F-Droid'), findsOneWidget);
+      expect(find.byType(FilledButton), findsNWidgets(2));
+      expect(find.byType(ListTile), findsNothing);
+      for (final button in find.byType(FilledButton).evaluate()) {
+        expect(
+          tester.getSize(find.byWidget(button.widget)).height,
+          greaterThanOrEqualTo(48),
+        );
+      }
       expect(find.textContaining('3.0.2'), findsOneWidget);
       expect(find.textContaining('3.0.3'), findsOneWidget);
       expect(tester.takeException(), isNull);
-      await tester.ensureVisible(find.text(source.label));
+      await tester.ensureVisible(find.text('التحديث من ${source.label}'));
       await tester.pumpAndSettle();
-      await tester.tap(find.text(source.label));
+      await tester.tap(find.text('التحديث من ${source.label}'));
       await tester.pumpAndSettle();
       expect(
         opened!.host,

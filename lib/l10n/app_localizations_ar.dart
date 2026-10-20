@@ -345,7 +345,7 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get consentDescription =>
-      'المشاركة اختيارية ويمكن تغيير اختيارك لاحقاً.';
+      'المشاركة اختيارية. أزل علامة أي خيار لرفضه.';
 
   @override
   String get analyticsConsent => 'أوافق على مشاركة إحصاءات الاستخدام.';
@@ -380,14 +380,7 @@ class AppLocalizationsAr extends AppLocalizations {
   String get upToDate => 'أنت تستخدم أحدث إصدار متاح.';
 
   @override
-  String get chooseUpdateSource =>
-      'اختر مصدر التحديث. يظهر الإصدار المتاح لدى كل مصدر.';
-
-  @override
   String get updateAvailable => 'تحديث جديد متاح';
-
-  @override
-  String get playUpdateAvailable => 'يتوفر تحديث جديد للتطبيق على Google Play.';
 
   @override
   String get later => 'لاحقاً';
@@ -453,11 +446,6 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get backToTop => 'العودة إلى الأعلى';
-
-  @override
-  String versionAvailable(String version) {
-    return 'يتوفر الإصدار $version. هل تريد التحديث الآن؟';
-  }
 
   @override
   String selectedCount(int count) {
@@ -567,4 +555,9 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get graphiteColorScheme => 'رمادي محايد';
+
+  @override
+  String updateFrom(String source) {
+    return 'التحديث من $source';
+  }
 }

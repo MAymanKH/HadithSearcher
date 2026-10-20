@@ -102,7 +102,7 @@ flutter {
 
 configure<ApplicationAndroidComponentsExtension> {
     onVariants(selector().withFlavor("distribution" to "foss")) { variant ->
-        val abiCodes = mapOf("armeabi-v7a" to 1, "arm64-v8a" to 2, "x86_64" to 3)
+        val abiCodes = mapOf("arm64-v8a" to 1, "armeabi-v7a" to 2, "x86_64" to 3)
         variant.outputs.forEach { output ->
             val abi = output.filters.find { it.filterType == FilterConfiguration.FilterType.ABI }?.identifier
             output.versionCode.set(flutter.versionCode + (abiCodes[abi] ?: 0))

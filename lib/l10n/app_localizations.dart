@@ -767,7 +767,7 @@ abstract class AppLocalizations {
   /// No description provided for @consentDescription.
   ///
   /// In en, this message translates to:
-  /// **'Sharing is optional. You can change your choice later.'**
+  /// **'Sharing is optional. Uncheck either option to decline.'**
   String get consentDescription;
 
   /// No description provided for @analyticsConsent.
@@ -830,23 +830,11 @@ abstract class AppLocalizations {
   /// **'You are using the latest version.'**
   String get upToDate;
 
-  /// No description provided for @chooseUpdateSource.
-  ///
-  /// In en, this message translates to:
-  /// **'Choose where to update. Each source shows its available version.'**
-  String get chooseUpdateSource;
-
   /// No description provided for @updateAvailable.
   ///
   /// In en, this message translates to:
   /// **'Update available'**
   String get updateAvailable;
-
-  /// No description provided for @playUpdateAvailable.
-  ///
-  /// In en, this message translates to:
-  /// **'An app update is available on Google Play.'**
-  String get playUpdateAvailable;
 
   /// No description provided for @later.
   ///
@@ -973,12 +961,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Back to top'**
   String get backToTop;
-
-  /// No description provided for @versionAvailable.
-  ///
-  /// In en, this message translates to:
-  /// **'Version {version} is available. Update now?'**
-  String versionAvailable(String version);
 
   /// No description provided for @selectedCount.
   ///
@@ -1141,6 +1123,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Graphite'**
   String get graphiteColorScheme;
+
+  /// No description provided for @updateFrom.
+  ///
+  /// In en, this message translates to:
+  /// **'Update from {source}'**
+  String updateFrom(String source);
 }
 
 class _AppLocalizationsDelegate

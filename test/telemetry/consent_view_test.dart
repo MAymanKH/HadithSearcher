@@ -8,65 +8,107 @@ import 'package:hadithsearcher/views/privacy/telemetry_consent_view.dart';
 import 'fake_backend.dart';
 
 void main() {
-  testWidgets(
-      'first launch requires explicit choice and defaults both options off',
-      (tester) async {
-    SharedPreferences.setMockInitialValues({});
-    final backend = FakeBackend();
-    final service = TelemetryService(
-        preferences: await SharedPreferences.getInstance(), backend: backend);
-    await tester.pumpWidget(ChangeNotifierProvider.value(
-      value: service,
-      child: MaterialApp(
-          theme: AppTheme.lightTheme,
-          home: const Directionality(
-        textDirection: TextDirection.rtl,
-        child: TelemetryConsentView(firstLaunch: true),
-      )),
-    ));
-    expect(
-        tester
-            .widget<CheckboxListTile>(
-                find.byKey(const Key('analytics-consent')))
-            .value,
-        false);
-    expect(
-        tester
-            .widget<CheckboxListTile>(
-                find.byKey(const Key('diagnostics-consent')))
-            .value,
-        false);
-    expect(backend.transitions, isEmpty);
-    await tester.tap(find.byKey(const Key('diagnostics-consent')));
-    await tester.pump();
-    expect(backend.transitions, isEmpty);
-    await tester.ensureVisible(find.byKey(const Key('save-telemetry-consent')));
-    await tester.tap(find.byKey(const Key('save-telemetry-consent')));
-    await tester.pumpAndSettle();
-    expect(service.consent.diagnostics, true);
-    expect(service.consent.analytics, false);
-    service.dispose();
-  });
+  for (final diagnostics in [false, true]) {
+    for (final analytics in [false, true]) {
+      testWidgets(
+        'first launch saves diagnostics=$diagnostics analytics=$analytics after Continue',
+        (tester) async {
+          SharedPreferences.setMockInitialValues({});
+          final backend = FakeBackend();
+          final service = TelemetryService(
+            preferences: await SharedPreferences.getInstance(),
+            backend: backend,
+          );
+          TelemetryService.instance = service;
+          addTearDown(() {
+            TelemetryService.instance = null;
+            service.dispose();
+          });
+          await tester.pumpWidget(
+            ChangeNotifierProvider.value(
+              value: service,
+              child: MaterialApp(
+                theme: AppTheme.darkTheme,
+                home: const TelemetryConsentView(firstLaunch: true),
+              ),
+            ),
+          );
+          for (final key in ['analytics-consent', 'diagnostics-consent']) {
+            expect(
+              tester.widget<CheckboxListTile>(find.byKey(Key(key))).value,
+              true,
+            );
+          }
+          if (!diagnostics) {
+            await tester.tap(find.byKey(const Key('diagnostics-consent')));
+          }
+          if (!analytics) {
+            await tester.tap(find.byKey(const Key('analytics-consent')));
+          }
+          await tester.pump();
+          TelemetryService.event('before_continue');
+          TelemetryService.report(
+            StateError('before_continue'),
+            StackTrace.current,
+            'test',
+          );
+          expect(service.analyticsEnabled || service.diagnosticsEnabled, false);
+          expect(backend.transitions, isEmpty);
+          expect(backend.events, isEmpty);
+          expect(backend.reports, isEmpty);
+          await tester.ensureVisible(
+            find.byKey(const Key('save-telemetry-consent')),
+          );
+          await tester.tap(find.byKey(const Key('save-telemetry-consent')));
+          await tester.pumpAndSettle();
+          expect(service.consent.decided, true);
+          expect(service.consent.diagnostics, diagnostics);
+          expect(service.consent.analytics, analytics);
+          expect(backend.diagnostics, diagnostics);
+          expect(backend.analytics, analytics);
+          final restarted = TelemetryService(
+            preferences: service.preferences,
+            backend: FakeBackend(),
+          );
+          expect(restarted.consent.diagnostics, diagnostics);
+          expect(restarted.consent.analytics, analytics);
+          restarted.dispose();
+        },
+      );
+    }
+  }
 
-  testWidgets(
-      'rejecting takes one action and persists without enabling either SDK',
-      (tester) async {
-    SharedPreferences.setMockInitialValues({});
-    final backend = FakeBackend();
+  testWidgets('privacy settings preserve saved choices', (tester) async {
+    SharedPreferences.setMockInitialValues({
+      TelemetryService.consentKey: const TelemetryConsent(
+        decided: true,
+        diagnostics: true,
+      ).encode(),
+    });
     final service = TelemetryService(
-        preferences: await SharedPreferences.getInstance(), backend: backend);
-    await tester.pumpWidget(ChangeNotifierProvider.value(
-      value: service,
-      child: MaterialApp(
-          theme: AppTheme.darkTheme,
-          home: const TelemetryConsentView(firstLaunch: true)),
-    ));
-    await tester.ensureVisible(find.byKey(const Key('save-telemetry-consent')));
-    await tester.tap(find.byKey(const Key('save-telemetry-consent')));
-    await tester.pumpAndSettle();
-    expect(service.consent.decided, true);
-    expect(backend.transitions, isNot(contains('diagnostics:true')));
-    expect(backend.transitions, isNot(contains('analytics:true')));
-    service.dispose();
+      preferences: await SharedPreferences.getInstance(),
+      backend: FakeBackend(),
+    );
+    addTearDown(service.dispose);
+    await tester.pumpWidget(
+      ChangeNotifierProvider.value(
+        value: service,
+        child: const MaterialApp(home: TelemetryConsentView()),
+      ),
+    );
+    expect(
+      tester
+          .widget<CheckboxListTile>(
+            find.byKey(const Key('diagnostics-consent')),
+          )
+          .value,
+      true,
+    );
+    expect(
+      tester
+          .widget<CheckboxListTile>(find.byKey(const Key('analytics-consent')))
+          .value,
+      false,
+    );
   });
 }

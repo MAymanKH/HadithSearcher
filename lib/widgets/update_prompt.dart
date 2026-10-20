@@ -27,46 +27,66 @@ Future<void> checkForUpdates(
     }
     return;
   }
-  final isPlay =
-      updates.length == 1 && updates.first.source == UpdateSource.play;
   final selected = await showDialog<Uri>(
     context: context,
-    builder: (context) => AlertDialog(
-      title: Text(context.l10n.updateAvailable),
-      content: isPlay
-          ? Text(context.l10n.playUpdateAvailable)
-          : SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Text(context.l10n.chooseUpdateSource),
-                  const SizedBox(height: 12),
-                  for (final update in updates)
-                    ListTile(
-                      contentPadding: EdgeInsets.zero,
-                      title: Text(update.source.label),
-                      subtitle: Text(
-                        context.l10n.versionAvailable(update.version!),
-                      ),
-                      trailing: const Icon(Icons.open_in_new_rounded),
-                      onTap: () => Navigator.pop(context, update.url),
-                    ),
-                ],
-              ),
-            ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: Text(context.l10n.later),
+    builder: (context) {
+      final colors = Theme.of(context).colorScheme;
+      return AlertDialog(
+        backgroundColor: colors.surfaceContainerHigh,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(24),
+          side: BorderSide(color: colors.outlineVariant),
         ),
-        if (isPlay)
-          FilledButton(
-            onPressed: () => Navigator.pop(context, updates.first.url),
-            child: Text(context.l10n.updateNow),
+        title: Text(context.l10n.updateAvailable),
+        content: SizedBox(
+          width: 320,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var index = 0; index < updates.length; index++) ...[
+                  if (index > 0) const SizedBox(height: 12),
+                  FilledButton.icon(
+                    style: FilledButton.styleFrom(
+                      minimumSize: const Size.fromHeight(56),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16,
+                        vertical: 12,
+                      ),
+                    ),
+                    onPressed: () => Navigator.pop(context, updates[index].url),
+                    icon: const Icon(Icons.system_update_rounded),
+                    label: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          context.l10n.updateFrom(updates[index].source.label),
+                          textAlign: TextAlign.center,
+                        ),
+                        if (updates[index].version != null)
+                          Text(
+                            updates[index].version!,
+                            textDirection: TextDirection.ltr,
+                            style: Theme.of(context).textTheme.labelMedium
+                                ?.copyWith(color: colors.onPrimary),
+                          ),
+                      ],
+                    ),
+                  ),
+                ],
+              ],
+            ),
           ),
-      ],
-    ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(context.l10n.later),
+          ),
+        ],
+      );
+    },
   );
   if (selected == null || !context.mounted) return;
   try {

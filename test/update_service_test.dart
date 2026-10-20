@@ -68,12 +68,12 @@ void main() {
         UpdateSource.fdroid,
         UpdateSource.github,
       ]);
-      expect(updates.first.versionCode, 222);
+      expect(updates.first.versionCode, 221);
       final direct = updates.last;
-      expect(direct.versionCode, 212);
+      expect(direct.versionCode, 211);
       expect(
         direct.url.toString(),
-        'https://github.com/MAymanKH/HadithSearcher/releases/download/3.0.2/HadithSearcher-3.0.2+212-foss-arm64-v8a.apk',
+        'https://github.com/MAymanKH/HadithSearcher/releases/download/3.0.2/HadithSearcher-3.0.2+211-foss-arm64-v8a.apk',
       );
     },
   );
@@ -91,7 +91,7 @@ void main() {
   test('F-Droid uses its recommended release and a supported ABI', () async {
     final updates = await service(githubData: github(base: 200)).check();
     expect(updates.single.source, UpdateSource.fdroid);
-    expect(updates.single.versionCode, 212);
+    expect(updates.single.versionCode, 211);
     expect(updates.single.url.host, 'f-droid.org');
     final missingAbi = fdroid();
     (missingAbi['packages'] as List).removeWhere(
@@ -123,7 +123,7 @@ void main() {
           'assets': [
             {
               'state': 'new',
-              'name': 'HadithSearcher-3.0.2+212-foss-arm64-v8a.apk',
+              'name': 'HadithSearcher-3.0.2+211-foss-arm64-v8a.apk',
             },
           ],
         },
@@ -140,7 +140,7 @@ void main() {
         githubData: github(abis: ['armeabi-v7a']),
         fdroidData: fdroid(base: 200),
       ).check();
-      expect(fallback.single.versionCode, 211);
+      expect(fallback.single.versionCode, 212);
     },
   );
 

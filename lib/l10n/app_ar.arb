@@ -111,7 +111,7 @@
   "allNarrators": "جميع الرواة",
   "specialists": "للمتخصصين",
   "consentTitle": "الموافقة على مشاركة البيانات",
-  "consentDescription": "المشاركة اختيارية ويمكن تغيير اختيارك لاحقاً.",
+  "consentDescription": "المشاركة اختيارية. أزل علامة أي خيار لرفضه.",
   "analyticsConsent": "أوافق على مشاركة إحصاءات الاستخدام.",
   "diagnosticsConsent": "أوافق على مشاركة تقارير الأعطال.",
   "continueAction": "متابعة",
@@ -122,9 +122,7 @@
   "analyticsFailed": "تعذر تشغيل إحصاءات الاستخدام حالياً.",
   "updateCheckFailed": "تعذر التحقق من التحديثات. حاول مرة أخرى لاحقاً.",
   "upToDate": "أنت تستخدم أحدث إصدار متاح.",
-  "chooseUpdateSource": "اختر مصدر التحديث. يظهر الإصدار المتاح لدى كل مصدر.",
   "updateAvailable": "تحديث جديد متاح",
-  "playUpdateAvailable": "يتوفر تحديث جديد للتطبيق على Google Play.",
   "later": "لاحقاً",
   "updateNow": "تحديث الآن",
   "updateOpenFailed": "تعذر فتح صفحة التحديث. حاول مرة أخرى لاحقاً.",
@@ -146,7 +144,6 @@
   "apiLanguageNotice": "تبقى الأحاديث ومحتويات المصدر باللغة العربية.",
   "preferencesSaveFailed": "تعذر حفظ الإعدادات. حاول مرة أخرى.",
   "backToTop": "العودة إلى الأعلى",
-  "versionAvailable": "يتوفر الإصدار {version}. هل تريد التحديث الآن؟",
   "selectedCount": "المحدد: {count}",
   "infoAbout": "معلومات عن {name}",
   "optionsLoadFailed": "تعذر تحميل جميع الخيارات. {error}",
@@ -173,5 +170,13 @@
   "roseColorScheme": "وردي",
   "oceanColorScheme": "أزرق مخضر",
   "amberColorScheme": "كهرماني",
-  "graphiteColorScheme": "رمادي محايد"
+  "graphiteColorScheme": "رمادي محايد",
+  "updateFrom": "التحديث من {source}",
+  "@updateFrom": {
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  }
 }

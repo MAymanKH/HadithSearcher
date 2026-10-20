@@ -71,7 +71,7 @@ The default API URL is in `lib/core/constants/app_config.dart`. Public Sentry an
 
 To use another API server, pass `--dart-define=HADITH_API_BASE_URL=https://your-api.example` to the run or build command.
 
-Play builds enable crash reports and usage analytics automatically. FOSS builds request separate consent for each service. See [Telemetry](docs/telemetry.md) for configuration, privacy details, and delivery checks.
+Play builds enable crash reports and usage analytics automatically. FOSS builds apply the onboarding choices after Continue; either option can be unchecked. See [Telemetry](docs/telemetry.md) for configuration, privacy details, and delivery checks.
 
 ### 3. Install dependencies
 
@@ -94,9 +94,9 @@ flutter run --flavor play
 
 ## Build Android releases
 
-The two flavors are `play` and `foss`. The same FOSS APKs are distributed on GitHub and F-Droid. Their update dialog checks both sources and lets the user choose an available update. GitHub downloads select the device ABI. The FOSS flavor excludes Shorebird and the Google Play update library, and requires separate telemetry consent.
+The two flavors are `play` and `foss`. The same FOSS APKs are distributed on GitHub and F-Droid. Their update dialog checks both sources and lets the user choose an available update. GitHub downloads select the device ABI. The FOSS flavor excludes Shorebird and the Google Play update library, and lets users choose telemetry on onboarding.
 
-Set `version` in `pubspec.yaml` for each release. Reserve the last version-code digit for ABI variants: use base codes divisible by 10, such as `3.0.1+200`, then `3.0.2+210`. Play uses the base code. FOSS adds 1 for `armeabi-v7a`, 2 for `arm64-v8a`, or 3 for `x86_64`, producing codes 201, 202, and 203 for the first example. The FOSS updater compares release codes without the ABI digit.
+Set `version` in `pubspec.yaml` for each release. Reserve the last version-code digit for ABI variants: use base codes divisible by 10, such as `3.0.3+220`, then `3.0.4+230`. Play uses the base code. FOSS adds 1 for `arm64-v8a`, 2 for `armeabi-v7a`, or 3 for `x86_64`, producing codes 221, 222, and 223 for the first example. The FOSS updater compares release codes without the ABI digit.
 
 Prepare `android/key.properties` with `storeFile`, `storePassword`, `keyAlias`, and `keyPassword`, and a local signing keystore. Relative keystore paths resolve from `android/app/`. Keep signing credentials out of version control. FOSS builds also require `android/local.properties` with `sdk.dir` and Android SDK Build Tools 35 or newer containing `apksigner` and `zipalign`.
 
@@ -110,7 +110,7 @@ The release script requires Python 3 and Flutter. Play releases require Shorebir
 | `./scripts/release.py play --dry-run` | Build the Play bundle without registering it with Shorebird. |
 | `./scripts/release.py patch-play` | Send a Dart update for the Play release in `pubspec.yaml`. |
 
-Outputs are saved in `build/releases/play/` and `build/releases/foss/`. The script does not upload files. FOSS filenames include the actual APK version code and ABI, for example `HadithSearcher-3.0.1+202-foss-arm64-v8a.apk`. Publish all three APKs on the GitHub release tagged `3.0.1`. F-Droid uses those same signed assets as reference binaries and publishes them after reproducing the build and verifying the pinned signing certificate.
+Outputs are saved in `build/releases/play/` and `build/releases/foss/`. The script does not upload files. FOSS filenames include the actual APK version code and ABI, for example `HadithSearcher-3.0.3+221-foss-arm64-v8a.apk`. Publish all three APKs on the GitHub release tagged `3.0.3`. F-Droid uses those same signed assets as reference binaries and publishes them after reproducing the build and verifying the pinned signing certificate.
 
 For unsigned rebuilds, run:
 
@@ -130,7 +130,7 @@ Before updating the recipe, verify each signed APK against a fresh unsigned buil
 python3 -m venv /tmp/hadith-repro-check
 /tmp/hadith-repro-check/bin/pip install apksigcopier
 /tmp/hadith-repro-check/bin/python scripts/verify_fdroid_reproducibility.py \
-  build/releases/foss/HadithSearcher-3.0.1+202-foss-arm64-v8a.apk \
+  build/releases/foss/HadithSearcher-3.0.3+221-foss-arm64-v8a.apk \
   build/app/outputs/flutter-apk/app-arm64-v8a-foss-release.apk \
   --apksigner "$ANDROID_HOME/build-tools/37.0.0/apksigner"
 ```

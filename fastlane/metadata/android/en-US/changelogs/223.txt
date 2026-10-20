@@ -1,0 +1,1 @@
+Improved startup options and update dialog.

@@ -349,7 +349,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get consentDescription =>
-      'Sharing is optional. You can change your choice later.';
+      'Sharing is optional. Uncheck either option to decline.';
 
   @override
   String get analyticsConsent => 'I agree to share usage analytics.';
@@ -384,15 +384,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get upToDate => 'You are using the latest version.';
 
   @override
-  String get chooseUpdateSource =>
-      'Choose where to update. Each source shows its available version.';
-
-  @override
   String get updateAvailable => 'Update available';
-
-  @override
-  String get playUpdateAvailable =>
-      'An app update is available on Google Play.';
 
   @override
   String get later => 'Later';
@@ -460,11 +452,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get backToTop => 'Back to top';
-
-  @override
-  String versionAvailable(String version) {
-    return 'Version $version is available. Update now?';
-  }
 
   @override
   String selectedCount(int count) {
@@ -574,4 +561,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get graphiteColorScheme => 'Graphite';
+
+  @override
+  String updateFrom(String source) {
+    return 'Update from $source';
+  }
 }

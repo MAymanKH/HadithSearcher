@@ -70,6 +70,14 @@ void main() {
       expect(find.byKey(const Key('analytics-consent')), findsOneWidget);
       expect(requests, 0);
       expect(Sentry.isEnabled, false);
+      for (final key in ['analytics-consent', 'diagnostics-consent']) {
+        expect(
+          tester.widget<CheckboxListTile>(find.byKey(Key(key))).value,
+          true,
+        );
+        await tester.tap(find.byKey(Key(key)));
+      }
+      await tester.pump();
       await tester.ensureVisible(
         find.byKey(const Key('save-telemetry-consent')),
       );

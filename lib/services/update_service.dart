@@ -136,7 +136,7 @@ class UpdateService extends ChangeNotifier {
     }
   }
 
-  static const abiCodes = {'armeabi-v7a': 1, 'arm64-v8a': 2, 'x86_64': 3};
+  static const abiCodes = {'arm64-v8a': 1, 'armeabi-v7a': 2, 'x86_64': 3};
 
   Future<AvailableUpdate?> _checkSource(
     UpdateSource source,

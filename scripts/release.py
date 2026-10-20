@@ -46,7 +46,7 @@ def keep_artifact(source, store, version, *, abi=None):
     print(f"Release artifact: {target}", flush=True)
 
 
-ABI_CODES = {"armeabi-v7a": 1, "arm64-v8a": 2, "x86_64": 3}
+ABI_CODES = {"arm64-v8a": 1, "armeabi-v7a": 2, "x86_64": 3}
 
 
 def build_unsigned_apks():

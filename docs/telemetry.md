@@ -4,7 +4,7 @@
 
 `lib/core/constants/telemetry_config.dart` contains the public ingestion configuration. Override it at build time with `SENTRY_DSN`, `POSTHOG_PROJECT_TOKEN`, and `POSTHOG_HOST`.
 
-Play builds enable crash reports and usage analytics automatically. FOSS builds require separate consent for each service. In those builds, users can change consent in Settings. SDK errors do not block searching.
+Play builds enable crash reports and usage analytics automatically. FOSS builds preselect both options on first launch and apply the selections only after Continue. Either option can be unchecked. In those builds, users can change consent in Settings. SDK errors do not block searching.
 
 Sentry collects errors and samples manual API and database transactions at 5%. Error processing removes messages, identity, requests, and breadcrumbs. PostHog records app interactions and operation outcomes without person profiles. Session replay and screenshots are disabled.
 

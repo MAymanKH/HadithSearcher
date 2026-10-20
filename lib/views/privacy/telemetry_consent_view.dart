@@ -26,8 +26,9 @@ class _TelemetryConsentViewState extends State<TelemetryConsentView> {
     super.initState();
     TelemetryService.event('screen_viewed', {'screen': 'privacy'});
     final consent = context.read<TelemetryService>().consent;
-    _diagnostics = consent.diagnostics;
-    _analytics = consent.analytics;
+    final initialSelection = widget.firstLaunch && !consent.decided;
+    _diagnostics = initialSelection || consent.diagnostics;
+    _analytics = initialSelection || consent.analytics;
   }
 
   Future<void> _save(bool diagnostics, bool analytics) async {
