@@ -279,5 +279,8 @@
         "type": "String"
       }
     }
-  }
+  },
+  "automaticUpdateChecks": "Automatic update checks",
+  "fossUpdateChecksDescription": "Check GitHub and F-Droid once a day.",
+  "playUpdateChecksDescription": "Check Google Play once a day."
 }

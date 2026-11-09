@@ -178,5 +178,8 @@
         "type": "String"
       }
     }
-  }
+  },
+  "automaticUpdateChecks": "التحقق التلقائي من التحديثات",
+  "fossUpdateChecksDescription": "التحقق من GitHub وF-Droid مرة يومياً.",
+  "playUpdateChecksDescription": "التحقق من Google Play مرة يومياً."
 }

@@ -9,6 +9,7 @@ class AppSettings {
   final FontWeightPreference fontWeight;
   final int fontSize;
   final int padding;
+  final bool automaticUpdateChecks;
 
   const AppSettings({
     this.theme = ThemePreference.system,
@@ -18,6 +19,7 @@ class AppSettings {
     this.fontWeight = FontWeightPreference.bold,
     this.fontSize = 20,
     this.padding = 10,
+    this.automaticUpdateChecks = true,
   });
 
   /// Creates settings from database row.
@@ -54,6 +56,7 @@ class AppSettings {
     FontWeightPreference? fontWeight,
     int? fontSize,
     int? padding,
+    bool? automaticUpdateChecks,
   }) {
     return AppSettings(
       theme: theme ?? this.theme,
@@ -63,6 +66,8 @@ class AppSettings {
       fontWeight: fontWeight ?? this.fontWeight,
       fontSize: fontSize ?? this.fontSize,
       padding: padding ?? this.padding,
+      automaticUpdateChecks:
+          automaticUpdateChecks ?? this.automaticUpdateChecks,
     );
   }
 }

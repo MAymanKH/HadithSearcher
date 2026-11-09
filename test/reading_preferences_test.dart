@@ -73,6 +73,19 @@ void main() {
     await tester.tap(find.text('نوتو نسخ عربي').last);
     await tester.pumpAndSettle();
     expect(settings.fontFamily, 'Noto Naskh Arabic');
+    final updateSwitch = find.byType(SwitchListTile);
+    await tester.scrollUntilVisible(
+      updateSwitch,
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(updateSwitch);
+    await tester.pumpAndSettle();
+    expect(settings.settings.automaticUpdateChecks, isFalse);
+    final restored = SettingsViewModel();
+    await restored.loadSettings();
+    expect(restored.settings.automaticUpdateChecks, isFalse);
+    restored.dispose();
     final privacy = find.text('الخصوصية والقياس الاختياري');
     await tester.scrollUntilVisible(
       privacy,

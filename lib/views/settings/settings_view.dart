@@ -6,6 +6,7 @@ import '../../widgets/appearance_preferences.dart';
 import '../../models/settings.dart';
 import '../../viewmodels/settings_viewmodel.dart';
 import '../../services/telemetry/telemetry_service.dart';
+import '../../services/update_service.dart';
 import '../privacy/telemetry_consent_view.dart';
 
 class SettingsView extends StatelessWidget {
@@ -60,6 +61,20 @@ class SettingsView extends StatelessWidget {
                 _buildFontWeightSection(context, vm),
                 _buildFontSizeSection(context, vm),
                 _buildPaddingSection(context, vm),
+                const SizedBox(height: 20),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: SwitchListTile(
+                    title: Text(context.l10n.automaticUpdateChecks),
+                    subtitle: Text(
+                      buildUpdateChannel == UpdateChannel.foss
+                          ? context.l10n.fossUpdateChecksDescription
+                          : context.l10n.playUpdateChecksDescription,
+                    ),
+                    value: vm.settings.automaticUpdateChecks,
+                    onChanged: vm.setAutomaticUpdateChecks,
+                  ),
+                ),
               ],
             ),
           ),

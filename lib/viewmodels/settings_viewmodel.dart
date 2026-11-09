@@ -82,6 +82,12 @@ class SettingsViewModel extends ChangeNotifier {
     return true;
   }
 
+  Future<void> setAutomaticUpdateChecks(bool enabled) async {
+    if (!await _settingsService.updateAutomaticUpdateChecks(enabled)) return;
+    _settings = _settings.copyWith(automaticUpdateChecks: enabled);
+    notifyListeners();
+  }
+
   /// Update theme preference.
   Future<void> setTheme(ThemePreference theme) async {
     if (await _settingsService.updateTheme(theme)) {

@@ -6,10 +6,10 @@ Search prophetic hadiths in Arabic and read their explanations, sources, and sch
 • Save hadiths for offline reading.
 • Adjust fonts, text size, and app colors.
 
-Search and new explanations require an internet connection to the hosted Dorar Hadith API. Saved hadiths remain available offline. The app's interface and hadith content are in Arabic.
+Search and new explanations require an internet connection to the hosted Dorar Hadith API. Saved hadiths remain available offline. The interface supports Arabic and English, with Arabic as the default. Hadith content is in Arabic.
 
 Crash reporting through Sentry and usage analytics through PostHog are optional. Both options are preselected on first launch; uncheck either to decline. They start only after Continue and can be disabled in Settings. See the privacy policy for details.
 
-The F-Droid build does not include Shorebird code updates or Google Play's update library. Updates come through F-Droid.
+The F-Droid build does not include Shorebird code updates or Google Play's update library. The app automatically checks GitHub and F-Droid for updates once a day. You can disable automatic checks in Settings or check manually from About.
 
 <a href="https://hadith-searcher-privacy-policy.pages.dev">Privacy policy</a>

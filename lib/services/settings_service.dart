@@ -16,6 +16,7 @@ class SettingsService {
   static const String _paddingKey = 'padding';
   static const String _languageKey = 'language';
   static const String _welcomeKey = 'welcomeCompleted';
+  static const String _automaticUpdateChecksKey = 'automaticUpdateChecks';
 
   /// Initialize SharedPreferences instance.
   Future<SharedPreferences> get prefs async {
@@ -38,6 +39,7 @@ class SettingsService {
         ),
         fontSize: p.getInt(_fontSizeKey) ?? 20,
         padding: p.getInt(_paddingKey) ?? 10,
+        automaticUpdateChecks: p.getBool(_automaticUpdateChecksKey) ?? true,
       );
     } catch (error, stack) {
       TelemetryService.report(error, stack, 'settings.getSettings');
@@ -60,6 +62,9 @@ class SettingsService {
 
   Future<bool> updateLanguage(String language) async =>
       (await prefs).setString(_languageKey, language);
+
+  Future<bool> updateAutomaticUpdateChecks(bool enabled) async =>
+      (await prefs).setBool(_automaticUpdateChecksKey, enabled);
 
   /// Update theme setting.
   Future<bool> updateTheme(ThemePreference theme) async {
@@ -141,6 +146,7 @@ class SettingsService {
       await p.setString(_fontWeightKey, 'bold');
       await p.setInt(_fontSizeKey, 20);
       await p.setInt(_paddingKey, 10);
+      await p.setBool(_automaticUpdateChecksKey, true);
       return true;
     } catch (error, stack) {
       TelemetryService.report(error, stack, 'settings.resetSettings');

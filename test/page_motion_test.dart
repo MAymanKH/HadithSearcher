@@ -69,6 +69,11 @@ void main() {
             300,
             scrollable: find.byType(Scrollable).first,
           );
+          await Scrollable.ensureVisible(
+            tester.element(find.text('Privacy and optional analytics')),
+            alignment: 0.5,
+          );
+          await tester.pumpAndSettle();
           await tester.tap(find.text('Privacy and optional analytics'));
         } else {
           await tester.tap(find.text('Open similar'));

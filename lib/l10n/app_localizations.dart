@@ -1129,6 +1129,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Update from {source}'**
   String updateFrom(String source);
+
+  /// No description provided for @automaticUpdateChecks.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatic update checks'**
+  String get automaticUpdateChecks;
+
+  /// No description provided for @fossUpdateChecksDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Check GitHub and F-Droid once a day.'**
+  String get fossUpdateChecksDescription;
+
+  /// No description provided for @playUpdateChecksDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Check Google Play once a day.'**
+  String get playUpdateChecksDescription;
 }
 
 class _AppLocalizationsDelegate

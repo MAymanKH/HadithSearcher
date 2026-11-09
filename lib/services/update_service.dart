@@ -7,6 +7,7 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'telemetry/telemetry_service.dart';
+import 'settings_service.dart';
 
 enum UpdateChannel { play, foss }
 
@@ -89,6 +90,10 @@ class UpdateService extends ChangeNotifier {
     failed = false;
     notifyListeners();
     try {
+      if (automatic &&
+          !(await SettingsService().getSettings()).automaticUpdateChecks) {
+        return [];
+      }
       final info = await _packageInfo();
       installedVersion = '${info.version}+${info.buildNumber}';
       final installedCode = int.parse(info.buildNumber);

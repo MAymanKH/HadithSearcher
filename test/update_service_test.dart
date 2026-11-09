@@ -3,6 +3,8 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hadithsearcher/services/update_service.dart';
+import 'package:hadithsearcher/services/settings_service.dart';
+import 'package:hadithsearcher/viewmodels/settings_viewmodel.dart';
 import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -16,6 +18,59 @@ void main() {
     buildNumber: '202',
   );
   setUp(() => SharedPreferences.setMockInitialValues({}));
+
+  for (final channel in UpdateChannel.values) {
+    test(
+      '${channel.name} disabled checks persist and manual checks still work',
+      () async {
+        final settings = SettingsViewModel();
+        await settings.loadSettings();
+        expect(settings.settings.automaticUpdateChecks, isTrue);
+        await settings.setAutomaticUpdateChecks(false);
+        final restored = SettingsViewModel();
+        await restored.loadSettings();
+        expect(restored.settings.automaticUpdateChecks, isFalse);
+        var requests = 0;
+        UpdateService createService() => UpdateService(
+          channel: channel,
+          packageInfo: () async => installed,
+          supportedAbis: () async => ['arm64-v8a'],
+          get: (_) async {
+            requests++;
+            return http.Response('{}', 404);
+          },
+          playVersion: () async {
+            requests++;
+            return null;
+          },
+        );
+        final updates = createService();
+        expect(await updates.check(automatic: true), isEmpty);
+        expect(requests, 0);
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.containsKey('update_check_${channel.name}'), isFalse);
+        await updates.check();
+        expect(requests, channel == UpdateChannel.foss ? 2 : 1);
+        requests = 0;
+        updates.dispose();
+        final restarted = createService();
+        await restarted.check(automatic: true);
+        expect(requests, 0);
+        await restored.setAutomaticUpdateChecks(true);
+        await restarted.check(automatic: true);
+        expect(requests, channel == UpdateChannel.foss ? 2 : 1);
+        await restored.setAutomaticUpdateChecks(false);
+        await restored.resetToDefaults();
+        expect(
+          (await SettingsService().getSettings()).automaticUpdateChecks,
+          isTrue,
+        );
+        settings.dispose();
+        restored.dispose();
+        restarted.dispose();
+      },
+    );
+  }
 
   Map<String, dynamic> github({
     int base = 210,

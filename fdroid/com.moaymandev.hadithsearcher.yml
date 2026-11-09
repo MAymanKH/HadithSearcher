@@ -22,9 +22,9 @@ RepoType: git
 Repo: https://github.com/MAymanKH/HadithSearcher.git
 
 Builds:
-  - versionName: 3.0.3
-    versionCode: 221
-    commit: 3.0.3
+  - versionName: 3.0.4
+    versionCode: 231
+    commit: 3.0.4
     output: build/app/outputs/flutter-apk/app-arm64-v8a-foss-release.apk
     binary:
       https://github.com/MAymanKH/HadithSearcher/releases/download/%v/HadithSearcher-%v+%c-foss-arm64-v8a.apk
@@ -49,9 +49,9 @@ Builds:
         arm64-v8a
     ndk: 29.0.13113456
 
-  - versionName: 3.0.3
-    versionCode: 222
-    commit: 3.0.3
+  - versionName: 3.0.4
+    versionCode: 232
+    commit: 3.0.4
     output: build/app/outputs/flutter-apk/app-armeabi-v7a-foss-release.apk
     binary:
       https://github.com/MAymanKH/HadithSearcher/releases/download/%v/HadithSearcher-%v+%c-foss-armeabi-v7a.apk
@@ -76,9 +76,9 @@ Builds:
         armeabi-v7a
     ndk: 29.0.13113456
 
-  - versionName: 3.0.3
-    versionCode: 223
-    commit: 3.0.3
+  - versionName: 3.0.4
+    versionCode: 233
+    commit: 3.0.4
     output: build/app/outputs/flutter-apk/app-x86_64-foss-release.apk
     binary:
       https://github.com/MAymanKH/HadithSearcher/releases/download/%v/HadithSearcher-%v+%c-foss-x86_64.apk
@@ -109,7 +109,8 @@ MaintainerNotes: |-
   Publish all three signed FOSS APKs from scripts/release.py foss on the
   <versionName> GitHub release. GitHub and F-Droid distribute the same APKs.
   Each ABI has a per-build binary URL. F-Droid must reproduce each APK before
-  publishing the upstream signature. The in-app updater checks both sources.
+  publishing the upstream signature. The updater checks both sources once a day
+  unless disabled in Settings.
 
   Search uses https://hadith-searcher-dorar-api-amx.vercel.app, backed by
   https://github.com/MAymanKH/dorar-hadith-api and content from https://dorar.net.
@@ -138,5 +139,5 @@ VercodeOperation:
   - '%c+2'
   - '%c+3'
 UpdateCheckData: pubspec.yaml|version:\s.+\+(\d+)|.|version:\s(.+)\+
-CurrentVersion: 3.0.3
-CurrentVersionCode: 223
+CurrentVersion: 3.0.4
+CurrentVersionCode: 233
