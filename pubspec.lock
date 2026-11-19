@@ -484,14 +484,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.3"
-  posthog_flutter:
-    dependency: "direct main"
-    description:
-      name: posthog_flutter
-      sha256: "039d60cbfeefbde8426dca3ffc5fda81b7d1f659a9dc499056d5407fc22d4718"
-      url: "https://pub.dev"
-    source: hosted
-    version: "5.55.0"
   process:
     dependency: transitive
     description:
@@ -810,7 +802,7 @@ packages:
     source: hosted
     version: "3.1.6"
   uuid:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: uuid
       sha256: a5be9ef6618a7ac1e964353ef476418026db906c4facdedaa299b7a2e71690ff

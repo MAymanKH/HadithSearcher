@@ -5,7 +5,6 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
-import 'package:posthog_flutter/posthog_flutter.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 // ignore: implementation_imports
 import 'package:sentry_flutter/src/utils/platform_dispatcher_wrapper.dart';
@@ -18,7 +17,7 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   testWidgets(
-    'real Android SDKs respect consent, send payloads, and discard queued data on withdrawal',
+    'Android telemetry respects consent and discards queued data on withdrawal',
     (tester) async {
       final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
       final bodies = <String>[];
@@ -26,6 +25,13 @@ void main() {
       var requests = 0;
       final subscription = server.listen((request) async {
         requests++;
+        if (request.uri.path == '/array/phc_local_test/config') {
+          request.response
+            ..headers.contentType = ContentType.json
+            ..write('{"sessionRecording":{"sampleRate":"1"}}');
+          await request.response.close();
+          return;
+        }
         var bytes = await request.fold<List<int>>(
           [],
           (buffer, data) => buffer..addAll(data),
@@ -51,6 +57,18 @@ void main() {
         preferences: preferences,
         backend: backend,
       );
+      Future<void> saveChoices() async {
+        final button = find.byKey(const Key('save-telemetry-consent'));
+        await tester.ensureVisible(button);
+        await tester.tap(button);
+        await tester.pump();
+        for (var attempt = 0; telemetry.saving && attempt < 100; attempt++) {
+          await tester.pump(const Duration(milliseconds: 50));
+        }
+        expect(telemetry.saving, isFalse);
+        await tester.pumpAndSettle();
+      }
+
       addTearDown(() async {
         await telemetry.save(diagnostics: false, analytics: false);
         TelemetryService.instance = null;
@@ -78,11 +96,7 @@ void main() {
         await tester.tap(find.byKey(Key(key)));
       }
       await tester.pump();
-      await tester.ensureVisible(
-        find.byKey(const Key('save-telemetry-consent')),
-      );
-      await tester.tap(find.byKey(const Key('save-telemetry-consent')));
-      await tester.pumpAndSettle();
+      await saveChoices();
       expect(find.byType(NavigationBar), findsOneWidget);
       expect(requests, 0);
 
@@ -94,14 +108,11 @@ void main() {
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('diagnostics-consent')));
       await tester.tap(find.byKey(const Key('analytics-consent')));
-      await tester.ensureVisible(
-        find.byKey(const Key('save-telemetry-consent')),
-      );
-      await tester.tap(find.byKey(const Key('save-telemetry-consent')));
-      await tester.pumpAndSettle();
+      await saveChoices();
       expect(telemetry.consent.analytics, true);
       expect(telemetry.consent.diagnostics, true);
       expect(Sentry.isEnabled, true);
+      expect(find.byType(NavigationBar), findsOneWidget);
 
       for (var index = 0; index < 4; index++) {
         await tester.tap(find.byType(NavigationDestination).at(index));
@@ -142,7 +153,7 @@ void main() {
         StateError('private-async-error'),
         StackTrace.current,
       );
-      await Posthog().flush();
+      await backend.flushAnalytics();
       await tester.runAsync(() async {
         for (
           var attempt = 0;
@@ -150,6 +161,7 @@ void main() {
               (!bodies.any((body) => body.contains('search_submitted')) ||
                   !bodies.any((body) => body.contains('integration.error')) ||
                   !bodies.any((body) => body.contains('FlutterError')) ||
+                  !bodies.any((body) => body.contains(r'$snapshot')) ||
                   !bodies.any(
                     (body) => body.contains('PlatformDispatcher.onError'),
                   ));
@@ -173,6 +185,44 @@ void main() {
         true,
       );
       expect(bodies.any((body) => body.contains('screen_viewed')), true);
+      final analyticsEvents = bodies
+          .map(jsonDecodeOrNull)
+          .whereType<Map<String, dynamic>>()
+          .expand((body) => (body['batch'] as List?) ?? const [])
+          .whereType<Map<String, dynamic>>();
+      final screen = analyticsEvents.firstWhere(
+        (event) => event['event'] == r'$screen',
+      );
+      final screenProperties = screen['properties'] as Map<String, dynamic>;
+      expect(screenProperties[r'$screen_name'], isA<String>());
+      expect(screenProperties[r'$device_type'], isIn(['Mobile', 'Tablet']));
+      expect(screenProperties[r'$os'], 'Android');
+      expect(
+        screenProperties[r'$session_id'],
+        matches(RegExp(r'^[0-9a-f-]{14}7')),
+      );
+      expect(screenProperties[r'$process_person_profile'], isFalse);
+      expect(screenProperties, isNot(contains(r'$geoip_disable')));
+      expect(screen['distinct_id'], firstId);
+      final recordingBody = bodies
+          .map(jsonDecodeOrNull)
+          .whereType<List<dynamic>>()
+          .expand((events) => events)
+          .whereType<Map<String, dynamic>>()
+          .firstWhere((event) => event['event'] == r'$snapshot');
+      final recordingProperties =
+          recordingBody['properties'] as Map<String, dynamic>;
+      expect(recordingBody['distinct_id'], firstId);
+      expect(
+        recordingProperties[r'$session_id'],
+        screenProperties[r'$session_id'],
+      );
+      expect(recordingProperties[r'$snapshot_source'], 'mobile');
+      expect(recordingProperties[r'$snapshot_data'], isNotEmpty);
+      final replay = jsonEncode(recordingProperties[r'$snapshot_data']);
+      expect(replay, contains('"type":"rectangle"'));
+      expect(replay, isNot(contains('consented-query')));
+      expect(replay, isNot(contains('base64')));
       expect(bodies.join(), isNot(contains('secret-query@example.com')));
       expect(bodies.join(), isNot(contains('private-framework-error')));
       expect(bodies.join(), isNot(contains('private-async-error')));
@@ -212,7 +262,7 @@ void main() {
       await restored.save(diagnostics: true, analytics: true);
       expect(await backend.analyticsId(), isNot(firstId));
       await backend.capture('after_reconsent', {});
-      await Posthog().flush();
+      await backend.flushAnalytics();
       await tester.runAsync(() async {
         for (
           var attempt = 0;
@@ -231,4 +281,13 @@ void main() {
       restored.dispose();
     },
   );
+}
+
+Object? jsonDecodeOrNull(String data) {
+  try {
+    return jsonDecode(data);
+  } on FormatException {
+    // A Sentry envelope is not a single JSON object.
+    return null;
+  }
 }

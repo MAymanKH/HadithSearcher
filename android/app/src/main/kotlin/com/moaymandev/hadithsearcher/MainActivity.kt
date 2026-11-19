@@ -89,7 +89,23 @@ class MainActivity : FlutterActivity() {
                         if (deleted) result.success(null)
                         else result.error("cache", "Could not clear diagnostics cache", null)
                     }
-                    "clearAnalyticsCache" -> {
+                    "analyticsDeviceContext" -> {
+                        val token = call.argument<String>("projectToken").orEmpty()
+                        val previousId = if (token.isEmpty()) null else {
+                            val preferences = getSharedPreferences("posthog-android-$token", MODE_PRIVATE)
+                            // The old client never identified users. Migrate only a generated UUID.
+                            preferences.getString("anonymousId", null)?.takeIf {
+                                runCatching { java.util.UUID.fromString(it).toString() == it }.getOrDefault(false)
+                            }
+                        }
+                        val properties = mutableMapOf(
+                            "deviceType" to if (resources.configuration.smallestScreenWidthDp >= 600) "Tablet" else "Mobile",
+                            "osVersion" to Build.VERSION.RELEASE,
+                        )
+                        if (previousId != null) properties["previousId"] = previousId
+                        result.success(properties)
+                    }
+                    "clearLegacyAnalytics" -> {
                         val directories = listOf(
                             File(cacheDir, "posthog-disk-queue"),
                             File(cacheDir, "posthog-disk-replay-queue"),
@@ -98,7 +114,7 @@ class MainActivity : FlutterActivity() {
                         )
                         val deleted = directories.map { !it.exists() || it.deleteRecursively() }.all { it }
                         val token = call.argument<String>("projectToken") ?: ""
-                        val identityCleared = if (call.argument<Boolean>("clearIdentity") != false && token.isNotEmpty()) {
+                        val identityCleared = if (token.isNotEmpty()) {
                             getSharedPreferences("posthog-android-$token", MODE_PRIVATE).edit().clear().commit()
                         } else true
                         if (deleted && identityCleared) result.success(null)

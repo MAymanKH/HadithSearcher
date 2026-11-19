@@ -1,13 +1,14 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:posthog_flutter/posthog_flutter.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/constants/telemetry_config.dart' as config;
+import 'posthog_analytics.dart';
 import 'telemetry_service.dart';
 
-class SdkTelemetryBackend implements TelemetryBackend {
+class SdkTelemetryBackend implements TelemetryBackend, TelemetryReplayBackend {
   static const _native = MethodChannel('hadithsearcher/telemetry');
   final String sentryDsn;
   final String posthogToken;
@@ -15,7 +16,7 @@ class SdkTelemetryBackend implements TelemetryBackend {
   final String environment;
   final String distribution;
   bool _diagnostics = false;
-  bool _analytics = false;
+  PostHogAnalytics? _analytics;
 
   SdkTelemetryBackend({
     this.sentryDsn = config.sentryDsn,
@@ -87,75 +88,91 @@ class SdkTelemetryBackend implements TelemetryBackend {
   @override
   Future<void> setAnalyticsEnabled(bool enabled) async {
     if (!enabled) {
-      if (!_analytics) {
-        await _clearAnalyticsCache();
-        return;
+      final analytics = _analytics;
+      _analytics = null;
+      try {
+        if (analytics == null) {
+          await PostHogAnalytics.clearStored(
+            await SharedPreferences.getInstance(),
+          );
+        } else {
+          await analytics.stop();
+        }
+      } finally {
+        await _clearLegacyAnalytics();
       }
-      _analytics = false;
-      await Posthog().optOut();
-      await _clearAnalyticsCache(clearIdentity: false);
-      await Posthog().close();
-      await _clearAnalyticsCache();
       return;
     }
-    if (_analytics) return;
-    if (posthogToken.isEmpty || posthogHost.isEmpty) {
-      throw StateError('PostHog project token or host is empty');
+    if (_analytics != null) return;
+    final host = Uri.tryParse(posthogHost);
+    final local = host?.scheme == 'http' && host?.host == '127.0.0.1';
+    if (posthogToken.isEmpty ||
+        host == null ||
+        host.host.isEmpty ||
+        host.userInfo.isNotEmpty ||
+        host.hasQuery ||
+        host.hasFragment ||
+        (host.scheme != 'https' && !local)) {
+      throw StateError('Invalid PostHog ingestion configuration');
     }
-    final config = PostHogConfig(posthogToken)
-      ..host = posthogHost
-      ..captureApplicationLifecycleEvents = false
-      ..preloadFeatureFlags = false
-      ..sendFeatureFlagEvent = false
-      ..personProfiles = PostHogPersonProfiles.never
-      ..sessionReplay = false
-      ..surveys = false
-      ..capturePushNotificationSubscriptions = false
-      ..capturePushNotificationOpened = false
-      ..maxQueueSize = 200
-      ..flushAt = 20
-      ..flushInterval = const Duration(seconds: 60)
-      ..beforeSend = [(event) => _analytics ? event : null];
-    config.errorTrackingConfig.captureFlutterErrors = false;
-    config.errorTrackingConfig.capturePlatformDispatcherErrors = false;
-    config.errorTrackingConfig.captureIsolateErrors = false;
-    config.errorTrackingConfig.captureNativeExceptions = false;
-    config.errorTrackingConfig.captureNativeCrashes = false;
-    config.logsConfig.beforeSend = [(record) => null];
-    _analytics = true;
-    try {
-      await Posthog().setup(config);
-      await Posthog().optIn();
-    } catch (_) {
-      await setAnalyticsEnabled(false);
-      rethrow;
-    }
+    final package = await PackageInfo.fromPlatform();
+    final android = defaultTargetPlatform == TargetPlatform.android
+        ? await _native.invokeMapMethod<String, String>(
+            'analyticsDeviceContext',
+            {'projectToken': posthogToken},
+          )
+        : null;
+    final analytics = PostHogAnalytics(
+      preferences: await SharedPreferences.getInstance(),
+      token: posthogToken,
+      host: host,
+      context: {
+        'app_environment': environment,
+        'app_distribution': distribution,
+        r'$app_name': package.appName,
+        r'$app_namespace': package.packageName,
+        r'$app_version': package.version,
+        r'$app_build': int.tryParse(package.buildNumber) ?? package.buildNumber,
+        r'$lib': 'hadithsearcher-dart',
+        r'$lib_version': package.version,
+        if (android?['deviceType'] case final String value)
+          r'$device_type': value,
+        if (android?['osVersion'] case final String value) ...{
+          r'$os': 'Android',
+          r'$os_version': value,
+        },
+      },
+    );
+    await analytics.start(previousId: android?['previousId']);
+    _analytics = analytics;
+    await _clearLegacyAnalytics();
   }
 
-  Future<void> _clearAnalyticsCache({bool clearIdentity = true}) =>
-      _native.invokeMethod<void>('clearAnalyticsCache', {
+  Future<void> _clearLegacyAnalytics() async {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      await _native.invokeMethod<void>('clearLegacyAnalytics', {
         'projectToken': posthogToken,
-        'clearIdentity': clearIdentity,
       });
+    }
+  }
 
   @override
   Future<void> capture(String event, Map<String, Object> properties) async {
-    if (!_analytics) return;
-    await Posthog().capture(
-      eventName: event,
-      properties: {
-        ...properties,
-        'app_environment': environment,
-        'app_distribution': distribution,
-        '\$geoip_disable': true,
-      },
-    );
+    await _analytics?.capture(event, properties);
   }
 
   @override
-  Future<String?> analyticsId() async {
-    if (!_analytics) return null;
-    return Posthog().getDistinctId();
+  Future<String?> analyticsId() async => _analytics?.distinctId;
+
+  Future<void> flushAnalytics() async => _analytics?.flush();
+
+  @override
+  Future<void> captureReplay(
+    Size size,
+    List<Rect> controls,
+    Offset? tap,
+  ) async {
+    await _analytics?.captureReplay(size, controls, tap);
   }
 
   @override

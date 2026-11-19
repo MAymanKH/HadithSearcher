@@ -86,14 +86,6 @@ dependencies {
     "playImplementation"("com.google.android.play:app-update:2.1.0")
     implementation("androidx.core:core:1.17.0")
     coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
-    constraints {
-        implementation("com.posthog:posthog-android") {
-            version { strictly("3.72.2") }
-        }
-        implementation("com.posthog:posthog") {
-            version { strictly("6.47.1") }
-        }
-    }
 }
 
 flutter {

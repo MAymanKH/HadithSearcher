@@ -767,13 +767,13 @@ abstract class AppLocalizations {
   /// No description provided for @consentDescription.
   ///
   /// In en, this message translates to:
-  /// **'Sharing is optional. Uncheck either option to decline.'**
+  /// **'Sharing is optional. Uncheck any option you want to decline.'**
   String get consentDescription;
 
   /// No description provided for @analyticsConsent.
   ///
   /// In en, this message translates to:
-  /// **'I agree to share usage analytics.'**
+  /// **'Share usage analytics.'**
   String get analyticsConsent;
 
   /// No description provided for @diagnosticsConsent.

@@ -345,10 +345,10 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get consentDescription =>
-      'المشاركة اختيارية. أزل علامة أي خيار لرفضه.';
+      'المشاركة اختيارية. أزل علامة أي خيار لا ترغب في تفعيله.';
 
   @override
-  String get analyticsConsent => 'أوافق على مشاركة إحصاءات الاستخدام.';
+  String get analyticsConsent => 'مشاركة إحصاءات الاستخدام.';
 
   @override
   String get diagnosticsConsent => 'أوافق على مشاركة تقارير الأعطال.';

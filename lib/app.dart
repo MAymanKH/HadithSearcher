@@ -16,6 +16,7 @@ import 'views/similar_hadith/similar_hadith_view.dart';
 import 'services/telemetry/telemetry_service.dart';
 import 'services/update_service.dart';
 import 'widgets/app_snack_bar.dart';
+import 'widgets/session_replay_view.dart';
 
 /// Main app widget with Provider setup.
 class HadithSearcherApp extends StatelessWidget {
@@ -93,7 +94,10 @@ class HadithSearcherApp extends StatelessWidget {
                               },
                             ),
                       },
-                      child: AppScaffoldMessenger(child: child!),
+                      child: SessionReplayView(
+                        telemetry: telemetry,
+                        child: AppScaffoldMessenger(child: child!),
+                      ),
                     ),
                   ),
                 ),

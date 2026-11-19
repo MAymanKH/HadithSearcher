@@ -117,8 +117,9 @@ MaintainerNotes: |-
   The API endpoint can be changed at build time, but not in the app settings.
   Please review service and content licensing during inclusion.
 
-  Sentry and PostHog SDKs are included. Both options are preselected on first
-  launch; SDKs start only after Continue with the saved selections.
+  Crash reports use Sentry. Analytics use the PostHog HTTP API and include
+  IP-based location and replay of control outlines and taps. Both options are
+  preselected on first launch and apply after Continue with the saved selections.
   See docs/telemetry.md and the privacy policy linked in the store description.
 
   The unsigned builder uses /var/tmp/hadithsearcher-foss for stable Dart URIs

@@ -42,68 +42,91 @@ void main() {
   });
 
   test(
-    'Play enables both SDKs and cannot change a saved F-Droid choice',
+    'Play automatically enables analytics, replay, and diagnostics',
     () async {
-      final declined = const TelemetryConsent(decided: true).encode();
-      await service.preferences.setString(
-        TelemetryService.consentKey,
-        declined,
-      );
       final preferences = service.preferences;
+      const fossConsent = '{"version":1,"decided":true,"analytics":true}';
+      await preferences.setString(TelemetryService.consentKey, fossConsent);
+      final recorder = _ReplayBackend();
       service.dispose();
       service = TelemetryService(
         preferences: preferences,
-        backend: backend,
+        backend: recorder,
         policy: TelemetryPolicy.alwaysOn,
       );
       TelemetryService.instance = service;
       await service.initialize();
       expect(service.needsConsent, false);
       expect(service.canChangeConsent, false);
-      expect(backend.diagnostics && backend.analytics, true);
-      TelemetryService.event('search_submitted');
-      TelemetryService.report(
-        StateError('test'),
-        StackTrace.current,
-        'api.search',
-      );
-      expect(backend.events, ['search_submitted']);
-      expect(backend.reports, ['api.search']);
+      expect(recorder.diagnostics, true);
+      expect(recorder.analytics, true);
+      expect(service.replayEnabled, true);
+      TelemetryService.event('screen_viewed');
+      await service.captureReplay(const Size(100, 100), [
+        const Rect.fromLTWH(0, 0, 50, 50),
+      ], null);
+      expect(recorder.events, ['screen_viewed']);
+      expect(recorder.replayFrames, 1);
       expect(await service.save(diagnostics: false, analytics: false), false);
-      expect(service.analyticsEnabled && service.diagnosticsEnabled, true);
-      expect(preferences.getString(TelemetryService.consentKey), declined);
-      final foss = TelemetryService(
-        preferences: preferences,
-        backend: FakeBackend(),
-      );
-      await foss.initialize();
-      expect(foss.analyticsEnabled || foss.diagnosticsEnabled, false);
-      foss.dispose();
+      expect(preferences.getString(TelemetryService.consentKey), fossConsent);
     },
   );
 
+  test('Play never writes a consent choice for FOSS to inherit', () async {
+    final preferences = service.preferences;
+    service.dispose();
+    service = TelemetryService(
+      preferences: preferences,
+      backend: backend,
+      policy: TelemetryPolicy.alwaysOn,
+    );
+    await service.initialize();
+    expect(preferences.containsKey(TelemetryService.consentKey), false);
+    final foss = TelemetryService(
+      preferences: preferences,
+      backend: FakeBackend(),
+    );
+    addTearDown(foss.dispose);
+    await foss.initialize();
+    expect(foss.needsConsent, true);
+    expect(
+      foss.replayEnabled || foss.analyticsEnabled || foss.diagnosticsEnabled,
+      false,
+    );
+  });
+
   test(
-    'Play never records consent that a later F-Droid build can inherit',
+    'previous analytics opt-in is renewed before expanded collection',
     () async {
       final preferences = service.preferences;
+      await preferences.setString(
+        TelemetryService.consentKey,
+        '{"version":1,"decided":true,"diagnostics":true,"analytics":true}',
+      );
       service.dispose();
-      service = TelemetryService(
-        preferences: preferences,
-        backend: backend,
-        policy: TelemetryPolicy.alwaysOn,
-      );
+      service = TelemetryService(preferences: preferences, backend: backend);
       await service.initialize();
-      expect(preferences.containsKey(TelemetryService.consentKey), false);
-      final foss = TelemetryService(
-        preferences: preferences,
-        backend: FakeBackend(),
-      );
-      await foss.initialize();
-      expect(foss.needsConsent, true);
-      expect(foss.analyticsEnabled || foss.diagnosticsEnabled, false);
-      foss.dispose();
+      expect(service.needsConsent, true);
+      expect(service.analyticsEnabled, false);
+      expect(backend.transitions, ['diagnostics:true']);
+      expect(await service.save(diagnostics: true, analytics: true), true);
+      expect(service.needsConsent, false);
+      expect(backend.analytics, true);
     },
   );
+
+  test('previous analytics refusal is respected after the update', () async {
+    final preferences = service.preferences;
+    await preferences.setString(
+      TelemetryService.consentKey,
+      '{"version":1,"decided":true,"diagnostics":true,"analytics":false}',
+    );
+    service.dispose();
+    service = TelemetryService(preferences: preferences, backend: backend);
+    await service.initialize();
+    expect(service.needsConsent, false);
+    expect(backend.analytics, false);
+  });
 
   test(
     'diagnostics and analytics are independent and survive restart',
@@ -202,14 +225,14 @@ void main() {
     expect(backend.distribution, appFlavor == 'play' ? 'play' : 'foss');
   });
 
-  test('corrupted or old consent never enables collection', () {
+  test('corrupted consent never enables collection', () {
     for (final raw in [
       null,
       true,
       1,
       'invalid',
       '[]',
-      '{"version":2,"decided":true,"analytics":true}',
+      '{"version":99,"decided":true,"analytics":true}',
       '{"version":1,"analytics":true}',
     ]) {
       final consent = TelemetryConsent.read(raw);
@@ -242,4 +265,17 @@ void main() {
       expect(event.request, isNull);
     },
   );
+}
+
+class _ReplayBackend extends FakeBackend implements TelemetryReplayBackend {
+  int replayFrames = 0;
+
+  @override
+  Future<void> captureReplay(
+    Size size,
+    List<Rect> controls,
+    Offset? tap,
+  ) async {
+    replayFrames++;
+  }
 }

@@ -15,24 +15,29 @@ class TelemetryConsent {
   final bool decided;
   final bool diagnostics;
   final bool analytics;
+  final bool analyticsScopeCurrent;
 
   const TelemetryConsent({
     this.decided = false,
     this.diagnostics = false,
     this.analytics = false,
+    this.analyticsScopeCurrent = true,
   });
 
   static TelemetryConsent read(Object? value) {
     if (value is! String) return const TelemetryConsent();
     try {
       final data = jsonDecode(value);
-      if (data is! Map || data['version'] != 1 || data['decided'] != true) {
+      if (data is! Map ||
+          (data['version'] != 1 && data['version'] != 2) ||
+          data['decided'] != true) {
         return const TelemetryConsent();
       }
       return TelemetryConsent(
         decided: true,
         diagnostics: data['diagnostics'] == true,
         analytics: data['analytics'] == true,
+        analyticsScopeCurrent: data['version'] == 2,
       );
     } on FormatException {
       return const TelemetryConsent();
@@ -40,7 +45,7 @@ class TelemetryConsent {
   }
 
   String encode() => jsonEncode({
-    'version': 1,
+    'version': 2,
     'decided': decided,
     'diagnostics': diagnostics,
     'analytics': analytics,
@@ -54,6 +59,10 @@ abstract class TelemetryBackend {
   Future<void> report(Object error, StackTrace stack, String operation);
   Future<T> trace<T>(String operation, Future<T> Function() action);
   Future<String?> analyticsId();
+}
+
+abstract interface class TelemetryReplayBackend {
+  Future<void> captureReplay(Size size, List<Rect> controls, Offset? tap);
 }
 
 class TelemetryService extends ChangeNotifier {
@@ -75,11 +84,15 @@ class TelemetryService extends ChangeNotifier {
 
   TelemetryConsent get consent => _consent;
   bool get canChangeConsent => policy == TelemetryPolicy.optIn;
-  bool get needsConsent => canChangeConsent && !_consent.decided;
+  bool get _needsAnalyticsRenewal =>
+      canChangeConsent && _consent.analytics && !_consent.analyticsScopeCurrent;
+  bool get needsConsent =>
+      canChangeConsent && (!_consent.decided || _needsAnalyticsRenewal);
   bool get analyticsEnabled =>
-      policy == TelemetryPolicy.alwaysOn || _consent.analytics;
-  bool get diagnosticsEnabled =>
-      policy == TelemetryPolicy.alwaysOn || _consent.diagnostics;
+      !canChangeConsent || (_consent.analytics && !_needsAnalyticsRenewal);
+  bool get diagnosticsEnabled => !canChangeConsent || _consent.diagnostics;
+  bool get replayEnabled =>
+      analyticsEnabled && backend is TelemetryReplayBackend;
   bool get saving => _saving;
   String? get error => _error;
 
@@ -100,23 +113,24 @@ class TelemetryService extends ChangeNotifier {
       decided: previous.decided,
       diagnostics: previous.diagnostics && diagnostics,
       analytics: previous.analytics && analytics,
+      analyticsScopeCurrent: previous.analyticsScopeCurrent,
     );
     notifyListeners();
     try {
       // A failing SDK must not prevent the other SDK from stopping or leave
       // consent enabled on the next launch.
-      if (!diagnostics) {
-        try {
-          await backend.setDiagnosticsEnabled(false);
-        } catch (_) {
-          _error = 'تعذر تشغيل تقارير الأعطال حالياً.';
-        }
-      }
       if (!analytics) {
         try {
           await backend.setAnalyticsEnabled(false);
         } catch (_) {
           _error = 'تعذر تشغيل إحصاءات الاستخدام حالياً.';
+        }
+      }
+      if (!diagnostics) {
+        try {
+          await backend.setDiagnosticsEnabled(false);
+        } catch (_) {
+          _error = 'تعذر تشغيل تقارير الأعطال حالياً.';
         }
       }
       final next = TelemetryConsent(
@@ -146,10 +160,22 @@ class TelemetryService extends ChangeNotifier {
     } catch (_) {
       _error = 'تعذر تشغيل تقارير الأعطال حالياً.';
     }
+    if (_needsAnalyticsRenewal) return;
     try {
       await backend.setAnalyticsEnabled(analyticsEnabled);
     } catch (_) {
       _error = 'تعذر تشغيل إحصاءات الاستخدام حالياً.';
+    }
+  }
+
+  Future<void> captureReplay(
+    Size size,
+    List<Rect> controls,
+    Offset? tap,
+  ) async {
+    if (!replayEnabled) return;
+    if (backend case final TelemetryReplayBackend recorder) {
+      await recorder.captureReplay(size, controls, tap);
     }
   }
 
