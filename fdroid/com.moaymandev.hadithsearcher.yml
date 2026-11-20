@@ -27,7 +27,7 @@ Builds:
     disable: https://github.com/PostHog/posthog-android/issues/921
     commit: e0ac1a88348d74ab923e572f7842a15e1a5afa12
     output: build/app/outputs/flutter-apk/app-arm64-v8a-foss-release.apk
-    binary:
+    binary: 
       https://github.com/MAymanKH/HadithSearcher/releases/download/%v/HadithSearcher-%v+%c-foss-arm64-v8a.apk
     srclibs:
       - flutter@stable
@@ -55,7 +55,7 @@ Builds:
     disable: https://github.com/PostHog/posthog-android/issues/921
     commit: e0ac1a88348d74ab923e572f7842a15e1a5afa12
     output: build/app/outputs/flutter-apk/app-armeabi-v7a-foss-release.apk
-    binary:
+    binary: 
       https://github.com/MAymanKH/HadithSearcher/releases/download/%v/HadithSearcher-%v+%c-foss-armeabi-v7a.apk
     srclibs:
       - flutter@stable
@@ -83,7 +83,7 @@ Builds:
     disable: https://github.com/PostHog/posthog-android/issues/921
     commit: e0ac1a88348d74ab923e572f7842a15e1a5afa12
     output: build/app/outputs/flutter-apk/app-x86_64-foss-release.apk
-    binary:
+    binary: 
       https://github.com/MAymanKH/HadithSearcher/releases/download/%v/HadithSearcher-%v+%c-foss-x86_64.apk
     srclibs:
       - flutter@stable
@@ -110,7 +110,7 @@ Builds:
     versionCode: 241
     commit: c2df803ce0ab4d5e7d0a2952e9ac6ddece7366be
     output: build/app/outputs/flutter-apk/app-arm64-v8a-foss-release.apk
-    binary:
+    binary: 
       https://github.com/MAymanKH/HadithSearcher/releases/download/%v/HadithSearcher-%v+%c-foss-arm64-v8a.apk
     srclibs:
       - flutter@stable
@@ -137,7 +137,7 @@ Builds:
     versionCode: 242
     commit: c2df803ce0ab4d5e7d0a2952e9ac6ddece7366be
     output: build/app/outputs/flutter-apk/app-armeabi-v7a-foss-release.apk
-    binary:
+    binary: 
       https://github.com/MAymanKH/HadithSearcher/releases/download/%v/HadithSearcher-%v+%c-foss-armeabi-v7a.apk
     srclibs:
       - flutter@stable
@@ -164,7 +164,7 @@ Builds:
     versionCode: 243
     commit: c2df803ce0ab4d5e7d0a2952e9ac6ddece7366be
     output: build/app/outputs/flutter-apk/app-x86_64-foss-release.apk
-    binary:
+    binary: 
       https://github.com/MAymanKH/HadithSearcher/releases/download/%v/HadithSearcher-%v+%c-foss-x86_64.apk
     srclibs:
       - flutter@stable
