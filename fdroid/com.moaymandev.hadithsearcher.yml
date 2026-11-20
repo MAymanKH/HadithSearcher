@@ -108,9 +108,9 @@ Builds:
 
   - versionName: 3.0.5
     versionCode: 241
-    commit: 5eb124611a60acee5185da9af54582fb92402caa
+    commit: c2df803ce0ab4d5e7d0a2952e9ac6ddece7366be
     output: build/app/outputs/flutter-apk/app-arm64-v8a-foss-release.apk
-    binary:
+    binary: 
       https://github.com/MAymanKH/HadithSearcher/releases/download/%v/HadithSearcher-%v+%c-foss-arm64-v8a.apk
     srclibs:
       - flutter@stable
@@ -135,9 +135,9 @@ Builds:
 
   - versionName: 3.0.5
     versionCode: 242
-    commit: 5eb124611a60acee5185da9af54582fb92402caa
+    commit: c2df803ce0ab4d5e7d0a2952e9ac6ddece7366be
     output: build/app/outputs/flutter-apk/app-armeabi-v7a-foss-release.apk
-    binary:
+    binary: 
       https://github.com/MAymanKH/HadithSearcher/releases/download/%v/HadithSearcher-%v+%c-foss-armeabi-v7a.apk
     srclibs:
       - flutter@stable
@@ -162,9 +162,9 @@ Builds:
 
   - versionName: 3.0.5
     versionCode: 243
-    commit: 5eb124611a60acee5185da9af54582fb92402caa
+    commit: c2df803ce0ab4d5e7d0a2952e9ac6ddece7366be
     output: build/app/outputs/flutter-apk/app-x86_64-foss-release.apk
-    binary:
+    binary: 
       https://github.com/MAymanKH/HadithSearcher/releases/download/%v/HadithSearcher-%v+%c-foss-x86_64.apk
     srclibs:
       - flutter@stable
