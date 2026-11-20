@@ -352,7 +352,7 @@ class AppLocalizationsEn extends AppLocalizations {
       'Sharing is optional. Uncheck any option you want to decline.';
 
   @override
-  String get analyticsConsent => 'Share usage analytics.';
+  String get analyticsConsent => 'I agree to share usage analytics.';
 
   @override
   String get diagnosticsConsent => 'I agree to share crash reports.';

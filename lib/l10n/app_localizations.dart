@@ -773,7 +773,7 @@ abstract class AppLocalizations {
   /// No description provided for @analyticsConsent.
   ///
   /// In en, this message translates to:
-  /// **'Share usage analytics.'**
+  /// **'I agree to share usage analytics.'**
   String get analyticsConsent;
 
   /// No description provided for @diagnosticsConsent.
