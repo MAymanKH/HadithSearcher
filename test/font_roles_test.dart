@@ -19,6 +19,7 @@ import 'package:hadithsearcher/views/settings/settings_view.dart';
 import 'package:hadithsearcher/views/welcome/welcome_view.dart';
 import 'package:hadithsearcher/views/privacy/telemetry_consent_view.dart';
 import 'package:hadithsearcher/widgets/app_dropdown.dart';
+import 'package:hadithsearcher/widgets/selection_sheet.dart';
 import 'package:hadithsearcher/widgets/hadith_additional_info.dart';
 import 'package:hadithsearcher/widgets/hadith_detail_button.dart';
 
@@ -29,7 +30,7 @@ void main() {
 
   for (final theme in [AppTheme.lightTheme, AppTheme.darkTheme]) {
     for (final language in ['ar', 'en']) {
-      testWidgets('interface uses Cairo in $language ${theme.brightness}', (
+      testWidgets('interface fonts in $language ${theme.brightness}', (
         tester,
       ) async {
         tester.view.physicalSize = const Size(800, 1600);
@@ -37,6 +38,7 @@ void main() {
         addTearDown(tester.view.reset);
         final settings = SettingsViewModel();
         await settings.loadSettings();
+        await settings.setLanguage(language);
         addTearDown(settings.dispose);
         final updates = UpdateService();
         addTearDown(updates.dispose);
@@ -46,14 +48,14 @@ void main() {
         );
         addTearDown(telemetry.dispose);
 
-        void expectInterfaceFont() {
+        void expectInterfaceFont([Map<String, String> previews = const {}]) {
           final texts = tester.widgetList<RichText>(find.byType(RichText));
           expect(texts, isNotEmpty);
           for (final text in texts) {
             if (text.text.style?.fontFamily == 'MaterialIcons') continue;
             expect(
               text.text.style?.fontFamily,
-              'Cairo',
+              previews[text.text.toPlainText()] ?? 'Cairo',
               reason: text.text.toPlainText(),
             );
           }
@@ -82,10 +84,46 @@ void main() {
             ),
           );
           await tester.pumpAndSettle();
-          expectInterfaceFont();
           if (page is SettingsView) {
-            await tester.tap(find.byType(AppDropdown<String>).last);
+            final family = find.byType(AppDropdown<String>).last;
+            final options = tester.widget<AppDropdown<String>>(family).items;
+            final previews = {
+              for (final option in options)
+                (option.child as Text).data!: option.value!,
+            };
+            expect(
+              previews.values,
+              unorderedEquals(SettingsViewModel.fontFamilies),
+            );
+            final robotoLabel = language == 'ar' ? 'روبوتو' : 'Roboto';
+            expect(previews[robotoLabel], 'Roboto');
+            for (final option in options) {
+              expect((option.child as Text).style!.fontFamily, option.value);
+            }
+            expectInterfaceFont(previews);
+            await tester.tap(family);
             await tester.pumpAndSettle();
+            expectInterfaceFont(previews);
+            final sheet = find.byType(SelectionSheet);
+            expect(
+              find.descendant(of: sheet, matching: find.text(robotoLabel)),
+              findsOneWidget,
+            );
+            Navigator.of(tester.element(sheet)).pop();
+            await tester.pumpAndSettle();
+
+            final weight = find.byType(AppDropdown<FontWeightPreference>);
+            final l10n = tester.element(weight).l10n;
+            await tester.tap(weight);
+            await tester.pumpAndSettle();
+            for (final preference in FontWeightPreference.values) {
+              final option = find.descendant(
+                of: sheet,
+                matching: find.text(preference.label(l10n)),
+              );
+              expect(tester.widget<Text>(option).style!.fontWeight, isNull);
+            }
+          } else {
             expectInterfaceFont();
           }
           expect(tester.takeException(), isNull);
