@@ -1,6 +1,6 @@
 <div dir="rtl">
 <div align="center">
-<img src="fastlane/metadata/android/en-US/images/icon.png" width="200" alt="Hadith Searcher">
+<img src="store/readme-icon.png" width="200" alt="Hadith Searcher">
 
 # Hadith Searcher
 
