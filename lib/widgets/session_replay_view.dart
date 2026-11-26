@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 
 import '../services/telemetry/telemetry_service.dart';
 
@@ -19,6 +22,7 @@ class SessionReplayView extends StatefulWidget {
 }
 
 class _SessionReplayViewState extends State<SessionReplayView> {
+  final _boundaryKey = GlobalKey();
   Timer? _timer;
   Offset? _tap;
   int? _pointer;
@@ -42,7 +46,7 @@ class _SessionReplayViewState extends State<SessionReplayView> {
 
   void _updateRecording() {
     if (widget.telemetry.replayEnabled) {
-      _timer ??= Timer.periodic(const Duration(seconds: 2), (_) => _capture());
+      _timer ??= Timer.periodic(const Duration(seconds: 1), (_) => _capture());
     } else {
       _timer?.cancel();
       _timer = null;
@@ -55,55 +59,38 @@ class _SessionReplayViewState extends State<SessionReplayView> {
     if (WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
       return;
     }
-    final root = context.findRenderObject();
-    if (root is! RenderBox || !root.hasSize || root.size.isEmpty) return;
-    final controls = <Rect>[];
-    final viewport = Offset.zero & root.size;
-    var tap = _tap;
+    final tap = _tap;
     _tap = null;
+    unawaited(widget.telemetry.captureReplay(_captureFrame, tap));
+  }
 
-    var remaining = 1500;
-    void visit(Element element) {
-      if (remaining-- <= 0 ||
-          controls.length >= 60 ||
-          (element.widget is Offstage &&
-              (element.widget as Offstage).offstage)) {
-        return;
-      }
-      switch (element.widget) {
-        case TextField():
-          final box = element.findRenderObject();
-          if (tap != null && box is RenderBox && box.hasSize) {
-            final bounds =
-                box.localToGlobal(Offset.zero, ancestor: root) & box.size;
-            if (bounds.contains(tap!)) tap = null;
-          }
-          return;
-        case ButtonStyleButton() ||
-            IconButton() ||
-            CheckboxListTile() ||
-            SwitchListTile() ||
-            ListTile() ||
-            NavigationBar() ||
-            Chip():
-          final box = element.findRenderObject();
-          if (box is RenderBox && box.hasSize) {
-            final bounds =
-                (box.localToGlobal(Offset.zero, ancestor: root) & box.size)
-                    .intersect(viewport);
-            if (bounds.width >= 16 && bounds.height >= 16) controls.add(bounds);
-          }
-          return;
-        default:
-          element.visitChildElements(visit);
-      }
+  Future<({Size size, Uint8List png})?> _captureFrame() async {
+    if (!mounted ||
+        !widget.telemetry.replayEnabled ||
+        WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
+      return null;
+    }
+    final boundary = _boundaryKey.currentContext?.findRenderObject();
+    if (boundary is! RenderRepaintBoundary ||
+        !boundary.hasSize ||
+        boundary.size.isEmpty) {
+      return null;
     }
 
-    context.visitChildElements(visit);
-    if (tap != null && !controls.any((bounds) => bounds.contains(tap!))) {
-      tap = null;
+    final size = boundary.size;
+    final image = await boundary.toImage();
+    try {
+      final data = await image.toByteData(format: ui.ImageByteFormat.png);
+      if (data == null ||
+          !mounted ||
+          !widget.telemetry.replayEnabled ||
+          WidgetsBinding.instance.lifecycleState != AppLifecycleState.resumed) {
+        return null;
+      }
+      return (size: size, png: Uint8List.sublistView(data));
+    } finally {
+      image.dispose();
     }
-    unawaited(widget.telemetry.captureReplay(root.size, controls, tap));
   }
 
   @override
@@ -126,7 +113,7 @@ class _SessionReplayViewState extends State<SessionReplayView> {
       _pointerDown = null;
       _pointer = null;
     },
-    child: widget.child,
+    child: RepaintBoundary(key: _boundaryKey, child: widget.child),
   );
 
   @override

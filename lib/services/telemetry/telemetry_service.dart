@@ -66,8 +66,10 @@ abstract class TelemetryBackend {
   Future<String?> analyticsId();
 }
 
+typedef CaptureReplayFrame = Future<({Size size, Uint8List png})?> Function();
+
 abstract interface class TelemetryReplayBackend {
-  Future<void> captureReplay(Size size, List<Rect> controls, Offset? tap);
+  Future<void> captureReplay(CaptureReplayFrame captureFrame, Offset? tap);
 }
 
 class TelemetryService extends ChangeNotifier {
@@ -174,13 +176,12 @@ class TelemetryService extends ChangeNotifier {
   }
 
   Future<void> captureReplay(
-    Size size,
-    List<Rect> controls,
+    CaptureReplayFrame captureFrame,
     Offset? tap,
   ) async {
     if (!replayEnabled) return;
     if (backend case final TelemetryReplayBackend recorder) {
-      await recorder.captureReplay(size, controls, tap);
+      await recorder.captureReplay(captureFrame, tap);
     }
   }
 

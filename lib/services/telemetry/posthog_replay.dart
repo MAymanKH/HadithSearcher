@@ -1,11 +1,11 @@
 import 'dart:convert';
 import 'dart:ui';
 
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 
-import '../../core/theme/app_palettes.g.dart';
-import '../../models/settings.dart';
+import 'telemetry_service.dart';
 
 class PostHogReplay {
   final String token;
@@ -13,15 +13,13 @@ class PostHogReplay {
   final http.Client _client;
 
   static const _configLifetime = Duration(minutes: 5);
-  static final _palette = AppPalettes.resolve(
-    ColorSchemePreference.classic,
-    Brightness.light,
-  );
   DateTime? _configExpires;
   DateTime? _retryAfter;
   double? _sampleRate;
   String? _lastSession;
-  String? _lastLayout;
+  String? _lastScreen;
+  Size? _lastSize;
+  Uint8List? _lastPng;
   bool _sending = false;
   bool _closed = false;
 
@@ -30,14 +28,12 @@ class PostHogReplay {
 
   void close() {
     _closed = true;
+    _lastPng = null;
     _client.close();
   }
 
   Uri _endpoint(String path) =>
       host.replace(path: '${host.path.replaceFirst(RegExp(r'/+$'), '')}/$path');
-
-  String _rgb(Color color) =>
-      '#${color.toARGB32().toRadixString(16).padLeft(8, '0').substring(2)}';
 
   Future<void> _refreshConfig(DateTime now) async {
     final expires = _configExpires;
@@ -51,9 +47,8 @@ class PostHogReplay {
     };
     final response = await _request(
       'GET',
-      _endpoint(
-        'array/${Uri.encodeComponent(token)}/config',
-      ).replace(host: assetsHost),
+      _endpoint('array/${Uri.encodeComponent(token)}/config')
+          .replace(host: assetsHost),
     );
     if (response.statusCode != 200) return;
     final config = jsonDecode(response.body);
@@ -101,8 +96,7 @@ class PostHogReplay {
     required String distinctId,
     required String sessionId,
     required String screen,
-    required Size size,
-    required List<Rect> controls,
+    required CaptureReplayFrame captureFrame,
     Offset? tap,
   }) async {
     final retryAfter = _retryAfter;
@@ -111,7 +105,6 @@ class PostHogReplay {
         (retryAfter != null && now.isBefore(retryAfter))) {
       return;
     }
-    if (controls.isEmpty) return;
     _sending = true;
     try {
       await _refreshConfig(now);
@@ -122,38 +115,17 @@ class PostHogReplay {
       );
       if (_closed || sample == null || bucket / (1 << 32) >= sample) return;
 
-      final width = size.width.round();
-      final height = size.height.round();
-      final wireframes = [
-        {
-          'id': 1,
-          'type': 'rectangle',
-          'x': 0,
-          'y': 0,
-          'width': width,
-          'height': height,
-          'style': {'backgroundColor': _rgb(_palette.surface)},
-        },
-        for (final (index, control) in controls.indexed)
-          {
-            'id': index + 2,
-            'type': 'rectangle',
-            'x': control.left.round(),
-            'y': control.top.round(),
-            'width': control.width.round(),
-            'height': control.height.round(),
-            'style': {
-              'backgroundColor': _rgb(_palette.surfaceContainer),
-              'borderColor': _rgb(_palette.outlineVariant),
-              'borderWidth': 1,
-              'borderRadius': 6,
-            },
-          },
-      ];
-      final layout = jsonEncode([screen, width, height, wireframes]);
-      final newSession = _lastSession != sessionId;
-      final newLayout = newSession || _lastLayout != layout;
-      if (!newLayout && tap == null) return;
+      final frame = await captureFrame();
+      if (_closed || frame == null) return;
+
+      final width = frame.size.width.round();
+      final height = frame.size.height.round();
+      final newViewport =
+          _lastSession != sessionId ||
+          _lastScreen != screen ||
+          _lastSize != frame.size;
+      final newImage = newViewport || !listEquals(_lastPng, frame.png);
+      if (!newImage && tap == null) return;
       final timestamp = now.millisecondsSinceEpoch;
       final response = await _request('POST', _endpoint('s/'), [
         {
@@ -168,21 +140,32 @@ class PostHogReplay {
             r'$snapshot_source': 'mobile',
             r'$process_person_profile': false,
             r'$snapshot_data': [
-              if (newLayout) ...[
+              if (newViewport)
                 {
                   'type': 4,
                   'timestamp': timestamp,
                   'data': {'href': screen, 'width': width, 'height': height},
                 },
+              if (newImage)
                 {
                   'type': 2,
                   'timestamp': timestamp,
                   'data': {
-                    'wireframes': wireframes,
+                    'wireframes': [
+                      {
+                        'id': 1,
+                        'type': 'screenshot',
+                        'x': 0,
+                        'y': 0,
+                        'width': width,
+                        'height': height,
+                        'base64':
+                            'data:image/png;base64,${base64Encode(frame.png)}',
+                      },
+                    ],
                     'initialOffset': {'top': 0, 'left': 0},
                   },
                 },
-              ],
               if (tap != null)
                 {
                   'type': 3,
@@ -200,9 +183,12 @@ class PostHogReplay {
           },
         },
       ]);
+      if (_closed) return;
       if (response.statusCode >= 200 && response.statusCode < 300) {
         _lastSession = sessionId;
-        _lastLayout = layout;
+        _lastScreen = screen;
+        _lastSize = frame.size;
+        _lastPng = frame.png;
       } else {
         _retryAfter = now.add(const Duration(seconds: 30));
       }

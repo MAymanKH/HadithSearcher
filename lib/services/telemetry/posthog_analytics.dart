@@ -9,6 +9,7 @@ import 'package:uuid/data.dart';
 import 'package:uuid/uuid.dart';
 
 import 'posthog_replay.dart';
+import 'telemetry_service.dart';
 
 class PostHogAnalytics with WidgetsBindingObserver {
   static const _storageKey = 'posthog_http_v1';
@@ -162,8 +163,7 @@ class PostHogAnalytics with WidgetsBindingObserver {
   }
 
   Future<void> captureReplay(
-    Size size,
-    List<Rect> controls,
+    CaptureReplayFrame captureFrame,
     Offset? tap,
   ) async {
     final id = _distinctId;
@@ -189,8 +189,7 @@ class PostHogAnalytics with WidgetsBindingObserver {
       distinctId: id,
       sessionId: session,
       screen: _screen ?? 'app',
-      size: size,
-      controls: controls,
+      captureFrame: captureFrame,
       tap: tap,
     );
   }

@@ -1,7 +1,9 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+
 import 'l10n/localization.dart';
 import 'views/startup_flow.dart';
 import 'core/constants/routes.dart';
@@ -79,23 +81,23 @@ class HadithSearcherApp extends StatelessWidget {
               final theme = Theme.of(context);
               return AnnotatedRegion<SystemUiOverlayStyle>(
                 value: AppTheme.systemUiOverlayStyle(theme.brightness),
-                child: ColoredBox(
-                  color: theme.scaffoldBackgroundColor,
-                  child: SafeArea(
-                    top: false,
-                    bottom: false,
-                    child: Actions(
-                      actions: {
-                        EditableTextTapOutsideIntent:
-                            CallbackAction<EditableTextTapOutsideIntent>(
-                              onInvoke: (intent) {
-                                intent.focusNode.unfocus();
-                                return null;
-                              },
-                            ),
-                      },
-                      child: SessionReplayView(
-                        telemetry: telemetry,
+                child: SessionReplayView(
+                  telemetry: telemetry,
+                  child: ColoredBox(
+                    color: theme.scaffoldBackgroundColor,
+                    child: SafeArea(
+                      top: false,
+                      bottom: false,
+                      child: Actions(
+                        actions: {
+                          EditableTextTapOutsideIntent:
+                              CallbackAction<EditableTextTapOutsideIntent>(
+                                onInvoke: (intent) {
+                                  intent.focusNode.unfocus();
+                                  return null;
+                                },
+                              ),
+                        },
                         child: AppScaffoldMessenger(child: child!),
                       ),
                     ),

@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -7,6 +8,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hadithsearcher/services/telemetry/telemetry_service.dart';
 import 'package:hadithsearcher/services/telemetry/sdk_telemetry_backend.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+
 import 'fake_backend.dart';
 
 void main() {
@@ -64,9 +66,7 @@ void main() {
       expect(recorder.analytics, true);
       expect(service.replayEnabled, true);
       TelemetryService.event('screen_viewed');
-      await service.captureReplay(const Size(100, 100), [
-        const Rect.fromLTWH(0, 0, 50, 50),
-      ], null);
+      await service.captureReplay(() async => null, null);
       expect(recorder.events, ['screen_viewed']);
       expect(recorder.replayFrames, 1);
       expect(await service.save(diagnostics: false, analytics: false), false);
@@ -279,6 +279,20 @@ void main() {
     expect(report['contexts']['failure']['status_code'], 500);
     expect(report.toString(), isNot(contains('private diagnostic message')));
 
+    expect(await first.trace('verification.success', () async => 42), 42);
+    final success = await lastReport();
+    expect(success['transaction'], 'verification.success');
+    expect(success['contexts']['trace']['status'], 'ok');
+    final failure = StateError('private trace error');
+    await expectLater(
+      first.trace<void>('verification.failure', () async => throw failure),
+      throwsA(same(failure)),
+    );
+    final failed = await lastReport();
+    expect(failed['transaction'], 'verification.failure');
+    expect(failed['contexts']['trace']['status'], 'internal_error');
+    expect(failed.toString(), isNot(contains('private trace error')));
+
     await Sentry.close();
     final restarted = await start();
     expect(nativeIds.last, firstId);
@@ -353,8 +367,7 @@ class _ReplayBackend extends FakeBackend implements TelemetryReplayBackend {
 
   @override
   Future<void> captureReplay(
-    Size size,
-    List<Rect> controls,
+    CaptureReplayFrame captureFrame,
     Offset? tap,
   ) async {
     replayFrames++;

@@ -72,7 +72,7 @@ class SdkTelemetryBackend implements TelemetryBackend, TelemetryReplayBackend {
               '${package.packageName}@${package.version}+${package.buildNumber}'
           ..environment = environment
           ..sendDefaultPii = false
-          ..tracesSampleRate = 0.05
+          ..tracesSampleRate = 1.0
           ..enableAutoPerformanceTracing = false
           ..enableAutoNativeBreadcrumbs = false
           ..enablePrintBreadcrumbs = false
@@ -196,11 +196,10 @@ class SdkTelemetryBackend implements TelemetryBackend, TelemetryReplayBackend {
 
   @override
   Future<void> captureReplay(
-    Size size,
-    List<Rect> controls,
+    CaptureReplayFrame captureFrame,
     Offset? tap,
   ) async {
-    await _analytics?.captureReplay(size, controls, tap);
+    await _analytics?.captureReplay(captureFrame, tap);
   }
 
   @override
@@ -227,7 +226,12 @@ class SdkTelemetryBackend implements TelemetryBackend, TelemetryReplayBackend {
     if (!_diagnostics) return action();
     final transaction = Sentry.startTransaction(operation, 'app.operation');
     try {
-      return await action();
+      final result = await action();
+      transaction.status = const SpanStatus.ok();
+      return result;
+    } catch (_) {
+      transaction.status = const SpanStatus.internalError();
+      rethrow;
     } finally {
       try {
         await transaction.finish();

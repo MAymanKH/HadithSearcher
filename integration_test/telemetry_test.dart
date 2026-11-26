@@ -102,9 +102,10 @@ void main() {
 
       await tester.tap(find.text('الإعدادات').last);
       await tester.pumpAndSettle();
-      await tester.ensureVisible(find.text('الخصوصية والقياس الاختياري'));
+      final privacy = find.text('الخصوصية والقياس الاختياري');
+      await tester.scrollUntilVisible(privacy, 250);
       await tester.pumpAndSettle();
-      await tester.tap(find.text('الخصوصية والقياس الاختياري'));
+      await tester.tap(privacy);
       await tester.pumpAndSettle();
       await tester.tap(find.byKey(const Key('diagnostics-consent')));
       await tester.tap(find.byKey(const Key('analytics-consent')));
@@ -127,6 +128,7 @@ void main() {
         'integration.error',
         details: {'status_code': 503},
       );
+      await backend.trace('integration.trace', () async {});
       final frameworkError = StateError('private-framework-error');
       FlutterError.reportError(
         FlutterErrorDetails(
@@ -161,6 +163,7 @@ void main() {
           attempt < 30 &&
               (!bodies.any((body) => body.contains('search_submitted')) ||
                   !bodies.any((body) => body.contains('integration.error')) ||
+                  !bodies.any((body) => body.contains('integration.trace')) ||
                   !bodies.any((body) => body.contains('FlutterError')) ||
                   !bodies.any((body) => body.contains(r'$snapshot')) ||
                   !bodies.any(
@@ -181,6 +184,7 @@ void main() {
       );
       expect(bodies.any((body) => body.contains('integration.error')), true);
       expect(bodies.any((body) => body.contains('FlutterError')), true);
+      expect(bodies.any((body) => body.contains('integration.trace')), true);
       expect(
         bodies.any((body) => body.contains('PlatformDispatcher.onError')),
         true,
@@ -219,11 +223,24 @@ void main() {
         screenProperties[r'$session_id'],
       );
       expect(recordingProperties[r'$snapshot_source'], 'mobile');
-      expect(recordingProperties[r'$snapshot_data'], isNotEmpty);
-      final replay = jsonEncode(recordingProperties[r'$snapshot_data']);
-      expect(replay, contains('"type":"rectangle"'));
-      expect(replay, isNot(contains('consented-query')));
-      expect(replay, isNot(contains('base64')));
+      final snapshots = recordingProperties[r'$snapshot_data'] as List;
+      final frame = snapshots.firstWhere((event) => event['type'] == 2);
+      final wireframe = (frame['data']['wireframes'] as List).single;
+      expect(wireframe['type'], 'screenshot');
+      final data = UriData.parse(wireframe['base64'] as String);
+      expect(data.mimeType, 'image/png');
+      final codec = await instantiateImageCodec(data.contentAsBytes());
+      final image = (await codec.getNextFrame()).image;
+      try {
+        expect(image.width, closeTo(wireframe['width'] as int, 1));
+        expect(image.height, closeTo(wireframe['height'] as int, 1));
+        final pixels = await image.toByteData();
+        final colors = pixels!.buffer.asUint32List().toSet();
+        expect(colors.length, greaterThan(8));
+      } finally {
+        image.dispose();
+        codec.dispose();
+      }
       expect(bodies.join(), isNot(contains('secret-query@example.com')));
       expect(bodies.join(), isNot(contains('private-framework-error')));
       expect(bodies.join(), isNot(contains('private-async-error')));
