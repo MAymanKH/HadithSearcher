@@ -71,9 +71,9 @@ void main() {
     expect(restoreIcons, findsNothing);
     final arrows = find.byIcon(Icons.expand_more_rounded);
     expect(arrows, findsNWidgets(7));
-    final arrowPositions = tester.getTopLeft(arrows.first).dx;
+    final arrowPositions = tester.getCenter(arrows.first).dx;
     for (final arrow in arrows.evaluate()) {
-      expect(tester.getTopLeft(find.byWidget(arrow.widget)).dx, arrowPositions);
+      expect(tester.getCenter(find.byWidget(arrow.widget)).dx, arrowPositions);
     }
     final familyField = find.ancestor(
       of: find.text('نوع الخط'),
@@ -97,7 +97,14 @@ void main() {
       tester.getRect(familyDecoration).contains(tester.getCenter(familyReset)),
       isTrue,
     );
-    expect(tester.getTopLeft(familyArrow).dx, arrowPositions);
+    expect(tester.getCenter(familyArrow).dx, arrowPositions);
+    expect(tester.getCenter(restoreIcons), tester.getCenter(familyReset));
+    expect(
+      (tester.getCenter(restoreIcons).dx - tester.getCenter(familyArrow).dx)
+          .abs(),
+      lessThanOrEqualTo(42),
+    );
+    expect(tester.getSize(familyReset).shortestSide, greaterThanOrEqualTo(48));
     final semantics = tester.ensureSemantics();
     final resetSemantics = tester.getSemantics(familyReset).getSemanticsData();
     semantics.dispose();

@@ -73,8 +73,13 @@ class AppDropdown<T> extends StatelessWidget {
   Widget build(BuildContext context) {
     final selected = items.firstWhere((item) => item.value == value);
     final theme = Theme.of(context);
+    const arrowIconSize = 24.0;
+    final arrowSlotWidth =
+        theme.inputDecorationTheme.suffixIconConstraints?.minWidth ??
+        kMinInteractiveDimension;
     final arrow = Icon(
       Icons.expand_more_rounded,
+      size: arrowIconSize,
       color: theme.colorScheme.onSurface,
     );
     final resetValue = defaultValue;
@@ -84,18 +89,21 @@ class AppDropdown<T> extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               IconButton(
+                constraints: const BoxConstraints(
+                  minWidth: kMinInteractiveDimension,
+                  minHeight: kMinInteractiveDimension,
+                ),
+                padding: EdgeInsets.zero,
                 tooltip: context.l10n.resetSetting(title),
                 icon: const Icon(Icons.restore_outlined, size: 20),
                 onPressed: () => onChanged(resetValue),
               ),
               SizedBox(
-                width:
-                    theme
-                        .inputDecorationTheme
-                        .suffixIconConstraints
-                        ?.minWidth ??
-                    kMinInteractiveDimension,
-                child: arrow,
+                width: (arrowSlotWidth + arrowIconSize) / 2,
+                child: Align(
+                  alignment: AlignmentDirectional.centerStart,
+                  child: arrow,
+                ),
               ),
             ],
           );
