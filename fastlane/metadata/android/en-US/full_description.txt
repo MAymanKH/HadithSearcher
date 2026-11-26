@@ -1,15 +1,11 @@
-Search prophetic hadiths in Arabic and read their explanations, sources, and scholars' authenticity assessments from Dorar al-Saniyyah.
+Hadith Searcher is a free and open-source application for searching prophetic hadiths, accessing their explanations, sources, and the rulings of hadith scholars. Based on the content of the Al-Durar Al-Sunniyyah website, it gathers hadith information in one place to facilitate reading and study.
+Features:
 
-• Search by any word, all words, or an exact phrase, and exclude words or phrases.
-• Filter by authenticity grade, scholar, book, or narrator.
-• View narrators, source references, original narrations, and similar hadiths.
-• Save hadiths for offline reading.
-• Adjust fonts, text size, and app colors.
+- Search - Search by any word, all words, or exact phrase, with the ability to select a search range and exclude words or phrases.
 
-Search and new explanations require an internet connection to the hosted Dorar Hadith API. Saved hadiths remain available offline. The interface supports Arabic and English, with Arabic as the default. Hadith content is in Arabic.
-
-Crash reporting through Sentry and usage analytics through PostHog are optional. Both options are preselected on first launch; uncheck either to decline. They start only after Continue and can be disabled in Settings. See the privacy policy for details.
-
-The F-Droid build does not include Shorebird code updates or Google Play's update library. The app automatically checks GitHub and F-Droid for updates once a day. You can disable automatic checks in Settings or check manually from About.
-
-<a href="https://hadith-searcher-privacy-policy.pages.dev">Privacy policy</a>
+- Hadith Data - Displays the narrator, source, hadith scholar, summary of the hadith scholar's ruling, hadith classification, and its origins.
+- Explanations - Access explanations and interpretations of hadiths.
+- Similar Hadiths - Search for hadiths similar to the displayed hadith.
+- Advanced Filtering - Select from thousands of options based on the hadith's grade, hadith scholars, books, or narrators.
+- Saved - Save hadiths for offline reading.
+- Appearance Customization - Control the font size and type of hadiths and support various application colors.
