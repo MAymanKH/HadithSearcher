@@ -8,7 +8,6 @@ import '../../widgets/appearance_preferences.dart';
 import '../../models/settings.dart';
 import '../../viewmodels/settings_viewmodel.dart';
 import '../../services/telemetry/telemetry_service.dart';
-import '../../services/update_service.dart';
 import '../privacy/telemetry_consent_view.dart';
 
 class SettingsView extends StatelessWidget {
@@ -56,11 +55,6 @@ class SettingsView extends StatelessWidget {
             context,
             SwitchListTile(
               title: Text(l10n.automaticUpdateChecks),
-              subtitle: Text(
-                buildUpdateChannel == UpdateChannel.foss
-                    ? l10n.fossUpdateChecksDescription
-                    : l10n.playUpdateChecksDescription,
-              ),
               value: vm.settings.automaticUpdateChecks,
               onChanged: vm.setAutomaticUpdateChecks,
             ),

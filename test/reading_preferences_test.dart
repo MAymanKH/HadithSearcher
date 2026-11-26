@@ -116,6 +116,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(restoreIcons, findsNWidgets(4));
     final updateSwitch = find.byType(SwitchListTile);
+    expect(tester.widget<SwitchListTile>(updateSwitch).subtitle, isNull);
     await tester.scrollUntilVisible(
       updateSwitch,
       200,

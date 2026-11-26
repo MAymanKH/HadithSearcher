@@ -571,11 +571,4 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get automaticUpdateChecks => 'Automatic update checks';
-
-  @override
-  String get fossUpdateChecksDescription =>
-      'Check GitHub and F-Droid once a day.';
-
-  @override
-  String get playUpdateChecksDescription => 'Check Google Play once a day.';
 }

@@ -565,11 +565,4 @@ class AppLocalizationsAr extends AppLocalizations {
 
   @override
   String get automaticUpdateChecks => 'التحقق التلقائي من التحديثات';
-
-  @override
-  String get fossUpdateChecksDescription =>
-      'التحقق من GitHub وF-Droid مرة يومياً.';
-
-  @override
-  String get playUpdateChecksDescription => 'التحقق من Google Play مرة يومياً.';
 }
