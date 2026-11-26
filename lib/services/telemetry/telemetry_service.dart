@@ -56,7 +56,12 @@ abstract class TelemetryBackend {
   Future<void> setDiagnosticsEnabled(bool enabled);
   Future<void> setAnalyticsEnabled(bool enabled);
   Future<void> capture(String event, Map<String, Object> properties);
-  Future<void> report(Object error, StackTrace stack, String operation);
+  Future<void> report(
+    Object error,
+    StackTrace stack,
+    String operation, {
+    Map<String, Object> details = const {},
+  });
   Future<T> trace<T>(String operation, Future<T> Function() action);
   Future<String?> analyticsId();
 }
@@ -187,11 +192,18 @@ class TelemetryService extends ChangeNotifier {
     );
   }
 
-  static void report(Object error, StackTrace stack, String operation) {
+  static void report(
+    Object error,
+    StackTrace stack,
+    String operation, {
+    Map<String, Object> details = const {},
+  }) {
     final service = instance;
     if (service == null || !service.diagnosticsEnabled) return;
     unawaited(
-      service.backend.report(error, stack, operation).catchError((Object _) {}),
+      service.backend
+          .report(error, stack, operation, details: details)
+          .catchError((Object _) {}),
     );
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 
 import '../../core/constants/telemetry_config.dart' as config;
 import 'posthog_analytics.dart';
@@ -10,6 +11,7 @@ import 'telemetry_service.dart';
 
 class SdkTelemetryBackend implements TelemetryBackend, TelemetryReplayBackend {
   static const _native = MethodChannel('hadithsearcher/telemetry');
+  static const _installationIdKey = 'diagnostics_installation_id';
   final String sentryDsn;
   final String posthogToken;
   final String posthogHost;
@@ -30,16 +32,38 @@ class SdkTelemetryBackend implements TelemetryBackend, TelemetryReplayBackend {
   Future<void> setDiagnosticsEnabled(bool enabled) async {
     if (!enabled) {
       _diagnostics = false;
-      if (Sentry.isEnabled) {
-        await _native.invokeMethod<void>('prepareDiagnosticsShutdown');
-        await Sentry.close();
+      try {
+        if (Sentry.isEnabled) {
+          try {
+            await _native.invokeMethod<void>('prepareDiagnosticsShutdown');
+          } finally {
+            await Sentry.close();
+          }
+        }
+      } finally {
+        try {
+          await _native.invokeMethod<void>('clearDiagnosticsCache');
+        } finally {
+          final preferences = await SharedPreferences.getInstance();
+          if (!await preferences.remove(_installationIdKey)) {
+            throw StateError('Could not clear diagnostics installation ID');
+          }
+        }
       }
-      await _native.invokeMethod<void>('clearDiagnosticsCache');
       return;
     }
     if (_diagnostics) return;
     if (sentryDsn.isEmpty) throw StateError('SENTRY_DSN is empty');
     final package = await PackageInfo.fromPlatform();
+    final preferences = await SharedPreferences.getInstance();
+    var installationId = preferences.getString(_installationIdKey);
+    if (installationId == null) {
+      installationId = const Uuid().v4();
+      if (!await preferences.setString(_installationIdKey, installationId)) {
+        throw StateError('Could not save diagnostics installation ID');
+      }
+    }
+    final diagnosticUserId = installationId;
     try {
       await SentryFlutter.init((options) {
         options
@@ -54,14 +78,18 @@ class SdkTelemetryBackend implements TelemetryBackend, TelemetryReplayBackend {
           ..enablePrintBreadcrumbs = false
           ..attachScreenshot = false
           ..enableLogs = false;
-        options.beforeSend = (event, hint) =>
-            _diagnostics ? scrubError(event) : null;
+        options.beforeSend = (event, hint) => _diagnostics
+            ? scrubError(event, installationId: diagnosticUserId)
+            : null;
         options.beforeSendTransaction = (event, hint) =>
             _diagnostics ? event : null;
         options.replay.sessionSampleRate = 0;
         options.replay.onErrorSampleRate = 0;
       });
-      await _native.invokeMethod<void>('configureDiagnosticsPrivacy');
+      await _native.invokeMethod<void>('configureDiagnosticsPrivacy', {
+        'installationId': diagnosticUserId,
+        'distribution': distribution,
+      });
       await Sentry.configureScope(
         (scope) => scope.setTag('distribution', distribution),
       );
@@ -73,8 +101,8 @@ class SdkTelemetryBackend implements TelemetryBackend, TelemetryReplayBackend {
     }
   }
 
-  static SentryEvent scrubError(SentryEvent event) {
-    event.user = null;
+  static SentryEvent scrubError(SentryEvent event, {String? installationId}) {
+    event.user = installationId == null ? null : SentryUser(id: installationId);
     event.request = null;
     event.message = null;
     event.breadcrumbs = null;
@@ -176,14 +204,20 @@ class SdkTelemetryBackend implements TelemetryBackend, TelemetryReplayBackend {
   }
 
   @override
-  Future<void> report(Object error, StackTrace stack, String operation) async {
+  Future<void> report(
+    Object error,
+    StackTrace stack,
+    String operation, {
+    Map<String, Object> details = const {},
+  }) async {
     if (!_diagnostics) return;
     await Sentry.captureException(
       error,
       stackTrace: stack,
-      withScope: (scope) {
+      withScope: (scope) async {
         scope.setTag('operation', operation);
         scope.fingerprint = [operation, error.runtimeType.toString()];
+        if (details.isNotEmpty) await scope.setContexts('failure', details);
       },
     );
   }

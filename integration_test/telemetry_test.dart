@@ -125,6 +125,7 @@ void main() {
         StateError('secret-query@example.com'),
         StackTrace.current,
         'integration.error',
+        details: {'status_code': 503},
       );
       final frameworkError = StateError('private-framework-error');
       FlutterError.reportError(
@@ -226,6 +227,22 @@ void main() {
       expect(bodies.join(), isNot(contains('secret-query@example.com')));
       expect(bodies.join(), isNot(contains('private-framework-error')));
       expect(bodies.join(), isNot(contains('private-async-error')));
+      final diagnosticEvents = bodies
+          .expand((body) => body.split('\n'))
+          .map(jsonDecodeOrNull)
+          .whereType<Map<String, dynamic>>()
+          .where((event) => event.containsKey('exception'))
+          .toList();
+      final manualReport = diagnosticEvents.firstWhere(
+        (event) => event['tags']?['operation'] == 'integration.error',
+      );
+      expect(manualReport['contexts']['failure']['status_code'], 503);
+      final diagnosticId = manualReport['user']['id'];
+      expect(diagnosticId, matches(RegExp(r'^[0-9a-f-]{36}$')));
+      expect(diagnosticId, isNot(firstId));
+      expect(diagnosticEvents.map((event) => event['user']?['id']).toSet(), {
+        diagnosticId,
+      });
 
       accepting = false;
       await backend.capture('queued_before_withdrawal', {
@@ -241,6 +258,7 @@ void main() {
       );
       await telemetry.save(diagnostics: false, analytics: false);
       expect(Sentry.isEnabled, false);
+      expect(preferences.getString('diagnostics_installation_id'), isNull);
       accepting = true;
       final afterWithdrawal = requests;
       TelemetryService.event('after_withdrawal');
@@ -261,6 +279,10 @@ void main() {
       expect(restored.consent.analytics || restored.consent.diagnostics, false);
       await restored.save(diagnostics: true, analytics: true);
       expect(await backend.analyticsId(), isNot(firstId));
+      expect(
+        preferences.getString('diagnostics_installation_id'),
+        isA<String>().having((id) => id, 'diagnostics ID', isNot(diagnosticId)),
+      );
       await backend.capture('after_reconsent', {});
       await backend.flushAnalytics();
       await tester.runAsync(() async {

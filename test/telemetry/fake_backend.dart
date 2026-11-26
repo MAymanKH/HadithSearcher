@@ -7,6 +7,7 @@ class FakeBackend implements TelemetryBackend {
   final events = <String>[];
   final properties = <Map<String, Object>>[];
   final reports = <String>[];
+  final reportDetails = <Map<String, Object>>[];
   final transitions = <String>[];
   Completer<void>? stoppingAnalytics;
   bool failDiagnostics = false;
@@ -34,8 +35,14 @@ class FakeBackend implements TelemetryBackend {
   }
 
   @override
-  Future<void> report(Object error, StackTrace stack, String operation) async {
+  Future<void> report(
+    Object error,
+    StackTrace stack,
+    String operation, {
+    Map<String, Object> details = const {},
+  }) async {
     reports.add(operation);
+    reportDetails.add(details);
   }
 
   @override

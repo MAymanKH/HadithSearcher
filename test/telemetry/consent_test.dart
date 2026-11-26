@@ -1,6 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hadithsearcher/services/telemetry/telemetry_service.dart';
 import 'package:hadithsearcher/services/telemetry/sdk_telemetry_backend.dart';
@@ -225,6 +227,70 @@ void main() {
     expect(backend.distribution, appFlavor == 'play' ? 'play' : 'foss');
   });
 
+  test('diagnostics ID and failure context reach a Sentry envelope', () async {
+    PackageInfo.setMockInitialValues(
+      appName: 'Hadith Searcher',
+      packageName: 'com.moaymandev.hadithsearcher',
+      version: '1.0.0',
+      buildNumber: '1',
+      buildSignature: '',
+    );
+    const channel = MethodChannel('hadithsearcher/telemetry');
+    final messenger =
+        TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger;
+    final nativeIds = <Object?>[];
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      if (call.method == 'configureDiagnosticsPrivacy') {
+        nativeIds.add(call.arguments['installationId']);
+      }
+      return null;
+    });
+    addTearDown(() => messenger.setMockMethodCallHandler(channel, null));
+    addTearDown(Sentry.close);
+
+    final transport = _CaptureTransport();
+    Future<SdkTelemetryBackend> start() async {
+      final backend = SdkTelemetryBackend(
+        sentryDsn: 'http://public@127.0.0.1/1',
+      );
+      await backend.setDiagnosticsEnabled(true);
+      // ignore: invalid_use_of_internal_member
+      Sentry.currentHub.options.transport = transport;
+      return backend;
+    }
+
+    Future<Map<String, dynamic>> lastReport() async {
+      final item = transport.envelopes.last.items.single;
+      return jsonDecode(utf8.decode(await item.dataFactory()))
+          as Map<String, dynamic>;
+    }
+
+    final first = await start();
+    await first.report(
+      StateError('private diagnostic message'),
+      StackTrace.current,
+      'api.book_details.http_500',
+      details: {'status_code': 500},
+    );
+    final report = await lastReport();
+    final firstId = report['user']['id'];
+    expect(firstId, matches(RegExp(r'^[0-9a-f-]{36}$')));
+    expect(firstId, nativeIds.single);
+    expect(report['contexts']['failure']['status_code'], 500);
+    expect(report.toString(), isNot(contains('private diagnostic message')));
+
+    await Sentry.close();
+    final restarted = await start();
+    expect(nativeIds.last, firstId);
+    await restarted.setDiagnosticsEnabled(false);
+    expect(
+      service.preferences.getString('diagnostics_installation_id'),
+      isNull,
+    );
+    await start();
+    expect(nativeIds.last, isNot(firstId));
+  });
+
   test('corrupted consent never enables collection', () {
     for (final raw in [
       null,
@@ -244,7 +310,7 @@ void main() {
   });
 
   test(
-    'Sentry payload retains stack type while removing content and identity',
+    'Sentry replaces personal identity with the diagnostics installation ID',
     () {
       final event = SentryEvent(
         user: SentryUser(id: 'user', email: 'someone@example.com'),
@@ -257,14 +323,29 @@ void main() {
       event.contexts['flutter_error_details'] = {
         'information': 'private hadith',
       };
-      final json = SdkTelemetryBackend.scrubError(event).toJson().toString();
+      final report = SdkTelemetryBackend.scrubError(
+        event,
+        installationId: 'diagnostic-installation',
+      );
+      final json = report.toJson().toString();
       expect(json, contains('FormatException'));
       expect(json, isNot(contains('private')));
       expect(json, isNot(contains('someone@example.com')));
-      expect(event.user, isNull);
+      expect(report.user?.id, 'diagnostic-installation');
+      expect(report.user?.email, isNull);
       expect(event.request, isNull);
     },
   );
+}
+
+class _CaptureTransport implements Transport {
+  final envelopes = <SentryEnvelope>[];
+
+  @override
+  Future<SentryId?> send(SentryEnvelope envelope) async {
+    envelopes.add(envelope);
+    return envelope.header.eventId;
+  }
 }
 
 class _ReplayBackend extends FakeBackend implements TelemetryReplayBackend {

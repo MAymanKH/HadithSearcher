@@ -8,6 +8,7 @@ import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import io.sentry.Sentry
+import io.sentry.protocol.User
 import java.io.File
 
 class MainActivity : FlutterActivity() {
@@ -65,20 +66,26 @@ class MainActivity : FlutterActivity() {
             .setMethodCallHandler { call, result ->
                 when (call.method) {
                     "configureDiagnosticsPrivacy" -> {
+                        val installationId = call.argument<String>("installationId")
+                        val distribution = call.argument<String>("distribution")
                         val options = Sentry.getCurrentScopes().options
                         val original = options.beforeSend
                         options.beforeSend = io.sentry.SentryOptions.BeforeSendCallback { event, hint ->
-                            event.user = null
-                            event.request = null
-                            event.message = null
-                            event.exceptions?.forEach { it.value = it.type }
-                            event.breadcrumbs = emptyList()
-                            if (original == null) event else original.execute(event, hint)
+                            val report = if (original == null) event else original.execute(event, hint)
+                            report?.apply {
+                                user = installationId?.let { id -> User().apply { this.id = id } }
+                                request = null
+                                message = null
+                                exceptions?.forEach { it.value = it.type }
+                                breadcrumbs = emptyList()
+                                distribution?.let { setTag("distribution", it) }
+                            }
                         }
                         result.success(null)
                     }
                     "prepareDiagnosticsShutdown" -> {
                         val options = Sentry.getCurrentScopes().options
+                        options.beforeSend = io.sentry.SentryOptions.BeforeSendCallback { _, _ -> null }
                         options.shutdownTimeoutMillis = 0
                         options.flushTimeoutMillis = 0
                         result.success(null)
