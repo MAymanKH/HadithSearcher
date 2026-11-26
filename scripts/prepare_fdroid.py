@@ -8,6 +8,7 @@ import argparse
 from pathlib import Path
 import re
 import shutil
+import xml.etree.ElementTree as ET
 
 from PIL import Image
 
@@ -25,8 +26,17 @@ def main():
         raise SystemExit("Expected version: x.y.z+number in pubspec.yaml")
     name, code = version.group(1), int(version.group(2))
 
-    with Image.open(ROOT / "assets/icons/launcher.png") as source:
-        icon = source.convert("RGBA").resize((512, 512), Image.Resampling.LANCZOS)
+    colors = ET.parse(ROOT / "android/app/src/main/res/values/colors.xml")
+    background = colors.findtext("./color[@name='ic_launcher_background']")
+    with Image.open(ROOT / "assets/icons/launcher_foreground.png") as source:
+        # Android displays the central 72 dp of the 108 dp adaptive layer.
+        width, height = source.size
+        viewport = (width / 6, height / 6, width * 5 / 6, height * 5 / 6)
+        foreground = source.convert("RGBA").resize(
+            (512, 512), Image.Resampling.LANCZOS, box=viewport
+        )
+    icon = Image.new("RGBA", foreground.size, background)
+    icon.alpha_composite(foreground)
     screenshots = sorted((ROOT / "store/screenshots/ar/phone").glob("*.png"))
     if not screenshots:
         raise SystemExit("No Arabic store screenshots found")

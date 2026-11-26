@@ -1,5 +1,5 @@
 <div align="center">
-<img src="assets/icons/logo_readme.svg" width="200" alt="Hadith Searcher">
+<img src="fastlane/metadata/android/en-US/images/icon.png" width="200" alt="Hadith Searcher">
 
 # Hadith Searcher
 
