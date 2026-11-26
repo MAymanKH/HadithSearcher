@@ -214,10 +214,22 @@ class AboutView extends StatelessWidget {
         TextButton(
           onPressed: () => Navigator.of(context).push<void>(
             MaterialPageRoute(
-              builder: (_) => const TooltipVisibility(
-                visible: false,
-                child: LicensePage(applicationName: 'Hadith Searcher'),
-              ),
+              builder: (context) {
+                final theme = Theme.of(context);
+                final backgroundColor =
+                    theme.appBarTheme.backgroundColor ??
+                    theme.colorScheme.surface;
+                return Theme(
+                  data: theme.copyWith(
+                    cardColor: backgroundColor,
+                    scaffoldBackgroundColor: backgroundColor,
+                  ),
+                  child: const TooltipVisibility(
+                    visible: false,
+                    child: LicensePage(applicationName: 'Hadith Searcher'),
+                  ),
+                );
+              },
             ),
           ),
           child: Text(context.l10n.licenses),

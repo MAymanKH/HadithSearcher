@@ -1,13 +1,16 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:hadithsearcher/core/theme/app_theme.dart';
 import 'package:hadithsearcher/l10n/localization.dart';
 import 'package:hadithsearcher/services/update_service.dart';
 import 'package:hadithsearcher/views/about/about_view.dart';
 import 'package:provider/provider.dart';
 
 void main() {
-  testWidgets('license list and details have no back tooltip', (tester) async {
+  testWidgets('license screens match the app bar and hide back tooltips', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(390, 850);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -22,14 +25,16 @@ void main() {
     );
     final updates = UpdateService();
     addTearDown(updates.dispose);
+    final theme = AppTheme.darkTheme;
     await tester.pumpWidget(
       ChangeNotifierProvider.value(
         value: updates,
-        child: const MaterialApp(
-          locale: Locale('ar'),
+        child: MaterialApp(
+          theme: theme,
+          locale: const Locale('ar'),
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: AboutView(),
+          home: const AboutView(),
         ),
       ),
     );
@@ -39,7 +44,17 @@ void main() {
     await tester.pumpAndSettle();
 
     final back = find.byType(BackButton);
-    Future<void> verifyBackTooltipHidden() async {
+    Future<void> verifyLicenseScreen(Finder bodyText) async {
+      final background = find.ancestor(
+        of: bodyText,
+        matching: find.byWidgetPredicate(
+          (widget) => widget is Material && widget.elevation == 4,
+        ),
+      );
+      expect(
+        tester.widget<Material>(background).color,
+        theme.appBarTheme.backgroundColor,
+      );
       expect(back, findsOneWidget);
       expect(TooltipVisibility.of(tester.element(back)), isFalse);
       final label = MaterialLocalizations.of(tester.element(back))
@@ -52,10 +67,10 @@ void main() {
     }
 
     final package = find.text('Example package');
-    await verifyBackTooltipHidden();
+    await verifyLicenseScreen(package);
     await tester.tap(package);
     await tester.pumpAndSettle();
-    await verifyBackTooltipHidden();
+    await verifyLicenseScreen(find.text('Example license'));
     await tester.tap(back);
     await tester.pumpAndSettle();
     expect(package, findsOneWidget);
