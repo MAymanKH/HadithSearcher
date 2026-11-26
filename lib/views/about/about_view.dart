@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../l10n/localization.dart';
+import '../../widgets/app_bar_back_button.dart';
 import '../../core/constants/app_config.dart';
 import '../../services/update_service.dart';
 import '../../services/telemetry/telemetry_service.dart';
@@ -53,6 +54,7 @@ class AboutView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        leading: appBarBackButton(context),
         title: Text(
           context.l10n.about,
           style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
@@ -210,9 +212,13 @@ class AboutView extends StatelessWidget {
         ),
         const SizedBox(height: 20),
         TextButton(
-          onPressed: () => showLicensePage(
-            context: context,
-            applicationName: 'Hadith Searcher',
+          onPressed: () => Navigator.of(context).push<void>(
+            MaterialPageRoute(
+              builder: (_) => const TooltipVisibility(
+                visible: false,
+                child: LicensePage(applicationName: 'Hadith Searcher'),
+              ),
+            ),
           ),
           child: Text(context.l10n.licenses),
         ),

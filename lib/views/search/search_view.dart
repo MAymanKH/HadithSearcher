@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/localization.dart';
+import '../../widgets/app_bar_back_button.dart';
 import '../../core/theme/app_theme.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../widgets/app_dropdown.dart';
@@ -112,6 +113,7 @@ class _SearchViewState extends State<SearchView> with ScrollToTopMixin {
 
     return Scaffold(
       appBar: AppBar(
+        leading: appBarBackButton(context),
         title: Text(
           context.l10n.search,
           style: const TextStyle(

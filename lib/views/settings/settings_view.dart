@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../l10n/localization.dart';
+import '../../widgets/app_bar_back_button.dart';
 import '../../widgets/app_dropdown.dart';
 import '../../widgets/appearance_preferences.dart';
 import '../../models/settings.dart';
@@ -27,6 +28,7 @@ class SettingsView extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
+        leading: appBarBackButton(context),
         title: Text(
           l10n.settings,
           style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),

@@ -81,11 +81,7 @@ class _BackToTopButtonState extends State<BackToTopButton> {
     return Scaffold(
       body: widget.child,
       floatingActionButton: _showButton
-          ? FloatingActionButton(
-              onPressed: _scrollToTop,
-              tooltip: context.l10n.backToTop,
-              child: const Icon(Icons.arrow_upward_rounded),
-            )
+          ? _backToTopButton(context, _scrollToTop)
           : null,
     );
   }
@@ -155,10 +151,15 @@ mixin ScrollToTopMixin<T extends StatefulWidget> on State<T> {
 
   Widget? buildBackToTopButton() {
     if (!showBackToTopButton) return null;
-    return FloatingActionButton(
-      onPressed: scrollToTop,
-      tooltip: context.l10n.backToTop,
-      child: const Icon(Icons.arrow_upward_rounded),
-    );
+    return _backToTopButton(context, scrollToTop);
   }
 }
+
+Widget _backToTopButton(BuildContext context, VoidCallback onPressed) =>
+    Semantics(
+      label: context.l10n.backToTop,
+      child: FloatingActionButton(
+        onPressed: onPressed,
+        child: const Icon(Icons.arrow_upward_rounded),
+      ),
+    );

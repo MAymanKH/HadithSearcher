@@ -5,6 +5,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hadithsearcher/core/theme/app_theme.dart';
 import 'package:hadithsearcher/services/telemetry/telemetry_service.dart';
 import 'package:hadithsearcher/views/privacy/telemetry_consent_view.dart';
+
 import 'fake_backend.dart';
 
 void main() {
@@ -90,12 +91,20 @@ void main() {
       backend: FakeBackend(),
     );
     addTearDown(service.dispose);
+    final navigator = GlobalKey<NavigatorState>();
     await tester.pumpWidget(
       ChangeNotifierProvider.value(
         value: service,
-        child: const MaterialApp(home: TelemetryConsentView()),
+        child: MaterialApp(
+          navigatorKey: navigator,
+          home: const Scaffold(body: Text('Settings')),
+        ),
       ),
     );
+    navigator.currentState!.push<void>(
+      MaterialPageRoute(builder: (_) => const TelemetryConsentView()),
+    );
+    await tester.pumpAndSettle();
     expect(
       tester
           .widget<CheckboxListTile>(
@@ -110,5 +119,15 @@ void main() {
           .value,
       false,
     );
+    final back = find.byType(BackButtonIcon);
+    final label = MaterialLocalizations.of(tester.element(back))
+        .backButtonTooltip;
+    expect(find.byTooltip(label), findsNothing);
+    final semantics = tester.ensureSemantics();
+    expect(find.bySemanticsLabel(label), findsOneWidget);
+    semantics.dispose();
+    await tester.tap(back);
+    await tester.pumpAndSettle();
+    expect(find.text('Settings'), findsOneWidget);
   });
 }

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../l10n/localization.dart';
+import '../../widgets/app_bar_back_button.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../core/constants/app_config.dart';
 import '../../widgets/app_logo.dart';
@@ -56,7 +57,9 @@ class _TelemetryConsentViewState extends State<TelemetryConsentView> {
   Widget build(BuildContext context) {
     final telemetry = context.watch<TelemetryService>();
     return Scaffold(
-      appBar: widget.firstLaunch ? null : AppBar(),
+      appBar: widget.firstLaunch
+          ? null
+          : AppBar(leading: appBarBackButton(context)),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) => SingleChildScrollView(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../widgets/hadith_source_sheet.dart';
 import '../../l10n/localization.dart';
+import '../../widgets/app_bar_back_button.dart';
 import '../../core/constants/app_config.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../services/telemetry/telemetry_service.dart';
@@ -50,6 +51,7 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
 
     return Scaffold(
       appBar: AppBar(
+        leading: appBarBackButton(context),
         title: Text(
           context.l10n.favourites,
           style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),

@@ -103,6 +103,10 @@ void main() {
 
         await scroll(110);
         expect(button, findsOneWidget);
+        expect(find.byTooltip('العودة إلى الأعلى'), findsNothing);
+        final semantics = tester.ensureSemantics();
+        expect(find.bySemanticsLabel('العودة إلى الأعلى'), findsOneWidget);
+        semantics.dispose();
         await tester.tap(button);
         await tester.pumpAndSettle();
         expect(controller.offset, 0);

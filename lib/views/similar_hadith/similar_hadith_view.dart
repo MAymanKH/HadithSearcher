@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:provider/provider.dart';
 import '../../l10n/localization.dart';
+import '../../widgets/app_bar_back_button.dart';
 import '../../services/telemetry/telemetry_service.dart';
 import '../../widgets/app_snack_bar.dart';
 import '../../viewmodels/similar_hadith_viewmodel.dart';
@@ -45,7 +46,10 @@ class _SimilarHadithViewState extends State<SimilarHadithView>
     final vm = context.watch<SimilarHadithViewModel>();
 
     return Scaffold(
-      appBar: AppBar(title: Text(context.l10n.similarHadiths)),
+      appBar: AppBar(
+        leading: appBarBackButton(context),
+        title: Text(context.l10n.similarHadiths),
+      ),
       body: SafeArea(
         top: false,
         child: Center(
