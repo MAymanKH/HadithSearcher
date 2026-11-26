@@ -29,5 +29,3 @@ flutter test integration_test/cloud_telemetry_test.dart -d emulator-5554 --flavo
 ```
 
 Confirm `telemetry_integration_verified` in PostHog with `app_environment=verification`, and `operation=verification.sentry` in Sentry. Passing the test alone does not confirm cloud ingestion.
-
-For an HTTP ingestion check without the Flutter SDKs, run `python3 scripts/verify_telemetry_ingestion.py --send`. This sends synthetic events and checks acceptance responses.
