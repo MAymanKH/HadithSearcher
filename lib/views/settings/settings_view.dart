@@ -19,7 +19,6 @@ class SettingsView extends StatelessWidget {
 
     final l10n = context.l10n;
     final showPrivacy = context.watch<TelemetryService>().canChangeConsent;
-    const sectionDivider = Divider(height: 24, indent: 24, endIndent: 24);
     const sectionTitlePadding = EdgeInsets.fromLTRB(20, 4, 20, 12);
     const sectionTitleStyle = TextStyle(
       fontSize: 23,
@@ -56,7 +55,7 @@ class SettingsView extends StatelessWidget {
           _buildFontWeightSection(context, vm),
           _buildFontSizeSection(context, vm),
           _buildPaddingSection(context, vm),
-          sectionDivider,
+          const Divider(height: 24, indent: 24, endIndent: 24),
           _settingsTile(
             context,
             SwitchListTile(
@@ -71,7 +70,7 @@ class SettingsView extends StatelessWidget {
             ),
           ),
           if (showPrivacy) ...[
-            sectionDivider,
+            const SizedBox(height: 12),
             _settingsTile(
               context,
               ListTile(

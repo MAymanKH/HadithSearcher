@@ -64,7 +64,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    final reset = find.byType(FloatingActionButton);
+    final reset = find.widgetWithText(FloatingActionButton, 'إعادة الضبط');
     final resetPosition = tester.getCenter(reset);
     final arrows = find.byIcon(Icons.expand_more_rounded);
     expect(arrows, findsNWidgets(7));
@@ -107,15 +107,11 @@ void main() {
       tester.getBottomLeft(privacy).dy,
       lessThan(tester.getTopLeft(reset).dy),
     );
-    final dividers = find.byType(Divider);
-    expect(dividers, findsNWidgets(2));
+    final divider = find.byType(Divider);
+    expect(divider, findsOneWidget);
     expect(
-      tester.getCenter(dividers.first).dy,
+      tester.getCenter(divider).dy,
       lessThan(tester.getTopLeft(updateSwitch).dy),
-    );
-    expect(
-      tester.getCenter(dividers.last).dy,
-      greaterThan(tester.getBottomLeft(updateSwitch).dy),
     );
     await tester.tap(reset);
     await tester.pumpAndSettle();

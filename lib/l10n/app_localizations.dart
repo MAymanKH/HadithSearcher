@@ -197,7 +197,7 @@ abstract class AppLocalizations {
   /// No description provided for @resetSettings.
   ///
   /// In en, this message translates to:
-  /// **'Reset to defaults'**
+  /// **'Reset'**
   String get resetSettings;
 
   /// No description provided for @systemTheme.
