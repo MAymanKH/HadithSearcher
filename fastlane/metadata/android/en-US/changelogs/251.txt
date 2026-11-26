@@ -1,0 +1,5 @@
+- Preview reading fonts and reset individual reading settings.
+- Keep your place in Saved when switching tabs.
+- Improve recovery from network errors and failures opening links.
+- Upgrade Flutter and refresh app dependencies.
+- Refresh the English store description and app icon.
