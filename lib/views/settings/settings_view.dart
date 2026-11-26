@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../l10n/localization.dart';
 import '../../widgets/app_dropdown.dart';
 import '../../widgets/appearance_preferences.dart';
@@ -16,98 +17,95 @@ class SettingsView extends StatelessWidget {
   Widget build(BuildContext context) {
     final vm = context.watch<SettingsViewModel>();
 
+    final l10n = context.l10n;
+    final showPrivacy = context.watch<TelemetryService>().canChangeConsent;
+    const sectionDivider = Divider(height: 24, indent: 24, endIndent: 24);
+    const sectionTitlePadding = EdgeInsets.fromLTRB(20, 4, 20, 12);
+    const sectionTitleStyle = TextStyle(
+      fontSize: 23,
+      fontWeight: FontWeight.bold,
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          context.l10n.settings,
-          style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+          l10n.settings,
+          style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
         ),
       ),
+      floatingActionButton: FloatingActionButton.extended(
+        heroTag: null,
+        onPressed: vm.resetToDefaults,
+        icon: const Icon(Icons.restore_outlined),
+        label: Text(l10n.resetSettings),
+      ),
       body: ListView(
+        padding: const EdgeInsets.only(top: 15, bottom: 88),
         children: [
-          SingleChildScrollView(
-            child: Column(
-              children: [
-                const SizedBox(height: 15),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(20, 4, 20, 12),
-                  child: Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: Text(
-                      context.l10n.appearanceSettings,
-                      style: TextStyle(
-                        fontSize: 23,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                const AppearancePreferences(),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(20, 4, 20, 12),
-                  child: Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: Text(
-                      context.l10n.readingSettings,
-                      style: TextStyle(
-                        fontSize: 23,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-                ),
-                _buildFontFamilySection(context, vm),
-                _buildFontWeightSection(context, vm),
-                _buildFontSizeSection(context, vm),
-                _buildPaddingSection(context, vm),
-                const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  child: SwitchListTile(
-                    title: Text(context.l10n.automaticUpdateChecks),
-                    subtitle: Text(
-                      buildUpdateChannel == UpdateChannel.foss
-                          ? context.l10n.fossUpdateChecksDescription
-                          : context.l10n.playUpdateChecksDescription,
-                    ),
-                    value: vm.settings.automaticUpdateChecks,
-                    onChanged: vm.setAutomaticUpdateChecks,
-                  ),
-                ),
-              ],
+          Padding(
+            padding: sectionTitlePadding,
+            child: Text(l10n.appearanceSettings, style: sectionTitleStyle),
+          ),
+          const AppearancePreferences(),
+          const SizedBox(height: 20),
+          Padding(
+            padding: sectionTitlePadding,
+            child: Text(l10n.readingSettings, style: sectionTitleStyle),
+          ),
+          _buildFontFamilySection(context, vm),
+          _buildFontWeightSection(context, vm),
+          _buildFontSizeSection(context, vm),
+          _buildPaddingSection(context, vm),
+          sectionDivider,
+          _settingsTile(
+            context,
+            SwitchListTile(
+              title: Text(l10n.automaticUpdateChecks),
+              subtitle: Text(
+                buildUpdateChannel == UpdateChannel.foss
+                    ? l10n.fossUpdateChecksDescription
+                    : l10n.playUpdateChecksDescription,
+              ),
+              value: vm.settings.automaticUpdateChecks,
+              onChanged: vm.setAutomaticUpdateChecks,
             ),
           ),
-          Column(
-            children: [
-              const SizedBox(height: 30),
-              _buildResetButton(context, vm),
-              const SizedBox(height: 30),
-              if (context.watch<TelemetryService>().canChangeConsent)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 30),
-                  child: Material(
-                    color: Theme.of(context).colorScheme.surfaceContainer,
-                    borderRadius: BorderRadius.circular(20),
-                    clipBehavior: Clip.antiAlias,
-                    child: ListTile(
-                      title: Text(
-                        context.l10n.privacySettings,
-                        style: TextStyle(fontSize: 18),
-                      ),
-                      trailing: const Icon(Icons.chevron_right_rounded),
-                      onTap: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const TelemetryConsentView(),
-                        ),
-                      ),
-                    ),
+          if (showPrivacy) ...[
+            sectionDivider,
+            _settingsTile(
+              context,
+              ListTile(
+                title: Text(l10n.privacySettings),
+                trailing: const Icon(Icons.chevron_right_rounded),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => const TelemetryConsentView(),
                   ),
                 ),
-            ],
-          ),
+              ),
+            ),
+          ],
         ],
+      ),
+    );
+  }
+
+  Widget _settingsTile(BuildContext context, Widget child) {
+    final decoration = Theme.of(context).inputDecorationTheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16),
+      child: Material(
+        color: decoration.fillColor,
+        shape: decoration.enabledBorder,
+        clipBehavior: Clip.antiAlias,
+        child: ListTileTheme(
+          data: ListTileTheme.of(context).copyWith(
+            titleTextStyle: Theme.of(context).textTheme.titleMedium
+                ?.copyWith(fontSize: 18),
+          ),
+          child: child,
+        ),
       ),
     );
   }
@@ -205,25 +203,6 @@ class SettingsView extends StatelessWidget {
             ),
           )
           .toList(),
-    );
-  }
-
-  Widget _buildResetButton(BuildContext context, SettingsViewModel vm) {
-    return SizedBox(
-      height: 45,
-      child: ElevatedButton.icon(
-        onPressed: () => vm.resetToDefaults(),
-        icon: const Icon(Icons.restore_outlined, size: 25),
-        label: Text(
-          context.l10n.resetSettings,
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(30),
-          ),
-        ),
-      ),
     );
   }
 }

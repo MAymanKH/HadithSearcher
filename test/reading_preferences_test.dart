@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -10,6 +11,7 @@ import 'package:hadithsearcher/widgets/app_dropdown.dart';
 import 'package:hadithsearcher/widgets/message_dialog.dart';
 import 'package:hadithsearcher/views/settings/settings_view.dart';
 import 'package:hadithsearcher/services/telemetry/telemetry_service.dart';
+
 import 'telemetry/fake_backend.dart';
 
 void main() {
@@ -35,7 +37,7 @@ void main() {
     },
   );
 
-  testWidgets('settings fit a narrow RTL phone and privacy follows reset', (
+  testWidgets('settings fit a narrow RTL phone with a floating reset', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(320, 850);
@@ -62,13 +64,20 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
+    final reset = find.byType(FloatingActionButton);
+    final resetPosition = tester.getCenter(reset);
     final arrows = find.byIcon(Icons.expand_more_rounded);
     expect(arrows, findsNWidgets(7));
     final arrowPositions = tester.getTopLeft(arrows.first).dx;
     for (final arrow in arrows.evaluate()) {
       expect(tester.getTopLeft(find.byWidget(arrow.widget)).dx, arrowPositions);
     }
-    await tester.tap(find.text('نوع الخط'));
+    await tester.tap(
+      find.ancestor(
+        of: find.text('نوع الخط'),
+        matching: find.byType(AppDropdown<String>),
+      ),
+    );
     await tester.pumpAndSettle();
     await tester.tap(find.text('نوتو نسخ عربي').last);
     await tester.pumpAndSettle();
@@ -93,12 +102,24 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
+    expect(tester.getCenter(reset), resetPosition);
     expect(
-      tester.getTopLeft(privacy).dy,
-      greaterThan(
-        tester.getTopLeft(find.text('العودة للإعدادات الافتراضية')).dy,
-      ),
+      tester.getBottomLeft(privacy).dy,
+      lessThan(tester.getTopLeft(reset).dy),
     );
+    final dividers = find.byType(Divider);
+    expect(dividers, findsNWidgets(2));
+    expect(
+      tester.getCenter(dividers.first).dy,
+      lessThan(tester.getTopLeft(updateSwitch).dy),
+    );
+    expect(
+      tester.getCenter(dividers.last).dy,
+      greaterThan(tester.getBottomLeft(updateSwitch).dy),
+    );
+    await tester.tap(reset);
+    await tester.pumpAndSettle();
+    expect(settings.settings.automaticUpdateChecks, isTrue);
     expect(tester.takeException(), isNull);
     await tester.tap(privacy);
     await tester.pumpAndSettle();
