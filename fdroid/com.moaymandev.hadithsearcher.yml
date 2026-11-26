@@ -202,9 +202,9 @@ MaintainerNotes: |-
   Please review service and content licensing during inclusion.
 
   Crash reports use Sentry. Analytics use the PostHog HTTP API and include
-  IP-based location and replay of control outlines and taps. Both options are
+  IP-based location and session replay. Both options are
   preselected on first launch and apply after Continue with the saved selections.
-  See docs/telemetry.md and the privacy policy linked in the store description.
+  See docs/telemetry.md and the privacy policy linked in the app.
 
   The unsigned builder uses /var/tmp/hadithsearcher-foss for stable Dart URIs
   and disables the JNI native library build ID. Both upstream and recipe use it.
