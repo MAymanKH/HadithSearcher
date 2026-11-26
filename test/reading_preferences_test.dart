@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ui' show SemanticsAction;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -6,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hadithsearcher/core/theme/app_theme.dart';
+import 'package:hadithsearcher/models/settings.dart';
 import 'package:hadithsearcher/viewmodels/settings_viewmodel.dart';
 import 'package:hadithsearcher/widgets/app_dropdown.dart';
 import 'package:hadithsearcher/widgets/message_dialog.dart';
@@ -37,7 +39,7 @@ void main() {
     },
   );
 
-  testWidgets('settings fit a narrow RTL phone with a floating reset', (
+  testWidgets('reading settings reset individually on a narrow RTL phone', (
     tester,
   ) async {
     tester.view.physicalSize = const Size(320, 850);
@@ -64,24 +66,48 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    final reset = find.widgetWithText(FloatingActionButton, 'إعادة الضبط');
-    final resetPosition = tester.getCenter(reset);
+    final restoreIcons = find.byIcon(Icons.restore_outlined);
+    expect(find.byType(FloatingActionButton), findsNothing);
+    expect(restoreIcons, findsNothing);
     final arrows = find.byIcon(Icons.expand_more_rounded);
     expect(arrows, findsNWidgets(7));
     final arrowPositions = tester.getTopLeft(arrows.first).dx;
     for (final arrow in arrows.evaluate()) {
       expect(tester.getTopLeft(find.byWidget(arrow.widget)).dx, arrowPositions);
     }
-    await tester.tap(
-      find.ancestor(
-        of: find.text('نوع الخط'),
-        matching: find.byType(AppDropdown<String>),
-      ),
+    final familyField = find.ancestor(
+      of: find.text('نوع الخط'),
+      matching: find.byType(AppDropdown<String>),
     );
+    final familyDecoration = find.descendant(
+      of: familyField,
+      matching: find.byType(InputDecorator),
+    );
+    final familyWidth = tester.getSize(familyDecoration).width;
+    final familyArrow = find.descendant(of: familyField, matching: arrows);
+    await tester.tap(familyField);
     await tester.pumpAndSettle();
     await tester.tap(find.text('نوتو نسخ عربي').last);
     await tester.pumpAndSettle();
     expect(settings.fontFamily, 'Noto Naskh Arabic');
+    expect(restoreIcons, findsOneWidget);
+    expect(tester.getSize(familyDecoration).width, familyWidth);
+    final familyReset = find.byTooltip('استعادة القيمة الافتراضية لـنوع الخط');
+    expect(
+      tester.getRect(familyDecoration).contains(tester.getCenter(familyReset)),
+      isTrue,
+    );
+    expect(tester.getTopLeft(familyArrow).dx, arrowPositions);
+    final semantics = tester.ensureSemantics();
+    final resetSemantics = tester.getSemantics(familyReset).getSemanticsData();
+    semantics.dispose();
+    expect(resetSemantics.tooltip, 'استعادة القيمة الافتراضية لـنوع الخط');
+    expect(resetSemantics.hasAction(SemanticsAction.tap), isTrue);
+    await settings.setFontWeight(FontWeightPreference.normal);
+    await settings.setFontSize(30);
+    await settings.setPadding(15);
+    await tester.pumpAndSettle();
+    expect(restoreIcons, findsNWidgets(4));
     final updateSwitch = find.byType(SwitchListTile);
     await tester.scrollUntilVisible(
       updateSwitch,
@@ -102,20 +128,38 @@ void main() {
       scrollable: find.byType(Scrollable).first,
     );
     await tester.pumpAndSettle();
-    expect(tester.getCenter(reset), resetPosition);
-    expect(
-      tester.getBottomLeft(privacy).dy,
-      lessThan(tester.getTopLeft(reset).dy),
-    );
     final divider = find.byType(Divider);
     expect(divider, findsOneWidget);
     expect(
       tester.getCenter(divider).dy,
       lessThan(tester.getTopLeft(updateSwitch).dy),
     );
-    await tester.tap(reset);
+    await tester.ensureVisible(familyReset);
+    await tester.tap(familyReset);
     await tester.pumpAndSettle();
-    expect(settings.settings.automaticUpdateChecks, isTrue);
+    expect(find.byType(BottomSheet), findsNothing);
+    expect(settings.fontFamily, AppSettings.defaults.fontFamily);
+    expect(settings.settings.fontWeight, FontWeightPreference.normal);
+    expect(settings.settings.fontSize, 30);
+    expect(settings.settings.padding, 15);
+
+    for (final label in ['ثقل الخط', 'حجم الخط', 'الحشو']) {
+      final reset = find.byTooltip('استعادة القيمة الافتراضية لـ$label');
+      await tester.ensureVisible(reset);
+      await tester.tap(reset);
+      await tester.pumpAndSettle();
+      expect(reset, findsNothing);
+    }
+    expect(restoreIcons, findsNothing);
+    final saved = SettingsViewModel();
+    addTearDown(saved.dispose);
+    await saved.loadSettings();
+    expect(saved.settings.fontFamily, AppSettings.defaults.fontFamily);
+    expect(saved.settings.fontWeight, AppSettings.defaults.fontWeight);
+    expect(saved.settings.fontSize, AppSettings.defaults.fontSize);
+    expect(saved.settings.padding, AppSettings.defaults.padding);
+    expect(saved.settings.automaticUpdateChecks, isFalse);
+    await tester.ensureVisible(privacy);
     expect(tester.takeException(), isNull);
     await tester.tap(privacy);
     await tester.pumpAndSettle();

@@ -32,14 +32,8 @@ class SettingsView extends StatelessWidget {
           style: const TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: null,
-        onPressed: vm.resetToDefaults,
-        icon: const Icon(Icons.restore_outlined),
-        label: Text(l10n.resetSettings),
-      ),
       body: ListView(
-        padding: const EdgeInsets.only(top: 15, bottom: 88),
+        padding: const EdgeInsets.only(top: 15, bottom: 16),
         children: [
           Padding(
             padding: sectionTitlePadding,
@@ -114,6 +108,7 @@ class SettingsView extends StatelessWidget {
     return AppDropdown<String>.settings(
       title: context.l10n.fontFamily,
       value: vm.fontFamily,
+      defaultValue: AppSettings.defaults.fontFamily,
       onChanged: (value) {
         if (value != null) vm.setFontFamily(value);
       },
@@ -152,6 +147,7 @@ class SettingsView extends StatelessWidget {
     return AppDropdown<FontWeightPreference>.settings(
       title: context.l10n.fontWeight,
       value: vm.settings.fontWeight,
+      defaultValue: AppSettings.defaults.fontWeight,
       onChanged: (value) {
         if (value != null) vm.setFontWeight(value);
       },
@@ -173,6 +169,7 @@ class SettingsView extends StatelessWidget {
     return AppDropdown<int>.settings(
       title: context.l10n.fontSize,
       value: vm.settings.fontSize,
+      defaultValue: AppSettings.defaults.fontSize,
       onChanged: (value) {
         if (value != null) vm.setFontSize(value);
       },
@@ -191,6 +188,7 @@ class SettingsView extends StatelessWidget {
     return AppDropdown<int>.settings(
       title: context.l10n.padding,
       value: vm.settings.padding,
+      defaultValue: AppSettings.defaults.padding,
       onChanged: (value) {
         if (value != null) vm.setPadding(value);
       },

@@ -57,7 +57,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get padding => 'Padding';
 
   @override
-  String get resetSettings => 'Reset';
+  String resetSetting(String setting) {
+    return 'Restore default for $setting';
+  }
 
   @override
   String get systemTheme => 'System default';

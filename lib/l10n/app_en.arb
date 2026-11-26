@@ -16,7 +16,12 @@
   "fontWeight": "Font weight",
   "fontSize": "Font size",
   "padding": "Padding",
-  "resetSettings": "Reset",
+  "resetSetting": "Restore default for {setting}",
+  "@resetSetting": {
+    "placeholders": {
+      "setting": { "type": "String" }
+    }
+  },
   "systemTheme": "System default",
   "lightTheme": "Light",
   "darkTheme": "Dark",

@@ -194,11 +194,11 @@ abstract class AppLocalizations {
   /// **'Padding'**
   String get padding;
 
-  /// No description provided for @resetSettings.
+  /// No description provided for @resetSetting.
   ///
   /// In en, this message translates to:
-  /// **'Reset'**
-  String get resetSettings;
+  /// **'Restore default for {setting}'**
+  String resetSetting(String setting);
 
   /// No description provided for @systemTheme.
   ///

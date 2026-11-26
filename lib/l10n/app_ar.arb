@@ -16,7 +16,7 @@
   "fontWeight": "ثقل الخط",
   "fontSize": "حجم الخط",
   "padding": "الحشو",
-  "resetSettings": "إعادة الضبط",
+  "resetSetting": "استعادة القيمة الافتراضية لـ{setting}",
   "systemTheme": "إتباع النظام",
   "lightTheme": "الوضع النهاري",
   "darkTheme": "الوضع الليلي",

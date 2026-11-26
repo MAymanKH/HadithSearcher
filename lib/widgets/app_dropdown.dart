@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+
+import '../l10n/localization.dart';
 import 'app_selection_tile.dart';
 import 'app_input_button.dart';
 import 'selection_sheet.dart';
@@ -12,6 +14,7 @@ class AppDropdown<T> extends StatelessWidget {
   final ValueChanged<T?> onChanged;
   final InputDecoration decoration;
   final Widget Function(BuildContext, T)? itemLeadingBuilder;
+  final T? defaultValue;
   final bool _settingsRow;
 
   const AppDropdown({
@@ -22,12 +25,14 @@ class AppDropdown<T> extends StatelessWidget {
     required this.onChanged,
     this.itemLeadingBuilder,
     this.decoration = const InputDecoration(),
-  }) : _settingsRow = false;
+  }) : defaultValue = null,
+       _settingsRow = false;
 
   const AppDropdown.settings({
     super.key,
     required this.title,
     required this.value,
+    this.defaultValue,
     required this.items,
     required this.onChanged,
     this.itemLeadingBuilder,
@@ -67,6 +72,33 @@ class AppDropdown<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final selected = items.firstWhere((item) => item.value == value);
+    final theme = Theme.of(context);
+    final arrow = Icon(
+      Icons.expand_more_rounded,
+      color: theme.colorScheme.onSurface,
+    );
+    final resetValue = defaultValue;
+    final suffix = resetValue == null || value == resetValue
+        ? arrow
+        : Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              IconButton(
+                tooltip: context.l10n.resetSetting(title),
+                icon: const Icon(Icons.restore_outlined, size: 20),
+                onPressed: () => onChanged(resetValue),
+              ),
+              SizedBox(
+                width:
+                    theme
+                        .inputDecorationTheme
+                        .suffixIconConstraints
+                        ?.minWidth ??
+                    kMinInteractiveDimension,
+                child: arrow,
+              ),
+            ],
+          );
     final field = Semantics(
       button: true,
       label: title,
@@ -74,12 +106,7 @@ class AppDropdown<T> extends StatelessWidget {
         onTap: () => _select(context),
         decoration:
             (_settingsRow ? InputDecoration(labelText: title) : decoration)
-                .copyWith(
-                  suffixIcon: Icon(
-                    Icons.expand_more_rounded,
-                    color: Theme.of(context).colorScheme.onSurface,
-                  ),
-                ),
+                .copyWith(suffixIcon: suffix),
         child: DefaultTextStyle.merge(
           maxLines: 1,
           overflow: TextOverflow.ellipsis,

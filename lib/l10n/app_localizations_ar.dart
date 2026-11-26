@@ -57,7 +57,9 @@ class AppLocalizationsAr extends AppLocalizations {
   String get padding => 'الحشو';
 
   @override
-  String get resetSettings => 'إعادة الضبط';
+  String resetSetting(String setting) {
+    return 'استعادة القيمة الافتراضية لـ$setting';
+  }
 
   @override
   String get systemTheme => 'إتباع النظام';
