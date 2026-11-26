@@ -280,7 +280,7 @@ void main() {
     );
     await tester.pumpAndSettle();
     expect(
-      find.text('عن ${hadith.rawi}: ${hadith.text}', findRichText: true),
+      find.text('عن "${hadith.rawi}": ${hadith.text}', findRichText: true),
       findsOneWidget,
     );
     expect(find.text('Grading: صحيح من المصدر'), findsOneWidget);
@@ -294,7 +294,7 @@ void main() {
               (widget) =>
                   widget is SelectableText &&
                   widget.textSpan?.toPlainText() ==
-                      'عن ${hadith.rawi}: ${hadith.text}',
+                      'عن "${hadith.rawi}": ${hadith.text}',
             ),
           )
           .textDirection,

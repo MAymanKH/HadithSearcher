@@ -235,14 +235,14 @@ void main() {
         expect(
           textWidgets.map((text) => text.data ?? text.textSpan!.toPlainText()),
           [
-            'عن Narrator: ${hadith.text}',
+            'عن "Narrator": ${hadith.text}',
             'خلاصة حكم المحدث: ${hadith.grade}',
             'Scholar، Source (1/2)',
           ],
         );
         final body = textWidgets.first;
         final prefix = body.textSpan!.children!.first as TextSpan;
-        expect(prefix.text, 'عن Narrator: ');
+        expect(prefix.text, 'عن "Narrator": ');
         expect(prefix.style!.color, isNot(body.style!.color));
         expect(
           prefix.style!.color!.computeLuminance(),

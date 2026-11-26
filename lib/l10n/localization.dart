@@ -125,7 +125,7 @@ String localizedError(String message, AppLocalizations l) => switch (message) {
 
 extension LocalizedCitation on HadithCitation {
   String cardText(String text, AppLocalizations l) => [
-    rawi.trim().isEmpty ? text : 'عن ${rawi.trim()}: $text',
+    rawi.trim().isEmpty ? text : 'عن "${rawi.trim()}": $text',
     l.gradeLabel(grade),
     compactSource,
   ].where((line) => line.isNotEmpty).join('\n\n');

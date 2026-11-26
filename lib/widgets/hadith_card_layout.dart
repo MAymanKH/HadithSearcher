@@ -64,7 +64,7 @@ class HadithCardLayout extends StatelessWidget {
               TextSpan(
                 children: [
                   TextSpan(
-                    text: 'عن ${narrator!.trim()}: ',
+                    text: 'عن "${narrator!.trim()}": ',
                     style: TextStyle(color: colors.onSurfaceVariant),
                   ),
                   TextSpan(text: text),

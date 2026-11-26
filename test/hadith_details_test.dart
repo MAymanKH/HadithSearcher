@@ -385,7 +385,7 @@ void main() {
             expect(find.byType(Scaffold), findsOneWidget);
             expect(
               find.text(
-                'عن ${hadith.rawi}: ${hadith.text}',
+                'عن "${hadith.rawi}": ${hadith.text}',
                 findRichText: true,
               ),
               findsOneWidget,
@@ -535,7 +535,7 @@ void main() {
         .firstWhere(
           (text) =>
               text.textSpan?.toPlainText() ==
-              'عن ${hadith.rawi}: ${hadith.text}',
+              'عن "${hadith.rawi}": ${hadith.text}',
         )
         .style!;
     final toggle = find.text('معلومات إضافية');
