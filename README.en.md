@@ -13,16 +13,17 @@ Search prophetic hadiths, read explanations, and check scholars' authenticity as
 
 ## About the app
 
-Hadith Searcher is a free, open-source Android app built with Flutter. It brings together hadith texts, explanations, sources, and scholars' assessments from Dorar al-Saniyyah.
+Hadith Searcher is a free, open-source Android app for finding and studying prophetic hadiths. It draws on Dorar al-Saniyyah for hadith texts, explanations, sources, and scholars' rulings.
 
 ## Features
 
-- Search for any word, all words, or an exact phrase. Choose the search scope and exclude words or phrases.
-- View the narrator, source, scholar, authenticity assessment, source references, and related original narrations.
-- Read hadith explanations and find similar hadiths.
-- Filter results by authenticity grade, scholar, book, or narrator.
-- Save hadiths for offline reading.
-- Customize hadith font size, font family, and app colors.
+- **Search.** Match any word, all words, or an exact phrase. Set the search scope and exclude words or phrases.
+- **Hadith details.** See the narrator, source, scholar, a summary of the scholar's ruling, authenticity grade, source references, and original narrations.
+- **Explanations.** Read explanations of hadiths and their meanings.
+- **Similar hadiths.** Find hadiths similar to the one you're reading.
+- **Advanced filters.** Narrow results by authenticity grade, scholar, book, or narrator.
+- **Saved hadiths.** Save hadiths to read offline.
+- **Appearance.** Choose the font and text size for hadiths and change the app colors.
 
 ## Screenshots
 
@@ -41,8 +42,6 @@ Hadith Searcher is a free, open-source Android app built with Flutter. It brings
 | <img src="store/screenshots/ar/phone/05-appearance.png" width="250" alt="App appearance settings"> | <img src="store/screenshots/ar/phone/06-sources.png" width="250" alt="Scholar and book information"> |
 
 </div>
-
-See the [store screenshot guide](docs/store-screenshots.md) for screenshot designs and update instructions.
 
 ## Data sources
 
