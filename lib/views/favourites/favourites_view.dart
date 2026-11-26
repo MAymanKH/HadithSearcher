@@ -96,11 +96,13 @@ class _FavouritesViewState extends State<FavouritesView> with ScrollToTopMixin {
 
   Widget _buildFavouritesList(FavouritesViewModel vm) {
     return ListView.builder(
+      key: const PageStorageKey<String>('saved-hadiths'),
       controller: scrollController,
       itemCount: vm.favourites.length,
       itemBuilder: (context, index) {
         final favourite = vm.favourites[index];
         return _FavouriteHadithCard(
+          key: PageStorageKey<String>('saved-hadith-${favourite.hadithId}'),
           favourite: favourite,
           onRemove: () async {
             final error = await vm.removeFavourite(favourite.hadithId);
@@ -139,6 +141,7 @@ class _FavouriteHadithCard extends StatelessWidget {
   final VoidCallback onGetSharh;
 
   const _FavouriteHadithCard({
+    super.key,
     required this.favourite,
     required this.onRemove,
     required this.onGetSharh,

@@ -8,11 +8,15 @@ import 'package:hadithsearcher/models/hadith.dart';
 import 'package:hadithsearcher/l10n/localization.dart';
 import 'package:hadithsearcher/models/hadith_citation.dart';
 import 'package:hadithsearcher/services/database_service.dart';
+import 'package:hadithsearcher/services/telemetry/telemetry_service.dart';
 import 'package:hadithsearcher/viewmodels/favourites_viewmodel.dart';
 import 'package:hadithsearcher/viewmodels/settings_viewmodel.dart';
 import 'package:hadithsearcher/views/favourites/favourites_view.dart';
+import 'package:hadithsearcher/views/main_shell.dart';
 import 'package:hadithsearcher/widgets/hadith_card.dart';
 import 'package:hadithsearcher/widgets/hadith_card_layout.dart';
+
+import 'telemetry/fake_backend.dart';
 
 const hadith = Hadith(
   id: 'card',
@@ -362,6 +366,62 @@ void main() {
       expect(result.onSourceInfo, isNotNull);
       expect(result.grading, saved.grading);
       expect(result.attribution, saved.attribution);
+      await tester.pumpWidget(const SizedBox());
+    },
+  );
+  testWidgets(
+    'saved hadiths restore their scroll position after tab switches',
+    (tester) async {
+      final settings = SettingsViewModel();
+      final favourites = SavedFavourites([
+        for (var index = 0; index < 30; index++)
+          FavouriteHadith(
+            id: index,
+            hadithId: 'saved-$index',
+            hadithText: 'Saved hadith $index',
+            hadithInfo: hadith.formattedInfo,
+          ),
+      ]);
+      final telemetry = TelemetryService(
+        preferences: await SharedPreferences.getInstance(),
+        backend: FakeBackend(),
+      );
+      addTearDown(settings.dispose);
+      addTearDown(favourites.dispose);
+      addTearDown(telemetry.dispose);
+
+      await tester.pumpWidget(
+        MultiProvider(
+          providers: [
+            ChangeNotifierProvider.value(value: settings),
+            ChangeNotifierProvider<FavouritesViewModel>.value(
+              value: favourites,
+            ),
+            ChangeNotifierProvider.value(value: telemetry),
+          ],
+          child: const MaterialApp(home: MainShell(initialIndex: 1)),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      final list = find.descendant(
+        of: find.byType(FavouritesView),
+        matching: find.byType(ListView),
+      );
+      double offset() => tester.widget<ListView>(list).controller!.offset;
+
+      // Use an actual scroll so PageStorage saves the offset when it settles.
+      await tester.drag(list, const Offset(0, -640));
+      await tester.pumpAndSettle();
+      final before = offset();
+      expect(before, greaterThan(500));
+
+      await tester.tap(find.byType(NavigationDestination).at(2));
+      await tester.pumpAndSettle();
+      expect(list, findsNothing);
+      await tester.tap(find.byType(NavigationDestination).at(1));
+      await tester.pumpAndSettle();
+      expect(offset(), before);
       await tester.pumpWidget(const SizedBox());
     },
   );
