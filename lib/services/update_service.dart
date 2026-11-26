@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
@@ -6,6 +7,7 @@ import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'retry_get.dart';
 import 'telemetry/telemetry_service.dart';
 import 'settings_service.dart';
 
@@ -110,7 +112,7 @@ class UpdateService extends ChangeNotifier {
         await preferences.setInt(key, _now().millisecondsSinceEpoch);
       }
       if (channel == UpdateChannel.play) {
-        final code = await _playVersion().timeout(const Duration(seconds: 10));
+        final code = await _checkPlayVersion();
         return code != null && code > installedCode
             ? [
                 AvailableUpdate(
@@ -125,13 +127,34 @@ class UpdateService extends ChangeNotifier {
       }
       final abis = await _supportedAbis().timeout(const Duration(seconds: 10));
       final results = await Future.wait([
-        _checkSource(UpdateSource.github, () => _github(installedCode, abis)),
-        _checkSource(UpdateSource.fdroid, () => _fdroid(installedCode, abis)),
+        _checkSource(
+          UpdateSource.github,
+          () => _github(installedCode, abis),
+          automatic: automatic,
+        ),
+        _checkSource(
+          UpdateSource.fdroid,
+          () => _fdroid(installedCode, abis),
+          automatic: automatic,
+        ),
       ]);
       return results.whereType<AvailableUpdate>().toList()
         ..sort((a, b) => b.versionCode.compareTo(a.versionCode));
     } catch (error, stack) {
-      TelemetryService.report(error, stack, 'updates.${channel.name}.check');
+      if (error is! PlatformException ||
+          error.code != 'play_update_unavailable') {
+        TelemetryService.report(
+          error,
+          stack,
+          'updates.${channel.name}.check',
+          details: {
+            'automatic': automatic,
+            if (error is PlatformException) 'platform_code': error.code,
+            if (error is PlatformException && error.details is int)
+              'play_error_code': error.details as int,
+          },
+        );
+      }
       // Checking for updates must never prevent use of the app while offline.
       failed = true;
       return [];
@@ -143,10 +166,20 @@ class UpdateService extends ChangeNotifier {
 
   static const abiCodes = {'arm64-v8a': 1, 'armeabi-v7a': 2, 'x86_64': 3};
 
+  Future<int?> _checkPlayVersion() async {
+    try {
+      return await _playVersion().timeout(const Duration(seconds: 10));
+    } on TimeoutException {
+      return _playVersion().timeout(const Duration(seconds: 5));
+    }
+  }
+
   Future<AvailableUpdate?> _checkSource(
     UpdateSource source,
-    Future<AvailableUpdate?> Function() check,
-  ) async {
+    Future<AvailableUpdate?> Function() check, {
+    required bool automatic,
+  }) async {
+    final elapsed = Stopwatch()..start();
     try {
       return await check();
     } catch (error, stack) {
@@ -155,7 +188,16 @@ class UpdateService extends ChangeNotifier {
         return null;
       }
       failed = true;
-      TelemetryService.report(error, stack, 'updates.${source.name}.check');
+      TelemetryService.report(
+        error,
+        stack,
+        'updates.${source.name}.check',
+        details: {
+          'automatic': automatic,
+          'duration_ms': elapsed.elapsedMilliseconds,
+          if (error is _UpdateHttpFailure) ...error.details,
+        },
+      );
       return null;
     }
   }
@@ -163,6 +205,7 @@ class UpdateService extends ChangeNotifier {
   Future<AvailableUpdate?> _fdroid(int installedCode, List<String> abis) async {
     final data = await _json(
       Uri.https('f-droid.org', '/api/v1/packages/$packageName'),
+      allowMissing: true,
     );
     final suggested = data['suggestedVersionCode'] as int;
     if (suggested ~/ 10 <= installedCode ~/ 10) return null;
@@ -220,11 +263,28 @@ class UpdateService extends ChangeNotifier {
     return null;
   }
 
-  Future<Map<String, dynamic>> _json(Uri url) async {
-    final response = await _get(url).timeout(const Duration(seconds: 10));
-    if (response.statusCode == 404) throw const _MissingListing();
+  Future<Map<String, dynamic>> _json(
+    Uri url, {
+    bool allowMissing = false,
+  }) async {
+    final response = await retryGet(
+      () => _get(url),
+      const Duration(seconds: 10),
+    );
+    if (allowMissing && response.statusCode == 404) {
+      throw const _MissingListing();
+    }
     if (response.statusCode != 200) {
-      throw StateError('Update source unavailable');
+      throw _UpdateHttpFailure({
+        'host': url.host,
+        'status_code': response.statusCode,
+        if (response.headers['x-github-request-id'] case final String id)
+          'github_request_id': id,
+        if (response.headers['x-ratelimit-remaining'] case final String value)
+          'rate_limit_remaining': value,
+        if (response.headers['retry-after'] case final String value)
+          'retry_after': value,
+      });
     }
     return jsonDecode(response.body) as Map<String, dynamic>;
   }
@@ -232,4 +292,10 @@ class UpdateService extends ChangeNotifier {
 
 class _MissingListing implements Exception {
   const _MissingListing();
+}
+
+class _UpdateHttpFailure implements Exception {
+  const _UpdateHttpFailure(this.details);
+
+  final Map<String, Object> details;
 }

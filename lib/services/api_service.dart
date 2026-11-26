@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
 import '../core/constants/app_config.dart';
 import 'package:http/http.dart' as http;
@@ -8,6 +9,7 @@ import '../models/hadith_details.dart';
 import '../models/search_params.dart';
 import '../models/search_option.dart';
 import 'telemetry/telemetry_service.dart';
+import 'retry_get.dart';
 
 class ApiService {
   static final ApiService _instance = ApiService._internal();
@@ -169,15 +171,34 @@ class ApiService {
     final analytics = TelemetryService.instance?.analyticsEnabled ?? false;
     final diagnostics = TelemetryService.instance?.diagnosticsEnabled ?? false;
     final timer = Stopwatch()..start();
+    String? host;
+    Map<String, Object> failureDetails() => {
+      if (host != null) 'host': host!,
+      'duration_ms': timer.elapsedMilliseconds,
+    };
     int? statusCode;
     ApiResult<T> result;
     try {
       result = await TelemetryService.trace('api.$operation', () async {
         final url = Uri.parse('$_baseUrl$path').replace(queryParameters: query);
+        host = url.host;
         final client = http.Client();
         final http.Response response;
         try {
-          response = await client.get(url).timeout(timeout);
+          Future<http.Response> request() => client.get(url);
+          response = await switch (operation) {
+            'book_details' => retryGet(
+              request,
+              timeout,
+              retryStatusCodes: const {500},
+            ),
+            'filter_catalog' => retryGet(
+              request,
+              timeout,
+              retryStatusCodes: const {},
+            ),
+            _ => request().timeout(timeout),
+          };
         } finally {
           client.close();
         }
@@ -194,6 +215,12 @@ class ApiService {
               StateError('HTTP failure'),
               StackTrace.current,
               'api.$operation.http_${response.statusCode}',
+              details: {
+                ...failureDetails(),
+                'status_code': response.statusCode,
+                if (response.headers['x-vercel-id'] case final String id)
+                  'vercel_request_id': id,
+              },
             );
           }
           return ApiResult<T>.error(ApiError.unknown);
@@ -205,8 +232,22 @@ class ApiService {
     } on TimeoutException {
       result = ApiResult.error(ApiError.timeout);
     } catch (error, stack) {
-      if (diagnostics) TelemetryService.report(error, stack, 'api.$operation');
-      result = ApiResult.error(ApiError.unknown);
+      if (diagnostics) {
+        TelemetryService.report(
+          error,
+          stack,
+          'api.$operation',
+          details: {
+            ...failureDetails(),
+            if (statusCode != null) 'status_code': statusCode!,
+            if (error is HandshakeException && error.osError != null)
+              'tls_error_code': error.osError!.errorCode,
+          },
+        );
+      }
+      result = ApiResult.error(
+        error is HandshakeException ? ApiError.noConnection : ApiError.unknown,
+      );
     }
     final outcomeProperties = <String, Object>{
       'operation': operation,

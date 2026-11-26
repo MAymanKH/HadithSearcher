@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -55,6 +56,8 @@ void main() {
         () => MockClient((_) async => http.Response('upstream failure', 502)));
     expect(result.error, ApiError.unknown);
     expect(backend.reports, ['api.search.http_502']);
+    expect(backend.reportDetails.single['status_code'], 502);
+    expect(backend.reportDetails.single.toString(), isNot(contains('query')));
     expect(backend.events, isEmpty);
   });
 
@@ -72,5 +75,32 @@ void main() {
     await result;
     expect(backend.events, isEmpty);
     expect(backend.reports, isEmpty);
+  });
+
+  test('book details recover from a transient upstream failure', () async {
+    var requests = 0;
+    final result = await http.runWithClient(
+      () => ApiService().getBookDetails('12'),
+      () => MockClient(
+        (_) async => ++requests == 1
+            ? http.Response('{}', 500)
+            : http.Response('{"data":null}', 200),
+      ),
+    );
+    expect(result.error, ApiError.notFound);
+    expect(requests, 2);
+  });
+
+  test('filter catalog retries a transient TLS handshake failure', () async {
+    var requests = 0;
+    final result = await http.runWithClient(
+      () => ApiService().getFilterOptions('book'),
+      () => MockClient((_) async {
+        if (++requests == 1) throw const HandshakeException('TLS handshake');
+        return http.Response('{"data":[]}', 200);
+      }),
+    );
+    expect(result.data, isEmpty);
+    expect(requests, 2);
   });
 }

@@ -1,21 +1,52 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../l10n/localization.dart';
 import '../../core/constants/app_config.dart';
 import '../../services/update_service.dart';
+import '../../services/telemetry/telemetry_service.dart';
 import '../../widgets/app_logo.dart';
+import '../../widgets/app_snack_bar.dart';
 import '../../widgets/update_prompt.dart';
 
 class AboutView extends StatelessWidget {
   const AboutView({super.key});
 
-  Future<void> _launchUrl(Uri url) async {
-    if (!await launchUrl(url, mode: LaunchMode.externalApplication)) {
-      throw Exception('Could not launch $url');
+  Future<void> _launchUrl(BuildContext context, Uri url) async {
+    final details = <String, Object>{
+      'scheme': url.scheme,
+      if (url.host.isNotEmpty) 'host': url.host,
+    };
+    Object failure = StateError('No link handler');
+    var failureStack = StackTrace.current;
+    final modes = [
+      LaunchMode.externalApplication,
+      if (url.scheme == 'https') LaunchMode.inAppWebView,
+    ];
+    for (final mode in modes) {
+      try {
+        if (await launchUrl(url, mode: mode)) return;
+        details[mode.name] = 'no_handler';
+      } on PlatformException catch (error, stack) {
+        failure = error;
+        failureStack = stack;
+        details[mode.name] = error.code;
+      }
+      if (!context.mounted) return;
     }
+    TelemetryService.report(
+      failure,
+      failureStack,
+      'about.open_link',
+      details: details,
+    );
+    showAppSnackBar(
+      context,
+      SnackBar(content: Text(context.l10n.unexpectedError)),
+    );
   }
 
   @override
@@ -85,7 +116,8 @@ class AboutView extends StatelessWidget {
                 color: Theme.of(context).colorScheme.primary,
               ),
               recognizer: TapGestureRecognizer()
-                ..onTap = () => _launchUrl(Uri.parse('https://dorar.net/')),
+                ..onTap = () =>
+                    _launchUrl(context, Uri.parse('https://dorar.net/')),
             ),
             TextSpan(text: context.l10n.usingApi),
             TextSpan(
@@ -97,6 +129,7 @@ class AboutView extends StatelessWidget {
               ),
               recognizer: TapGestureRecognizer()
                 ..onTap = () => _launchUrl(
+                  context,
                   Uri.parse('https://github.com/MAymanKH/dorar-hadith-api'),
                 ),
             ),
@@ -124,6 +157,7 @@ class AboutView extends StatelessWidget {
           icon: Icons.code_rounded,
           label: context.l10n.code,
           onTap: () => _launchUrl(
+            context,
             Uri.parse('https://github.com/MAymanKH/HadithSearcher'),
           ),
         ),
@@ -131,7 +165,8 @@ class AboutView extends StatelessWidget {
         _ActionIconButton(
           icon: Icons.attach_money_rounded,
           label: context.l10n.support,
-          onTap: () => _launchUrl(Uri.parse('https://ko-fi.com/MAymanKH')),
+          onTap: () =>
+              _launchUrl(context, Uri.parse('https://ko-fi.com/MAymanKH')),
         ),
         const SizedBox(width: 24),
         _ActionIconButton(
@@ -159,13 +194,15 @@ class AboutView extends StatelessWidget {
             _ActionIconButton(
               icon: Icons.language_rounded,
               label: context.l10n.website,
-              onTap: () => _launchUrl(Uri.parse('https://mohamedayman.net')),
+              onTap: () =>
+                  _launchUrl(context, Uri.parse('https://mohamedayman.net')),
             ),
             const SizedBox(width: 40),
             _ActionIconButton(
               icon: Icons.email_rounded,
               label: context.l10n.email,
               onTap: () => _launchUrl(
+                context,
                 Uri.parse('mailto:mohamed.ayman.khodeir@gmail.com'),
               ),
             ),
@@ -180,7 +217,7 @@ class AboutView extends StatelessWidget {
           child: Text(context.l10n.licenses),
         ),
         GestureDetector(
-          onTap: () => _launchUrl(Uri.parse(privacyPolicyUrl)),
+          onTap: () => _launchUrl(context, Uri.parse(privacyPolicyUrl)),
           child: Text(
             context.l10n.privacyPolicy,
             style: TextStyle(

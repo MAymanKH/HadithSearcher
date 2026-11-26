@@ -214,6 +214,24 @@ void main() {
     }
   });
 
+  test('a transient GitHub failure recovers during the same check', () async {
+    var githubRequests = 0;
+    final updates = UpdateService(
+      channel: UpdateChannel.foss,
+      packageInfo: () async => installed,
+      supportedAbis: () async => ['arm64-v8a'],
+      get: (url) async {
+        if (url.host != 'api.github.com') return http.Response('{}', 404);
+        return ++githubRequests == 1
+            ? http.Response('{}', 503)
+            : http.Response(jsonEncode(github()), 200);
+      },
+    );
+    addTearDown(updates.dispose);
+    expect((await updates.check()).single.source, UpdateSource.github);
+    expect(updates.failed, isFalse);
+  });
+
   test(
     'F-Droid not listed yet is normal; other failures remain recoverable',
     () async {
@@ -266,6 +284,22 @@ void main() {
     final update = (await updates.check()).single;
     expect(update.source, UpdateSource.play);
     expect(update.url.host, 'play.google.com');
+  });
+
+  test('Play retries a timed-out check once', () async {
+    var checks = 0;
+    final updates = UpdateService(
+      channel: UpdateChannel.play,
+      packageInfo: () async => installed,
+      playVersion: () async {
+        if (++checks == 1) throw TimeoutException('Play timed out');
+        return 210;
+      },
+    );
+    addTearDown(updates.dispose);
+    expect((await updates.check()).single.versionCode, 210);
+    expect(checks, 2);
+    expect(updates.failed, isFalse);
   });
 
   test(
