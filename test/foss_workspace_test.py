@@ -2,6 +2,7 @@
 
 import importlib.util
 from pathlib import Path
+import shlex
 import subprocess
 import tempfile
 import unittest
@@ -37,6 +38,10 @@ class FossWorkspaceTest(unittest.TestCase):
                 def run(args, **kwargs):
                     self.assertEqual(kwargs["cwd"], workspace)
                     self.assertEqual(args[0], str(root / "sdk/bin/flutter"))
+                    self.assertEqual(
+                        shlex.split(kwargs["env"]["GRADLE_OPTS"]),
+                        ["-Dkeep=true", f"-Dorg.gradle.java.home={root / 'release JDK'}"],
+                    )
                     self.assertFalse((workspace / "android/key.properties").exists())
                     self.assertFalse((workspace / "android/app/src/play").exists())
                     self.assertEqual((workspace / "android/app/build.gradle.kts").read_text(), "keep\n")
@@ -60,7 +65,11 @@ class FossWorkspaceTest(unittest.TestCase):
                     build, "WORKSPACE", workspace
                 ), patch.object(build.subprocess, "check_output", return_value=tracked), patch.object(
                     build.subprocess, "run", side_effect=run
-                ), patch.dict(build.os.environ, {"FLUTTER_BIN": str(root / "sdk/bin/flutter")}):
+                ), patch.dict(build.os.environ, {
+                    "FLUTTER_BIN": str(root / "sdk/bin/flutter"),
+                    "JAVA_HOME": str(root / "release JDK"),
+                    "GRADLE_OPTS": "-Dkeep=true",
+                }):
                     if failure:
                         with self.assertRaises(subprocess.CalledProcessError):
                             build.main(root / "sdk/bin/flutter")

@@ -4,6 +4,7 @@
 import argparse
 import os
 from pathlib import Path
+import shlex
 import shutil
 import subprocess
 
@@ -19,6 +20,11 @@ def main(flutter=None, abi=None):
     if executable is None:
         raise RuntimeError("Install Flutter on PATH or specify --flutter /path/to/flutter")
     flutter = Path(executable).resolve()
+    environment = os.environ.copy()
+    if java_home := environment.get("JAVA_HOME"):
+        # Flutter can prefer Android Studio's JDK over JAVA_HOME when launching Gradle.
+        gradle_java = shlex.quote(f"-Dorg.gradle.java.home={Path(java_home).resolve()}")
+        environment["GRADLE_OPTS"] = f"{environment.get('GRADLE_OPTS', '')} {gradle_java}".strip()
     # Exclusive creation also prevents concurrent builds from sharing this path.
     WORKSPACE.mkdir()
     try:
@@ -45,7 +51,7 @@ def main(flutter=None, abi=None):
             ["build", "apk", "--release", "--flavor", "foss", "--split-per-abi",
              "--target-platform=" + ",".join(ABIS[item] for item in abis)],
         ):
-            subprocess.run([str(flutter), *args], cwd=WORKSPACE, check=True)
+            subprocess.run([str(flutter), *args], cwd=WORKSPACE, env=environment, check=True)
         for item in abis:
             destination = ROOT / OUTPUTS[item]
             destination.parent.mkdir(parents=True, exist_ok=True)

@@ -10,7 +10,7 @@
 ## Publish to GitHub and F-Droid
 
 1. Use a dedicated Git checkout of the Flutter SDK on the `stable` branch at the version in `.flutter-version`. From the app repo, run `git -C /path/to/flutter checkout -B stable "$(cat .flutter-version)"`. Use JDK 21 and the NDK in the [live F-Droid recipe](https://gitlab.com/fdroid/fdroiddata/-/blob/master/metadata/com.moaymandev.hadithsearcher.yml).
-2. Run `FLUTTER_BIN=/path/to/flutter/bin/flutter ./scripts/release.py foss`. The script signs three APKs in `build/releases/foss/`. Check that their signatures match the recipe's `AllowedAPKSigningKeys`.
+2. Run `JAVA_HOME=/path/to/jdk-21 FLUTTER_BIN=/path/to/flutter/bin/flutter ./scripts/release.py foss`. The unsigned build uses `JAVA_HOME` for Gradle even when Flutter launches it with Android Studio's JDK. The release script signs three APKs in `build/releases/foss/`. Check that their signatures match the recipe's `AllowedAPKSigningKeys`.
 3. Publish all three APKs on the GitHub release with a numeric tag such as `3.0.6`, without a `v` prefix. Keep the filenames the script produces, such as `HadithSearcher-3.0.6+251-foss-arm64-v8a.apk`. Stage the APKs on the release before making it public so the reference files are available when F-Droid builds.
 4. Check the live recipe for the new version. F-Droid's tag check reads the base version from `pubspec.yaml` and generates three build entries via `VercodeOperation`. F-Droid reproduces each APK against the matching GitHub asset before publishing it with the developer signature. [F-Droid Monitor](https://monitor.f-droid.org/builds) shows build progress. Verify publication in the [package listing](https://f-droid.org/packages/com.moaymandev.hadithsearcher/).
 
