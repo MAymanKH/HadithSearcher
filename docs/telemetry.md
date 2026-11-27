@@ -8,7 +8,7 @@ For more details, see the [privacy policy](https://hadith-searcher-privacy-polic
 
 Release builds use the `production` environment. Debug and profile builds use `development`. Both GitHub and F-Droid use the `foss` flavor.
 
-Replay uploads use gzip and send one snapshot per request. On Android 11 or later, the app uses lossless WebP when encoding succeeds and produces a smaller image. Other frames use PNG. Build with `--dart-define=POSTHOG_REPLAY_WEBP=false` to use PNG for every frame.
+Replay uploads use gzip and send one snapshot per request. On Android 11 or later, the app uses WebP at quality 50 when encoding succeeds and produces a smaller image. Other frames use PNG. Build with `--dart-define=POSTHOG_REPLAY_WEBP=false` to use PNG for every frame.
 
 Build with `--dart-define=POSTHOG_REPLAY_WIFI_ONLY=true` to upload replays only over the active Wi-Fi connection on Android. The app stores pending requests in app-private storage excluded from backups. It queues up to 32 MiB or 1,024 requests, pauses queuing at the limit, and expires pending recordings after 24 hours. Withdrawing analytics consent clears the queue.
 
@@ -26,7 +26,7 @@ On a disposable Android emulator, run the delivery test. It clears app preferenc
 flutter test integration_test/telemetry_test.dart -d emulator-5554 --flavor foss
 ```
 
-Measure compressed request sizes and compare PNG and WebP pixels on an Android 11 or later emulator.
+Measure compressed request sizes and verify that PNG and WebP decode at the same dimensions on an Android 11 or later emulator.
 
 ```sh
 flutter test integration_test/replay_upload_test.dart -d emulator-5554 --flavor foss

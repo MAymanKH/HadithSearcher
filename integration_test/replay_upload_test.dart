@@ -22,7 +22,7 @@ typedef _Upload = ({String? encoding, List<int> bytes});
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
-  testWidgets('measure real replay uploads and compare decoded pixels', (
+  testWidgets('measure replay uploads and verify decoded frames', (
     tester,
   ) async {
     final receiver = await _Receiver.start();
@@ -50,11 +50,10 @@ void main() {
         frames[index].png,
       );
       expect(encoded, isNotNull);
+      final useWebp = encoded!.length < frames[index].png.length;
       expect(pngData.mimeType, 'image/png');
-      expect(
-        webpData.mimeType,
-        encoded!.length < frames[index].png.length ? 'image/webp' : 'image/png',
-      );
+      expect(webpData.mimeType, useWebp ? 'image/webp' : 'image/png');
+      expect(webpData.contentAsBytes(), useWebp ? encoded : frames[index].png);
       debugPrint(
         'REPLAY_FRAME_BYTES frame=$index png=${frames[index].png.length} '
         'webp=${encoded.length} sent=${webpData.mimeType}',
@@ -64,7 +63,10 @@ void main() {
       final restored = await _pixels(webpData.contentAsBytes());
       expect(restored.width, original.width);
       expect(restored.height, original.height);
-      expect(restored.bytes, original.bytes);
+      expect(
+        restored.bytes,
+        useWebp ? isNot(equals(original.bytes)) : equals(original.bytes),
+      );
       originalBytes += gzip.decode(pngRequest.bytes).length;
       gzipBytes += pngRequest.bytes.length;
       webpBytes += webpRequest.bytes.length;

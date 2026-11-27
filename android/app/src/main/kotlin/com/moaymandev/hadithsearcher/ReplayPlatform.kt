@@ -95,7 +95,7 @@ internal class ReplayPlatform(context: Context, messenger: BinaryMessenger) {
         val bitmap = BitmapFactory.decodeByteArray(png, 0, png.size) ?: return null
         try {
             val output = ByteArrayOutputStream()
-            return if (bitmap.compress(Bitmap.CompressFormat.WEBP_LOSSLESS, 70, output)) {
+            return if (bitmap.compress(Bitmap.CompressFormat.WEBP_LOSSY, 50, output)) {
                 output.toByteArray()
             } else null
         } finally {
