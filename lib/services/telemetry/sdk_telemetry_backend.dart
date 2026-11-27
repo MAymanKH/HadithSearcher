@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -7,16 +9,24 @@ import 'package:uuid/uuid.dart';
 
 import '../../core/constants/telemetry_config.dart' as config;
 import 'posthog_analytics.dart';
+import 'posthog_replay.dart';
+import 'replay_upload_queue.dart';
 import 'telemetry_service.dart';
 
 class SdkTelemetryBackend implements TelemetryBackend, TelemetryReplayBackend {
   static const _native = MethodChannel('hadithsearcher/telemetry');
+  static const _nativeReplay = MethodChannel('hadithsearcher/replay');
+  static const _nativeReplayEncoder = MethodChannel(
+    'hadithsearcher/replay_encoder',
+  );
   static const _installationIdKey = 'diagnostics_installation_id';
   final String sentryDsn;
   final String posthogToken;
   final String posthogHost;
   final String environment;
   final String distribution;
+  final bool replayWebp;
+  final bool replayWifiOnly;
   bool _diagnostics = false;
   PostHogAnalytics? _analytics;
 
@@ -26,6 +36,8 @@ class SdkTelemetryBackend implements TelemetryBackend, TelemetryReplayBackend {
     this.posthogHost = config.posthogHost,
     this.environment = kReleaseMode ? 'production' : 'development',
     this.distribution = config.telemetryDistribution,
+    this.replayWebp = config.posthogReplayWebp,
+    this.replayWifiOnly = config.posthogReplayWifiOnly,
   });
 
   @override
@@ -127,7 +139,13 @@ class SdkTelemetryBackend implements TelemetryBackend, TelemetryReplayBackend {
           await analytics.stop();
         }
       } finally {
-        await _clearLegacyAnalytics();
+        try {
+          if (defaultTargetPlatform == TargetPlatform.android) {
+            await _nativeReplay.invokeMethod<void>('clearQueue');
+          }
+        } finally {
+          await _clearLegacyAnalytics();
+        }
       }
       return;
     }
@@ -150,10 +168,39 @@ class SdkTelemetryBackend implements TelemetryBackend, TelemetryReplayBackend {
             {'projectToken': posthogToken},
           )
         : null;
+    final queuePath =
+        replayWifiOnly && defaultTargetPlatform == TargetPlatform.android
+        ? await _nativeReplay.invokeMethod<String>('queuePath') ??
+              (throw StateError('Could not locate replay upload queue'))
+        : null;
+    final replayEndpoint = PostHogReplay.endpoint(host, 's/').toString();
     final analytics = PostHogAnalytics(
       preferences: await SharedPreferences.getInstance(),
       token: posthogToken,
       host: host,
+      createReplay: (id) => PostHogReplay(
+        posthogToken,
+        host,
+        encodeWebp:
+            replayWebp && defaultTargetPlatform == TargetPlatform.android
+            ? (png) => _nativeReplayEncoder.invokeMethod<Uint8List>(
+                'encodeWebp',
+                png,
+              )
+            : null,
+        wifiQueue: queuePath == null
+            ? null
+            : ReplayUploadQueue(
+                path: queuePath,
+                scope: jsonEncode([replayEndpoint, posthogToken, id]),
+                upload: (body) => _nativeReplay.invokeMethod<int>(
+                  'uploadOnWifi',
+                  {'endpoint': replayEndpoint, 'body': body},
+                ),
+                cancelUpload: () =>
+                    _nativeReplay.invokeMethod<void>('cancelUpload'),
+              ),
+      ),
       context: {
         'app_environment': environment,
         'app_distribution': distribution,

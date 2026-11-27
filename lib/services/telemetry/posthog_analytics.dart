@@ -26,6 +26,7 @@ class PostHogAnalytics with WidgetsBindingObserver {
   final Map<String, Object> _context;
   final DateTime Function() _now;
   final http.Client Function() _createClient;
+  final PostHogReplay Function(String)? _createReplay;
   final List<Map<String, dynamic>> _queue = [];
   Future<void> _writes = Future.value();
   Future<void>? _sending;
@@ -49,6 +50,7 @@ class PostHogAnalytics with WidgetsBindingObserver {
     required Map<String, Object> context,
     DateTime Function()? now,
     http.Client Function()? createClient,
+    this._createReplay,
   }) : _host = host,
        _batchUrl = host.replace(
          path: '${host.path.replaceFirst(RegExp(r'/+$'), '')}/batch/',
@@ -67,6 +69,7 @@ class PostHogAnalytics with WidgetsBindingObserver {
     try {
       await _persist();
       _client = _createClient();
+      _replay = _createReplay?.call(_distinctId!);
       WidgetsBinding.instance.addObserver(this);
       _timer = Timer.periodic(_flushInterval, (_) => unawaited(flush()));
       unawaited(flush());
@@ -89,11 +92,15 @@ class PostHogAnalytics with WidgetsBindingObserver {
     _timer = null;
     _client?.close();
     _client = null;
-    _replay?.close();
+    final replay = _replay;
     _replay = null;
     _screen = null;
     _sending = null;
-    await _persist();
+    try {
+      await replay?.close();
+    } finally {
+      await _persist();
+    }
   }
 
   // Also clear persisted events if consent was disabled before this process
@@ -122,6 +129,7 @@ class PostHogAnalytics with WidgetsBindingObserver {
       }
     } else if (state == AppLifecycleState.resumed && _background) {
       _background = false;
+      _replay?.flushQueued();
       unawaited(_recordLifecycle('app_foregrounded'));
     }
   }

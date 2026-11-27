@@ -1,16 +1,24 @@
+import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 
+import 'replay_upload_queue.dart';
 import 'telemetry_service.dart';
+
+typedef EncodeReplayWebp = Future<Uint8List?> Function(Uint8List png);
 
 class PostHogReplay {
   final String token;
   final Uri host;
   final http.Client _client;
+  final EncodeReplayWebp? _encodeWebp;
+  final ReplayUploadQueue? _wifiQueue;
+  Completer<void>? _activeAbort;
 
   static const _configLifetime = Duration(minutes: 5);
   DateTime? _configExpires;
@@ -23,16 +31,30 @@ class PostHogReplay {
   bool _sending = false;
   bool _closed = false;
 
-  PostHogReplay(this.token, this.host, {http.Client? client})
-    : _client = client ?? http.Client();
+  PostHogReplay(
+    this.token,
+    this.host, {
+    http.Client? client,
+    this._encodeWebp,
+    this._wifiQueue,
+  }) : _client = client ?? http.Client();
 
-  void close() {
+  Future<void> close() async {
     _closed = true;
     _lastPng = null;
+    _abortRequest();
     _client.close();
+    await _wifiQueue?.close();
   }
 
-  Uri _endpoint(String path) =>
+  void flushQueued() => _wifiQueue?.flush();
+
+  void _abortRequest() {
+    _activeAbort?.complete();
+    _activeAbort = null;
+  }
+
+  static Uri endpoint(Uri host, String path) =>
       host.replace(path: '${host.path.replaceFirst(RegExp(r'/+$'), '')}/$path');
 
   Future<void> _refreshConfig(DateTime now) async {
@@ -47,8 +69,10 @@ class PostHogReplay {
     };
     final response = await _request(
       'GET',
-      _endpoint('array/${Uri.encodeComponent(token)}/config')
-          .replace(host: assetsHost),
+      endpoint(
+        host,
+        'array/${Uri.encodeComponent(token)}/config',
+      ).replace(host: assetsHost),
     );
     if (response.statusCode != 200) return;
     final config = jsonDecode(response.body);
@@ -79,16 +103,50 @@ class PostHogReplay {
   bool _hasRules(Object? rules) =>
       rules != null && (rules is! List || rules.isNotEmpty);
 
-  Future<http.Response> _request(String method, Uri uri, [Object? body]) async {
-    final request = http.Request(method, uri)..followRedirects = false;
+  Future<http.Response> _request(
+    String method,
+    Uri uri, [
+    Uint8List? body,
+  ]) async {
+    final abort = _activeAbort = Completer<void>();
+    final request = http.AbortableRequest(
+      method,
+      uri,
+      abortTrigger: abort.future,
+    )..followRedirects = false;
     if (body != null) {
-      request.headers['content-type'] = 'application/json';
-      request.body = jsonEncode(body);
+      request.headers
+        ..['content-type'] = 'application/json'
+        ..['content-encoding'] = 'gzip';
+      request.bodyBytes = body;
     }
-    return _client
-        .send(request)
-        .then(http.Response.fromStream)
-        .timeout(const Duration(seconds: 5));
+    try {
+      return await _client
+          .send(request)
+          .then(http.Response.fromStream)
+          .timeout(
+            const Duration(seconds: 5),
+            onTimeout: () {
+              _abortRequest();
+              throw TimeoutException('PostHog replay request timed out');
+            },
+          );
+    } finally {
+      _activeAbort = null;
+    }
+  }
+
+  Future<String> _imageData(Uint8List png) async {
+    Uint8List? webp;
+    try {
+      webp = await _encodeWebp?.call(png);
+    } catch (_) {
+      // The captured PNG is available if the platform encoder fails.
+    }
+    if (webp != null && webp.isNotEmpty && webp.length < png.length) {
+      return 'data:image/webp;base64,${base64Encode(webp)}';
+    }
+    return 'data:image/png;base64,${base64Encode(png)}';
   }
 
   Future<void> capture({
@@ -126,8 +184,10 @@ class PostHogReplay {
           _lastSize != frame.size;
       final newImage = newViewport || !listEquals(_lastPng, frame.png);
       if (!newImage && tap == null) return;
+      final imageData = newImage ? await _imageData(frame.png) : null;
+      if (_closed) return;
       final timestamp = now.millisecondsSinceEpoch;
-      final response = await _request('POST', _endpoint('s/'), [
+      final body = await compute(_gzipReplay, [
         {
           'api_key': token,
           'event': r'$snapshot',
@@ -146,7 +206,7 @@ class PostHogReplay {
                   'timestamp': timestamp,
                   'data': {'href': screen, 'width': width, 'height': height},
                 },
-              if (newImage)
+              if (imageData != null)
                 {
                   'type': 2,
                   'timestamp': timestamp,
@@ -159,8 +219,7 @@ class PostHogReplay {
                         'y': 0,
                         'width': width,
                         'height': height,
-                        'base64':
-                            'data:image/png;base64,${base64Encode(frame.png)}',
+                        'base64': imageData,
                       },
                     ],
                     'initialOffset': {'top': 0, 'left': 0},
@@ -184,12 +243,21 @@ class PostHogReplay {
         },
       ]);
       if (_closed) return;
-      if (response.statusCode >= 200 && response.statusCode < 300) {
+      final queue = _wifiQueue;
+      final bool accepted;
+      if (queue == null) {
+        final response = await _request('POST', endpoint(host, 's/'), body);
+        accepted = response.statusCode >= 200 && response.statusCode < 300;
+      } else {
+        accepted = await queue.enqueue(sessionId, body);
+      }
+      if (_closed) return;
+      if (accepted) {
         _lastSession = sessionId;
         _lastScreen = screen;
         _lastSize = frame.size;
         _lastPng = frame.png;
-      } else {
+      } else if (queue == null) {
         _retryAfter = now.add(const Duration(seconds: 30));
       }
     } catch (_) {
@@ -200,3 +268,6 @@ class PostHogReplay {
     }
   }
 }
+
+Uint8List _gzipReplay(List<Map<String, Object>> body) =>
+    Uint8List.fromList(gzip.encode(utf8.encode(jsonEncode(body))));

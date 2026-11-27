@@ -17,3 +17,9 @@ const posthogHost = String.fromEnvironment(
   'POSTHOG_HOST',
   defaultValue: 'https://eu.i.posthog.com',
 );
+
+const posthogReplayWebp = bool.fromEnvironment(
+  'POSTHOG_REPLAY_WEBP',
+  defaultValue: true,
+);
+const posthogReplayWifiOnly = bool.fromEnvironment('POSTHOG_REPLAY_WIFI_ONLY');

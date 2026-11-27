@@ -15,6 +15,7 @@ class MainActivity : FlutterActivity() {
     private var sharedTextChannel: MethodChannel? = null
     private var pendingSharedText: String? = null
     private var shareListenerReady = false
+    private var replayPlatform: ReplayPlatform? = null
 
     private fun receiveSharedText(intent: Intent?) {
         if (intent?.action != Intent.ACTION_SEND || intent.type != "text/plain") return
@@ -42,6 +43,7 @@ class MainActivity : FlutterActivity() {
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
+        replayPlatform = ReplayPlatform(this, flutterEngine.dartExecutor.binaryMessenger)
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, "hadithsearcher/updates")
             .setMethodCallHandler { call, result ->
                 if (call.method == "supportedAbis") {
@@ -130,5 +132,11 @@ class MainActivity : FlutterActivity() {
                     else -> result.notImplemented()
                 }
             }
+    }
+
+    override fun cleanUpFlutterEngine(flutterEngine: FlutterEngine) {
+        replayPlatform?.close()
+        replayPlatform = null
+        super.cleanUpFlutterEngine(flutterEngine)
     }
 }

@@ -228,7 +228,7 @@ void main() {
       final wireframe = (frame['data']['wireframes'] as List).single;
       expect(wireframe['type'], 'screenshot');
       final data = UriData.parse(wireframe['base64'] as String);
-      expect(data.mimeType, 'image/png');
+      expect(data.mimeType, isIn(['image/png', 'image/webp']));
       final codec = await instantiateImageCodec(data.contentAsBytes());
       final image = (await codec.getNextFrame()).image;
       try {
