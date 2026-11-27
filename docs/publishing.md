@@ -9,14 +9,17 @@
 
 ## Publish to GitHub and F-Droid
 
+For routine releases, publish the GitHub release and let F-Droid's automatic update process create the build entries. Use the manual recipe steps only if auto-update fails or the recipe needs a change.
+
 1. Use a dedicated Git checkout of the Flutter SDK on the `stable` branch at the version in `.flutter-version`. From the app repo, run `git -C /path/to/flutter checkout -B stable "$(cat .flutter-version)"`. Use JDK 21 and the NDK in the [live F-Droid recipe](https://gitlab.com/fdroid/fdroiddata/-/blob/master/metadata/com.moaymandev.hadithsearcher.yml).
 2. Run `JAVA_HOME=/path/to/jdk-21 FLUTTER_BIN=/path/to/flutter/bin/flutter ./scripts/release.py foss`. The unsigned build uses `JAVA_HOME` for Gradle even when Flutter launches it with Android Studio's JDK. The release script signs three APKs in `build/releases/foss/`. Check that their signatures match the recipe's `AllowedAPKSigningKeys`.
-3. Publish all three APKs on the GitHub release with a numeric tag such as `3.0.6`, without a `v` prefix. Keep the filenames the script produces, such as `HadithSearcher-3.0.6+251-foss-arm64-v8a.apk`. Stage the APKs on the release before making it public so the reference files are available when F-Droid builds.
-4. Check the live recipe for the new version. F-Droid's tag check reads the base version from `pubspec.yaml` and generates three build entries via `VercodeOperation`. F-Droid reproduces each APK against the matching GitHub asset before publishing it with the developer signature. [F-Droid Monitor](https://monitor.f-droid.org/builds) shows build progress. Verify publication in the [package listing](https://f-droid.org/packages/com.moaymandev.hadithsearcher/).
+3. [Verify reproducibility locally](#verify-reproducibility-locally) for all three APKs before publishing.
+4. Publish all three APKs on the GitHub release with a numeric tag such as `3.0.6`, without a `v` prefix. Keep the filenames the script produces, such as `HadithSearcher-3.0.6+251-foss-arm64-v8a.apk`. Stage the APKs on the release before making it public so the reference files are available when F-Droid builds.
+5. Check the live recipe for the new version. F-Droid's tag check reads the base version from `pubspec.yaml` and generates three build entries via `VercodeOperation`. F-Droid reproduces each APK against the matching GitHub asset before publishing it with the developer signature. [F-Droid Monitor](https://monitor.f-droid.org/builds) shows build progress. Verify publication in the [package listing](https://f-droid.org/packages/com.moaymandev.hadithsearcher/).
 
 ### Update the F-Droid recipe manually
 
-If auto-update fails or the build recipe needs a change, start from the current `fdroiddata` metadata. The [copy in this repository](../fdroid/com.moaymandev.hadithsearcher.yml) is a reference.
+If auto-update fails or the build recipe needs a change, check the live recipe and open F-Droid merge requests for the version before submitting a manual update. Start from the current `fdroiddata` metadata. The [copy in this repository](../fdroid/com.moaymandev.hadithsearcher.yml) is a reference.
 
 - For a new release, add one build per ABI. Pin each `commit` to the source commit used for the signed GitHub APKs. Keep the matching `output` and `binary` per ABI. Set `CurrentVersion` and use the highest ABI code for `CurrentVersionCode`.
 - Keep `flutter@stable` and the recipe's `git -C $$flutter$$ checkout -f -B stable "$flutterVersion"` step. It reads the version from `.flutter-version` and resets the reused Flutter checkout to that version on the stable branch. For a Flutter upgrade, update the app's pin and verify the new release against the recipe.
@@ -24,10 +27,11 @@ If auto-update fails or the build recipe needs a change, start from the current 
 
 ### Verify reproducibility locally
 
-Use the same source commit, Flutter SDK, and Android toolchain as the reference APKs. Run the unsigned builder and compare each rebuilt APK with its signed counterpart. For example:
+Use the same source commit, Flutter SDK, and Android toolchain as the reference APKs. Set `JAVA_HOME` to JDK 21 for both builds. Run the unsigned builder one ABI at a time, as F-Droid does, and compare each rebuilt APK with its signed counterpart. For example, to check `arm64-v8a`, run:
 
 ```sh
-python3 scripts/build_foss_unsigned.py --flutter /path/to/flutter/bin/flutter --abi arm64-v8a
+JAVA_HOME=/path/to/jdk-21 python3 scripts/build_foss_unsigned.py \
+  --flutter /path/to/flutter/bin/flutter --abi arm64-v8a
 python3 -m venv /tmp/hadith-repro-check
 /tmp/hadith-repro-check/bin/pip install apksigcopier
 /tmp/hadith-repro-check/bin/python scripts/verify_fdroid_reproducibility.py \
@@ -37,6 +41,8 @@ python3 -m venv /tmp/hadith-repro-check
 ```
 
 The verifier copies the upstream signature onto the rebuild, validates it, and compares the certificate with the recipe. Repeat for `armeabi-v7a` and `x86_64`. Running the unsigned builder without `--abi` builds all three. Both the release script and the F-Droid recipe use `/var/tmp/hadithsearcher-foss` to keep embedded Dart paths consistent. Run one FOSS build at a time and allow several GiB of disk space. If an interrupted build leaves this directory behind, confirm the build has stopped before removing it.
+
+If F-Droid builds the APK but signature copying fails and the diff is limited to DEX files and `assets/dexopt/baseline.prof`, check the Gradle JVM used for the GitHub build. For 3.0.6, Android Studio's JDK 25 changed the R8 mapping ID. Building with JDK 21 reproduced F-Droid's arm64 APK byte for byte.
 
 ## Publish to Google Play
 
