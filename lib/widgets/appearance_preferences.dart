@@ -9,7 +9,9 @@ import '../core/theme/app_palettes.g.dart';
 
 /// Shared appearance controls for the welcome page and settings.
 class AppearancePreferences extends StatelessWidget {
-  const AppearancePreferences({super.key});
+  const AppearancePreferences({super.key, this.languageTitle});
+
+  final String? languageTitle;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +21,7 @@ class AppearancePreferences extends StatelessWidget {
       children: [
         AppDropdown<String>.settings(
           key: const Key('language-selector'),
-          title: context.l10n.language,
+          title: languageTitle ?? context.l10n.language,
           value: vm.settings.language,
           onChanged: (value) {
             if (value != null) vm.setLanguage(value);

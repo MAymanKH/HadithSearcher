@@ -91,7 +91,11 @@ class _WelcomeViewState extends State<WelcomeView> {
                     const SizedBox(height: 24),
                     AbsorbPointer(
                       absorbing: _saving,
-                      child: const AppearancePreferences(),
+                      child: AppearancePreferences(
+                        languageTitle: l.localeName == 'ar'
+                            ? 'اللغة / Language'
+                            : 'Language / اللغة',
+                      ),
                     ),
                     const SizedBox(height: 16),
                     _content(

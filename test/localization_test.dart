@@ -125,7 +125,9 @@ void main() {
         Directionality.of(tester.element(find.byType(WelcomeView))),
         TextDirection.rtl,
       );
+      expect(find.text('اللغة / Language'), findsOneWidget);
       await chooseEnglish(tester);
+      expect(find.text('Language / اللغة'), findsOneWidget);
       expect(find.text('Welcome to Hadith Searcher'), findsOneWidget);
       expect(
         Directionality.of(tester.element(find.byType(WelcomeView))),
